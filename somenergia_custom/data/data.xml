@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="leave_avui_no_vinc" model="hr.leave.type">
+            <field name="name">Indisposició (un dia, el 2n, justificant. Inclou menors i ascendents a càrrec)</field>
+            <field name="requires_allocation">no</field>
+            <field name="color_name">red</field>
+            <field name="leave_validation_type">no_validation</field>
+        </record>
+    </data>
+</odoo>
