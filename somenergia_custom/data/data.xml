@@ -7,5 +7,9 @@
             <field name="color_name">red</field>
             <field name="leave_validation_type">no_validation</field>
         </record>
+        <record id="som_mail_avui_no_vinc" model="ir.config_parameter">
+            <field name="key">som_mail_avui_no_vinc</field>
+            <field name="value">avuinovinc@somenergia.coop</field>
+        </record>
     </data>
 </odoo>

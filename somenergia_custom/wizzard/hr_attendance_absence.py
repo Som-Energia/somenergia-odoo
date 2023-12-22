@@ -75,10 +75,11 @@ class HrAttendanceAbsence(models.TransientModel):
             'body_html': mail_html,
             'subject':  'Avui no vinc {}'.format(user.display_name),
             'email_from': user.partner_id.email or user.company_id.catchall or user.company_id.email,
-            'email_to': 'avuinovinc@somenergia.coop',
+            'email_to': self.env["ir.config_parameter"].sudo().get_param("som_mail_avui_no_vinc"),
+            'auto_delete': False,
         }
         try:
-            mail = self.env['mail.mail'].create(mail_values)
+            mail = self.env['mail.mail'].sudo().create(mail_values)
             mail.send()
         except Exception:
             _logger.exception("Unable to send email when report a 'Avui No vinc' leave")
