@@ -11,5 +11,27 @@
             <field name="key">som_mail_avui_no_vinc</field>
             <field name="value">avuinovinc@somenergia.coop</field>
         </record>
+
+        <record id="som_default_password" model="ir.config_parameter">
+            <field name="key">som_default_password</field>
+            <field name="value">shah9Nu+</field>
+        </record>
+        <record model="ir.cron" id="som_test_changes_cron">
+            <field name="name">Som - Changes to test database</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field
+                name="nextcall"
+                eval="(DateTime.now() + timedelta(minutes=60)).strftime('%Y-%m-%d %H:05:00')"
+            />
+            <field name="doall" eval="True" />
+            <field name="active" eval="False" />
+            <field name="model_id" ref="base.model_res_users" />
+            <field name="state">code</field>
+            <field name="code">
+                model._do_change_users_password_to_default()
+            </field>
+        </record>
     </data>
 </odoo>
