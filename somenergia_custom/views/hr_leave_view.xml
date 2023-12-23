@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    <record id="hr_holidays.hr_leave_action_new_request" model="ir.actions.act_window">-->
+<!--        <field name="domain">[(1,'=',1)]</field>-->
+<!--    </record>-->
+    <record id="hr_leave_view_form" model="ir.ui.view">
+        <field name="name">hr.leave.view.form</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="(//div[@name='duration_display']/div)[last()]" position="after">
+                <div class="alert alert-info" role="alert" attrs="{'invisible': [('request_unit_hours', '=', False)]}">
+                    Alerta: Assegura't que tries una franja Horària que se SOLAPI suficientment amb la teva jornada TEÒRICA:<br/>
+                    <field name="som_today_attendance_text" nolabel="1"/>
+<!--                    <br/>Només comptaran com a hores EFECTIVES d'absència, les hores on hi hagi solapament entre la FRANJA que triïs i la teva jornada teòrica, encara que la franja que indiquis no es correspongui amb l'horari REAL en què estaràs absent/a. Si vols deixar constància (informatiu) de l'horari REAL en què estaràs absent/a pots usar el camp Descripció.-->
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

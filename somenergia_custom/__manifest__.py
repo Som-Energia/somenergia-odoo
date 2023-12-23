@@ -22,6 +22,8 @@
     'depends': [
         'base',
         'hr_attendance_report_theoretical_time',
+        'hr_holidays',
+        'hr_holidays_attendance',
     ],
 
     # always loaded
@@ -29,6 +31,7 @@
         'data/data.xml',
         'security/ir.model.access.csv',
         'views/hr_attendance_view.xml',
+        'views/hr_leave_view.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
