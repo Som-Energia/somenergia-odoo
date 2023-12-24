@@ -16,7 +16,7 @@
         <!--feature massive password change-->
         <record id="som_default_password" model="ir.config_parameter">
             <field name="key">som_default_password</field>
-            <field name="value">shah9Nu+</field>
+            <field name="value"></field>
         </record>
         <record model="ir.cron" id="som_test_changes_cron">
             <field name="name">Som - Changes to test database</field>
