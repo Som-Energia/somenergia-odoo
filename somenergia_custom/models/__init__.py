@@ -1,3 +1,6 @@
 # -*- coding: utf-8 -*-
 from . import hr_leave
 from . import res_users
+from . import project
+from . import som_calendar_week
+from . import analytic_account

@@ -1,0 +1,20 @@
+<odoo>
+  <data>
+      <record id="view_som_calendar_week_tree" model="ir.ui.view">
+        <field name="name">som.calendar.week.tree</field>
+        <field name="model">som.calendar.week</field>
+        <field name="arch" type="xml">
+            <tree string="Som Calendar Week">
+                <field name="id"/>
+                <field name="som_cw_code"/>
+                <field name="name"/>
+                <field name="som_cw_date"/>
+                <field name="som_cw_date_end"/>
+                <field name="som_cw_week_number"/>
+                <field name="som_cw_week_year"/>
+                <field name="som_cw_year"/>
+            </tree>
+        </field>
+      </record>
+  </data>
+</odoo>

@@ -24,6 +24,8 @@
         'hr_attendance_report_theoretical_time',
         'hr_holidays',
         'hr_holidays_attendance',
+        'project',
+        'hr_timesheet',
     ],
 
     # always loaded
@@ -32,6 +34,8 @@
         'security/ir.model.access.csv',
         'views/hr_attendance_view.xml',
         'views/hr_leave_view.xml',
+        'views/som_calendar_week_view.xml',
+        'views/hr_timesheet_view.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
