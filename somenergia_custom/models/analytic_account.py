@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from logging import getLogger
 from odoo import api, fields, models, _
+from odoo.modules.module import get_module_resource
 
+_logger = getLogger(__name__)
 
 class AccountAnalyticAccount(models.Model):
     _inherit = "account.analytic.account"
@@ -15,8 +18,63 @@ class AccountAnalyticLine(models.Model):
         string="Week"
     )
 
-    @api.onchange('som_week_id')
-    def on_week(self):
-        if self.som_week_id:
-            self.date = self.som_week_id.som_cw_date.date()
+    som_is_cumulative = fields.Boolean(
+        string="Is cumulative"
+    )
 
+    @api.onchange('som_week_id')
+    def onchange_week(self):
+        self.date = (
+            self.som_week_id.som_cw_date.date() if self.som_week_id else False
+        )
+
+    def _get_cumulative_timesheet_week(self, employee_id, year):
+        query_name = "query_get_wh_employee_by_weeek.sql"
+        query_file = get_module_resource(
+            "somenergia_custom", "query", query_name
+        )
+        query = open(query_file).read()
+        cr = self.env.cr
+        result = []
+        cr.execute(
+            query, (
+                employee_id.id, employee_id.id,
+                year, year
+            )
+        )
+        result = cr.fetchall()
+        return result
+
+    @api.model
+    def _do_load_wh_week_timesheets(self, year):
+        _logger.info('START - _do_load_wh_week_timesheets')
+        project_ch_id = self.env.ref(
+            'somenergia_custom.som_cumulative_hours_project'
+        )
+        employee_ids = self.env['hr.employee'].search([])
+        for employee_id in employee_ids:
+            _logger.info("loading employee '[%s] %s'" % (employee_id.id, employee_id.name))
+            worked_hours = self._get_cumulative_timesheet_week(employee_id, year)
+            # I need to check if exists timesheet with project and week
+            for worked_week in worked_hours:
+                id_week = worked_week[0]
+                week_name = worked_week[1]
+                week_date = worked_week[2].date()
+                worked_hours = worked_week[4]
+                timesheet_id = self.env['account.analytic.line'].search([
+                    ('employee_id', '=', employee_id.id),
+                    ('som_week_id', '=', id_week),
+                    ('project_id', '=', project_ch_id.id),
+                ])
+                if timesheet_id:
+                    timesheet_id.unit_amount = worked_hours
+                else:
+                    timesheet_id = self.env['account.analytic.line'].create({
+                        'date': week_date,
+                        'som_week_id': id_week,
+                        'employee_id': employee_id.id,
+                        'project_id': project_ch_id.id,
+                        'name': week_name,
+                        'unit_amount': worked_hours,
+                    })
+            pass

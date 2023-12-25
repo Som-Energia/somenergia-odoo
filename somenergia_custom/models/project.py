@@ -32,12 +32,9 @@ class Project(models.Model):
             )
             query = open(query_file).read()
             cr = self.env.cr
-            # result = []
             cr.execute(query)
-            # result = cr.fetchall()
 
     @api.model
     def _do_initialize_projects(self):
         self._load_default_tasks()
         self._load_table_calendar_weeks()
-        pass

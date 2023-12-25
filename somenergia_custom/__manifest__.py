@@ -25,6 +25,7 @@
         'hr_holidays',
         'hr_holidays_attendance',
         'project',
+        'analytic',
         'hr_timesheet',
     ],
 

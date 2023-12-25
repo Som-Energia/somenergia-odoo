@@ -65,5 +65,24 @@
             </field>
         </record>
 
+        <!--create or load cumulative timesheets-->
+        <record model="ir.cron" id="som_load_timesheet_cumulative">
+            <field name="name">Som - Load cumulative timesheets</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field
+                name="nextcall"
+                eval="(DateTime.now() + timedelta(minutes=60)).strftime('%Y-%m-%d %H:05:00')"
+            />
+            <field name="doall" eval="True" />
+            <field name="active" eval="False" />
+            <field name="model_id" ref="analytic.model_account_analytic_line" />
+            <field name="state">code</field>
+            <field name="code">
+                model._do_load_wh_week_timesheets(year=2023)
+            </field>
+        </record>
+
     </data>
 </odoo>
