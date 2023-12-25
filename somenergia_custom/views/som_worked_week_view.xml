@@ -11,9 +11,15 @@
                     <field name="som_week_id"/>
                     <field name="som_employee_id"/>
                     <field name="som_timesheet_ids"/>
-                    <field name="som_total_worked_hours" decoration-info="som_week_id != False"/>
-                    <field name="som_total_assigned_hours" decoration-success="som_week_id != False"/>
-                    <field name="som_total_unassigned_hours" decoration-warning="som_week_id != False"/>
+                    <field name="som_total_worked_hours"
+                           widget="float_time"
+                           decoration-info="som_week_id != False"/>
+                    <field name="som_total_assigned_hours"
+                           widget="float_time"
+                           decoration-success="som_week_id != False"/>
+                    <field name="som_total_unassigned_hours"
+                           widget="float_time"
+                           decoration-warning="som_week_id != False"/>
                 </tree>
             </field>
         </record>
@@ -39,7 +45,10 @@
                                 <field name="som_week_id" invisible="1" force_save="1"/>
                                 <field name="project_id" readonly="0"/>
                                 <field name="name"/>
-                                <field name="unit_amount" string="Hours assigned" sum="Total"/>
+                                <field name="unit_amount"
+                                       widget="float_time"
+                                       string="Hours assigned"
+                                       sum="Total"/>
                             </tree>
                         </field>
                     </group>
