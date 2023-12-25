@@ -6,12 +6,18 @@ from odoo.modules.module import get_module_resource
 
 _logger = getLogger(__name__)
 
+
 class AccountAnalyticAccount(models.Model):
     _inherit = "account.analytic.account"
 
 
 class AccountAnalyticLine(models.Model):
     _inherit = "account.analytic.line"
+
+    som_worked_week_id = fields.Many2one(
+        comodel_name="som.worked.week",
+        string="Worked week",
+    )
 
     som_week_id = fields.Many2one(
         comodel_name="som.calendar.week",
@@ -55,12 +61,22 @@ class AccountAnalyticLine(models.Model):
         for employee_id in employee_ids:
             _logger.info("loading employee '[%s] %s'" % (employee_id.id, employee_id.name))
             worked_hours = self._get_cumulative_timesheet_week(employee_id, year)
-            # I need to check if exists timesheet with project and week
             for worked_week in worked_hours:
                 id_week = worked_week[0]
                 week_name = worked_week[1]
                 week_date = worked_week[2].date()
                 worked_hours = worked_week[4]
+
+                worked_week_id = self.env['som.worked.week'].search([
+                    ('som_employee_id', '=', employee_id.id),
+                    ('som_week_id', '=', id_week),
+                ])
+                if not worked_week_id:
+                    worked_week_id = self.env['som.worked.week'].create({
+                        'som_employee_id': employee_id.id,
+                        'som_week_id': id_week,
+                    })
+
                 timesheet_id = self.env['account.analytic.line'].search([
                     ('employee_id', '=', employee_id.id),
                     ('som_week_id', '=', id_week),
@@ -71,7 +87,9 @@ class AccountAnalyticLine(models.Model):
                 else:
                     timesheet_id = self.env['account.analytic.line'].create({
                         'date': week_date,
+                        'som_worked_week_id': worked_week_id.id,
                         'som_week_id': id_week,
+                        'som_is_cumulative': True,
                         'employee_id': employee_id.id,
                         'project_id': project_ch_id.id,
                         'name': week_name,

@@ -4,3 +4,4 @@ from . import res_users
 from . import project
 from . import som_calendar_week
 from . import analytic_account
+from . import som_worked_week
