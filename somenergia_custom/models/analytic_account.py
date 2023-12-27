@@ -65,7 +65,7 @@ class AccountAnalyticLine(models.Model):
                 id_week = worked_week[0]
                 week_name = worked_week[1]
                 week_date = worked_week[2].date()
-                worked_hours = worked_week[4]
+                worked_hours = round(worked_week[4], 2)
 
                 worked_week_id = self.env['som.worked.week'].search([
                     ('som_employee_id', '=', employee_id.id),

@@ -7,20 +7,55 @@
             <field name="model">som.worked.week</field>
             <field name="type">tree</field>
             <field name="arch" type="xml">
-                <tree string="Worked weeks">
+                <tree string="Worked weeks"
+                      decoration-success="som_total_unassigned_hours == 0 and som_total_worked_hours != 0"
+                      decoration-danger="som_total_assigned_hours == 0 and som_total_worked_hours != 0"
+                      decoration-warning="som_total_assigned_hours != 0 and som_total_unassigned_hours != 0 and som_total_worked_hours != 0">
                     <field name="som_week_id"/>
-                    <field name="som_employee_id"/>
+                    <field name="som_employee_id" optional="hide" />
                     <field name="som_timesheet_ids"/>
                     <field name="som_total_worked_hours"
-                           widget="float_time"
-                           decoration-info="som_week_id != False"/>
+                           widget="float_time"/>
                     <field name="som_total_assigned_hours"
-                           widget="float_time"
-                           decoration-success="som_week_id != False"/>
+                           widget="float_time"/>
                     <field name="som_total_unassigned_hours"
-                           widget="float_time"
-                           decoration-warning="som_week_id != False"/>
+                           widget="float_time"/>
+                    <field name="som_cw_date_rel" optional="hide" />
+                    <field name="som_cw_date_end_rel" optional="hide" />
+                    <field name="som_cw_week_number_rel" optional="hide" />
+                    <field name="som_cw_year_rel" optional="hide" />
                 </tree>
+            </field>
+        </record>
+
+        <record id="som_worked_week_search" model="ir.ui.view">
+            <field name="name">som.worked.week.search</field>
+            <field name="model">som.worked.week</field>
+            <field name="arch" type="xml">
+                <search string="Worked Week">
+                    <field name="name"/>
+                    <field name="som_employee_id"/>
+                    <field name="som_cw_date_rel"/>
+                    <field name="som_cw_date_end_rel"/>
+<!--                    <filter name="with_assigned_hours"-->
+<!--                            string="With assigned hours)"-->
+<!--                            domain="[('som_total_assigned_hours', '!=', 0)]"/>-->
+                    <filter name="without_assigned_hours"
+                            string="Assignment Empty (no assigned hours)"
+                            domain="[('som_total_assigned_hours', '=', 0), ('som_total_worked_hours','!=', 0)]"/>
+                    <filter name="with_pending assignment"
+                            string="Assignment Incomplete"
+                            domain="[('som_total_assigned_hours', '!=', 0), ('som_total_unassigned_hours', '!=', 0), ('som_total_worked_hours','!=', 0)]"/>
+                    <filter name="with_no_pending assignment"
+                            string="Assignment Complete"
+                            domain="[('som_total_unassigned_hours', '=', 0), ('som_total_worked_hours','!=', 0)]"/>
+                    <separator/>
+                    <filter name="month" string="Date" date="som_cw_date_rel"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Employee" name="groupby_employee" domain="[]" context="{'group_by': 'som_employee_id'}"/>
+                        <filter string="Date" name="groupby_date" domain="[]" context="{'group_by': 'som_cw_date_rel'}" help="Week Month"/>
+                    </group>
+                </search>
             </field>
         </record>
 

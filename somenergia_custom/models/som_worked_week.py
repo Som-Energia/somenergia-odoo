@@ -19,14 +19,20 @@ class SomWorkedWeek(models.Model):
                 lambda x: not x.som_is_cumulative
             ).mapped("unit_amount"))
 
-            record.som_total_unassigned_hours = (
+            record.som_total_unassigned_hours = round((
                     record.som_total_worked_hours - record.som_total_assigned_hours
-            )
+            ), 2)
 
     som_week_id = fields.Many2one(
         comodel_name="som.calendar.week",
         string="Week",
         required=True,
+    )
+
+    name = fields.Char(
+        string="Name",
+        related="som_week_id.name",
+        store=True,
     )
 
     som_employee_id = fields.Many2one(
@@ -58,3 +64,37 @@ class SomWorkedWeek(models.Model):
         compute='_compute_totals',
         store=True,
     )
+
+    # related field from som.calendar.week
+    # -----
+    som_cw_date_rel = fields.Datetime(
+        string="Week Date From",
+        related="som_week_id.som_cw_date",
+        store=True,
+    )
+
+    som_cw_date_end_rel = fields.Datetime(
+        string="Week Date End",
+        related="som_week_id.som_cw_date_end",
+        store=True,
+    )
+
+    som_cw_week_number_rel = fields.Integer(
+        string="Week Number",
+        related="som_week_id.som_cw_week_number",
+        store=True,
+    )
+
+    som_cw_week_year_rel = fields.Integer(
+        string="Week Year Relative",
+        related="som_week_id.som_cw_week_year",
+        store=True,
+    )
+
+    som_cw_year_rel = fields.Integer(
+        string="Week Year",
+        related="som_week_id.som_cw_week_year",
+        store=True,
+    )
+
+    # -----
