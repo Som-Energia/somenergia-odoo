@@ -27,6 +27,7 @@
         'project',
         'analytic',
         'hr_timesheet',
+        'custom_pnt',
     ],
 
     # always loaded
