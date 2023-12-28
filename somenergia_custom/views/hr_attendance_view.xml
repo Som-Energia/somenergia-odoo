@@ -47,7 +47,6 @@
     <menuitem id="menu_hr_attendance_avuinovinc_som"
               name="Avui no vinc 🤒"
               parent="hr_attendance.menu_hr_attendance_root"
-              sequence="40"
               groups="hr_attendance.group_hr_attendance"
               action="hr_attendance_absence_action"/>
 </odoo>

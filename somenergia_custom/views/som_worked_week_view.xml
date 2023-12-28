@@ -128,7 +128,7 @@
 
         <menuitem id="menu_som_worked_week_attendances_root"
                 name="Worked weeks"
-                sequence="30"
+                sequence="90"
                 parent="hr_attendance.menu_hr_attendance_root"/>
 
         <menuitem id="menu_som_worked_week_attendances_recompute"
