@@ -52,12 +52,25 @@ class AccountAnalyticLine(models.Model):
         return result
 
     @api.model
-    def _do_load_wh_week_timesheets(self, year):
+    def _do_load_wh_week_timesheets_current_user(self):
+        year = fields.Date.today().year
+        list_employee = []
+        if not self.env.user._is_admin():
+            list_employee.append(self.env.user.employee_id.id)
+        self._do_load_wh_week_timesheets(year, list_employee)
+
+    @api.model
+    def _do_load_wh_week_timesheets(self, year, list_employee=[]):
         _logger.info('START - _do_load_wh_week_timesheets')
         project_ch_id = self.env.ref(
             'somenergia_custom.som_cumulative_hours_project'
         )
-        employee_ids = self.env['hr.employee'].search([])
+
+        domain = []
+        if list_employee:
+            domain = [('id', 'in', list_employee)]
+
+        employee_ids = self.env['hr.employee'].search(domain)
         for employee_id in employee_ids:
             _logger.info("loading employee '[%s] %s'" % (employee_id.id, employee_id.name))
             worked_hours = self._get_cumulative_timesheet_week(employee_id, year)

@@ -9,6 +9,17 @@
         <field name="context">{'create': True}</field>
     </record>
 
+    <record id="som_hr_attendance_view_tree" model="ir.ui.view">
+        <field name="name">som_hr.attendance.tree</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree" />
+        <field name="arch" type="xml">
+            <field name="worked_hours" position="after">
+                <field name="som_comments"/>
+            </field>
+        </field>
+    </record>
+
     <!-- Avui no vinc -->
     <record id="account_invoice_download_credentials_form" model="ir.ui.view">
         <field name="name">hr.attendance.absenceg.form</field>

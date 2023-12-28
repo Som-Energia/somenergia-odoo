@@ -5,6 +5,7 @@ from odoo import api, fields, models, tools, _
 
 class SomWorkedWeek(models.Model):
     _name = "som.worked.week"
+    _inherit = ["mail.thread", "mail.activity.mixin"]
     _description = "Som Worked Week"
 
     @api.depends('som_timesheet_ids', 'som_timesheet_ids.unit_amount')
@@ -42,7 +43,7 @@ class SomWorkedWeek(models.Model):
     )
 
     som_timesheet_ids = fields.One2many(
-        string="Timesheets",
+        string="Assignments",
         comodel_name="account.analytic.line",
         inverse_name="som_worked_week_id",
     )
