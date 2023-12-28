@@ -85,7 +85,10 @@
                                     <field name="som_is_cumulative" invisible="1"/>
                                     <field name="date" invisible="1" force_save="1"/>
                                     <field name="som_week_id" invisible="1" force_save="1"/>
-                                    <field name="project_id" readonly="0"/>
+                                    <field name="project_id"
+                                           required="True"
+                                           string="Scope"
+                                           readonly="0"/>
                                     <field name="name"/>
                                     <field name="unit_amount"
                                            widget="float_time"

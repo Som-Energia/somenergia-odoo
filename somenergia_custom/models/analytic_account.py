@@ -14,6 +14,10 @@ class AccountAnalyticAccount(models.Model):
 class AccountAnalyticLine(models.Model):
     _inherit = "account.analytic.line"
 
+    name = fields.Char(
+        default="/"
+    )
+
     som_worked_week_id = fields.Many2one(
         comodel_name="som.worked.week",
         string="Worked week",
@@ -27,6 +31,12 @@ class AccountAnalyticLine(models.Model):
     som_is_cumulative = fields.Boolean(
         string="Is cumulative"
     )
+
+    def unlink(self):
+        for record in self:
+            if self.som_is_cumulative:
+                return False
+        return super().unlink()
 
     @api.onchange('som_week_id')
     def onchange_week(self):
