@@ -2,3 +2,4 @@ id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
 access_hr_attendance_absence_user,hr.attendance.absence_user,model_hr_attendance_absence,base.group_user,1,1,1,1
 access_som_calendar_week_user,som.calendar.week_user,model_som_calendar_week,base.group_user,1,1,0,0
 access_som_worked_week_user,som.worked.week_user,model_som_worked_week,hr_timesheet.group_hr_timesheet_user,1,1,0,0
+access_hr_attendance_report_user,hr.attendance.report.user,model_hr_attendance_report,hr_attendance.group_hr_attendance,1,0,0,0
