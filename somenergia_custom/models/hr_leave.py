@@ -99,3 +99,29 @@ class HolidaysRequest(models.Model):
                     }
                 }
 
+    @api.model
+    def get_leaves(self, start_date, end_date):
+        """
+        This function returns leaves from start_date to end_date in the following
+        format: {'worker': email, 'start_time': '2021-12-30','end_time': '2021-12-31'}
+        """
+        res = []
+        resources_calendar_leaves_model = self.env["resource.calendar.leaves"]
+        resource_resource_model = self.env["resource.resource"]
+        search_params = [
+            ('date_to', '>=', start_date),
+            ('date_from', '<=', end_date),
+            ('holiday_id', '!=', False)
+        ]
+        leaves = resources_calendar_leaves_model.search(search_params)
+
+        for leave_id in leaves.ids:
+            leave_data = resources_calendar_leaves_model.browse(leave_id)
+            worker = leave_data.resource_id.user_id.email
+            res.append({
+                'worker': worker,
+                'start_time': leave_data.date_from,
+                'end_time': leave_data.date_to
+            })
+
+        return res
