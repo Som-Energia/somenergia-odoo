@@ -24,6 +24,13 @@ class SomWorkedWeek(models.Model):
                     record.som_total_worked_hours - record.som_total_assigned_hours
             ), 2)
 
+    def _compute_project_area_domain_ids(self):
+        tag_area_id = self.env.ref("somenergia_custom.som_project_tag_area")
+        for record in self:
+            domain = [("tag_ids", "in", tag_area_id.ids)]
+            project_ids = self.env['project.project'].search(domain)
+            record.som_project_area_domain_ids = project_ids
+
     som_week_id = fields.Many2one(
         comodel_name="som.calendar.week",
         string="Week",
@@ -64,6 +71,13 @@ class SomWorkedWeek(models.Model):
         'Total assigned hours',
         compute='_compute_totals',
         store=True,
+    )
+
+    som_project_area_domain_ids = fields.Many2many(
+        "project.project",
+        string="Projects area domain",
+        compute="_compute_project_area_domain_ids",
+        store=False,
     )
 
     # related field from som.calendar.week

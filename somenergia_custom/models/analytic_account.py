@@ -32,6 +32,11 @@ class AccountAnalyticLine(models.Model):
         string="Is cumulative"
     )
 
+    som_project_area_domain_ids = fields.Many2many(
+        "project.project",
+        store=False,
+    )
+
     def unlink(self):
         for record in self:
             if self.som_is_cumulative:
