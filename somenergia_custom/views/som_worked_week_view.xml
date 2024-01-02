@@ -51,7 +51,7 @@
                             domain="[('som_total_unassigned_hours', '=', 0), ('som_total_worked_hours','!=', 0)]"/>
                     <separator/>
                     <filter name="month" string="Date" date="som_cw_date_rel"/>
-                    <group expand="0" string="Group By">
+                    <group expand="1" string="Group By">
                         <filter string="Employee" name="groupby_employee" domain="[]" context="{'group_by': 'som_employee_id'}"/>
                         <filter string="Date" name="groupby_date" domain="[]" context="{'group_by': 'som_cw_date_rel'}" help="Week Month"/>
                     </group>
@@ -86,11 +86,15 @@
                                     <field name="date" invisible="1" force_save="1"/>
                                     <field name="som_week_id" invisible="1" force_save="1"/>
                                     <field name="project_id"
+                                           options="{'no_open': True}"
+                                           attrs="{'readonly': [('som_is_cumulative', '=', True)]}"
                                            required="True"
                                            string="Scope"
                                            readonly="0"/>
-                                    <field name="name"/>
+                                    <field name="name"
+                                           attrs="{'readonly': [('som_is_cumulative', '=', True)]}"/>
                                     <field name="unit_amount"
+                                           attrs="{'readonly': [('som_is_cumulative', '=', True)]}"
                                            widget="float_time"
                                            string="Hours assigned"
                                            sum="Total"/>
@@ -111,6 +115,7 @@
             <field name="name">Worked weeks</field>
             <field name="res_model">som.worked.week</field>
             <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_month':1, 'search_default_groupby_date': 3}</field>
             <field name="view_id" ref="view_som_worked_week_tree"/>
         </record>
 
@@ -142,12 +147,6 @@
                 sequence="20"
                 parent="menu_som_worked_week_attendances_root"
                 action="action_som_worked_week"/>
-
-<!--        <menuitem id="menu_som_worked_week"-->
-<!--                name="Worked weeks"-->
-<!--                sequence="5"-->
-<!--                parent="hr_timesheet.timesheet_menu_root"-->
-<!--                action="action_som_worked_week"/>-->
 
     </data>
 </odoo>
