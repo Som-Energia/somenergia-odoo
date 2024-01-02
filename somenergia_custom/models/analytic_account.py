@@ -39,7 +39,7 @@ class AccountAnalyticLine(models.Model):
 
     def unlink(self):
         for record in self:
-            if self.som_is_cumulative:
+            if record.som_is_cumulative:
                 return False
         return super().unlink()
 
