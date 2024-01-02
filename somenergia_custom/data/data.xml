@@ -36,14 +36,26 @@
             </field>
         </record>
 
-        <!--feature initialize projects for cost control purpose-->
+        <!--PROJECTS-->
+
+        <!-- Project categories -->
+        <record id="som_project_tag_area" model="project.tags">
+            <field name="name">Area</field>
+        </record>
+
+        <record id="som_project_tag_transversal_project" model="project.tags">
+            <field name="name">Transversal project</field>
+        </record>
+        <!-- -->
+
         <record id="som_cumulative_hours_project" model="project.project">
-            <field name="name">[SOM-ACUMULAT] Acumulat</field>
+            <field name="name">[SOM] Worked hours</field>
             <field name="allow_timesheets">True</field>
+            <field name="tag_ids" eval="[(6, 0, [ref('somenergia_custom.som_project_tag_area')])]"/>
         </record>
 
         <record id="som_cumulative_hours_project_task" model="project.task">
-            <field name="name">[SOM-ACUMULAT] Acumulat</field>
+            <field name="name">[SOM] Worked hours</field>
             <field name="project_id" ref="som_cumulative_hours_project" />
         </record>
 
@@ -80,9 +92,11 @@
             <field name="model_id" ref="analytic.model_account_analytic_line" />
             <field name="state">code</field>
             <field name="code">
-                model._do_load_wh_week_timesheets(year=2023)
+                model._do_load_wh_week_timesheets(year=2024)
             </field>
         </record>
+
+
 
     </data>
 </odoo>

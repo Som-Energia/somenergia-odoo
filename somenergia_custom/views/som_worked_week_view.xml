@@ -37,9 +37,6 @@
                     <field name="som_employee_id"/>
                     <field name="som_cw_date_rel"/>
                     <field name="som_cw_date_end_rel"/>
-<!--                    <filter name="with_assigned_hours"-->
-<!--                            string="With assigned hours)"-->
-<!--                            domain="[('som_total_assigned_hours', '!=', 0)]"/>-->
                     <filter name="without_assigned_hours"
                             string="Assignment Empty (no assigned hours)"
                             domain="[('som_total_assigned_hours', '=', 0), ('som_total_worked_hours','!=', 0)]"/>
@@ -113,8 +110,6 @@
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_som_worked_week_tree"/>
         </record>
-
-
 
         <record id="som_recompute_worked_weeks" model="ir.actions.server">
             <field name="name">Recompute worked hours</field>
