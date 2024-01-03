@@ -42,6 +42,7 @@
         'views/som_calendar_week_view.xml',
         'views/hr_timesheet_view.xml',
         'views/som_worked_week_view.xml',
+        'views/hr_employee_view.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
