@@ -27,6 +27,7 @@
         'project',
         'analytic',
         'hr_timesheet',
+        'hr_attendance_autoclose',
         'custom_pnt',
     ],
 
