@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-02 11:49+0000\n"
-"PO-Revision-Date: 2024-01-02 11:49+0000\n"
+"POT-Creation-Date: 2024-01-03 04:47+0000\n"
+"PO-Revision-Date: 2024-01-03 04:47+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -68,6 +68,11 @@ msgstr "Compte analític"
 #: model:ir.model,name:somenergia_custom.model_account_analytic_line
 msgid "Analytic Line"
 msgstr "Línia analítica"
+
+#. module: somenergia_custom
+#: model:project.tags,name:somenergia_custom.som_project_tag_area
+msgid "Area"
+msgstr "Àmbit"
 
 #. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_worked_week_search
@@ -149,6 +154,13 @@ msgstr "Data"
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__som_cw_date_end
 msgid "Date End"
 msgstr "Data Fi"
+
+#. module: somenergia_custom
+#. odoo-python
+#: code:addons/somenergia_custom/models/hr_attendance_report.py:0
+#, python-format
+msgid "Day attendances %s"
+msgstr "Assistències dia %s"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_account_analytic_line__name
@@ -362,6 +374,11 @@ msgid "Project"
 msgstr "Àmbit"
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__som_project_area_domain_ids
+msgid "Projects area domain"
+msgstr ""
+
+#. module: somenergia_custom
 #: model:ir.actions.server,name:somenergia_custom.som_recompute_worked_weeks
 #: model:ir.ui.menu,name:somenergia_custom.menu_som_worked_week_attendances_recompute
 msgid "Recompute worked hours"
@@ -399,6 +416,11 @@ msgstr ""
 #: model:ir.model,name:somenergia_custom.model_som_calendar_week
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.view_som_calendar_week_tree
 msgid "Som Calendar Week"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_account_analytic_line__som_project_area_domain_ids
+msgid "Som Project Area Domain"
 msgstr ""
 
 #. module: somenergia_custom
@@ -446,6 +468,11 @@ msgid "Total worked hours"
 msgstr "Total hores treballades"
 
 #. module: somenergia_custom
+#: model:project.tags,name:somenergia_custom.som_project_tag_transversal_project
+msgid "Transversal project"
+msgstr "Transversal"
+
+#. module: somenergia_custom
 #: model:ir.model.fields,help:somenergia_custom.field_som_worked_week__activity_exception_decoration
 msgid "Type of the exception activity on record."
 msgstr ""
@@ -454,6 +481,11 @@ msgstr ""
 #: model:ir.model,name:somenergia_custom.model_res_users
 msgid "User"
 msgstr "Usuari"
+
+#. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.view_som_hr_attendance_report_tree
+msgid "View attendances"
+msgstr "Veure assitències"
 
 #. module: somenergia_custom
 #. odoo-python

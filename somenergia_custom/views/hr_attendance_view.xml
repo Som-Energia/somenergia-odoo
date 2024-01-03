@@ -10,14 +10,20 @@
     </record>
 
     <record id="som_hr_attendance_view_tree" model="ir.ui.view">
-        <field name="name">som_hr.attendance.tree</field>
+        <field name="name">som.hr.attendance.tree</field>
         <field name="model">hr.attendance</field>
         <field name="inherit_id" ref="hr_attendance.view_attendance_tree" />
         <field name="arch" type="xml">
             <field name="worked_hours" position="after">
                 <field name="som_comments"/>
+                <field name="worked_hours"
+                       string="Total"
+                       invisible="0"
+                       sum="Total"
+                       widget="float_time"/>
             </field>
         </field>
+
     </record>
 
     <!-- Avui no vinc -->
@@ -74,8 +80,12 @@
                 <field name="employee_id"/>
                 <field name="department_id"/>
                 <field name="check_in"/>
-                <field name="worked_hours" widget="float_time"/>
+                <field name="worked_hours" widget="float_time" invisible="1"/>
                 <field name="overtime_hours" decoration-danger="1==1" widget="float_time"/>
+                <button string="View attendances"
+                        name="action_view_attendances"
+                        type="object"
+                        icon="fa-check"/>
             </tree>
         </field>
     </record>
