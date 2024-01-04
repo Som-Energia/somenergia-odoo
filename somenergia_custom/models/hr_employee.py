@@ -11,14 +11,14 @@ class HrEmployee(models.Model):
         for record in self:
             record.is_present = not record.is_absent
 
-    @api.depends('calendar_ids', 'calendar_ids.date_start', 'calendar_ids.date_end')
-    def _compute_current_calendar(self):
-        for record in self:
-            calendar_id = record.calendar_ids.filtered(
-                lambda x: (x.date_start and x.date_start <= fields.Date.today() and not x.date_end) or
-                          (not x.date_start and not x.date_end)
-            )
-            record.som_current_calendar_id = calendar_id[0].calendar_id.id if calendar_id else False
+    # @api.depends('calendar_ids', 'calendar_ids.date_start', 'calendar_ids.date_end')
+    # def _compute_current_calendar(self):
+    #     for record in self:
+    #         calendar_id = record.calendar_ids.filtered(
+    #             lambda x: (x.date_start and x.date_start <= fields.Date.today() and not x.date_end) or
+    #                       (not x.date_start and not x.date_end)
+    #         )
+    #         record.som_current_calendar_id = calendar_id[0].calendar_id.id if calendar_id else False
 
     def _search_present_employee(self, operator, value):
         if operator not in ('=', '!=') or not isinstance(value, bool):
@@ -34,9 +34,9 @@ class HrEmployee(models.Model):
         search='_search_present_employee'
     )
 
-    som_current_calendar_id = fields.Many2one(
-        comodel_name="resource.calendar",
-        string="Current calendar",
-        compute='_compute_current_calendar',
-        store=True,
-    )
+    # som_current_calendar_id = fields.Many2one(
+    #     comodel_name="resource.calendar",
+    #     string="Current calendar",
+    #     compute='_compute_current_calendar',
+    #     store=True,
+    # )
