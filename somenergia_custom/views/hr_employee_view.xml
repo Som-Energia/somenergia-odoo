@@ -9,6 +9,37 @@
                         string="Present today"
                         domain="[('is_present', '=', True)]"/>
             </xpath>
+            <xpath expr="//group/filter[@name='group_category_ids']" position="after">
+                <filter name="group_current_calendar"
+                        string="Current calendar"
+                        domain="[]"
+                        context="{'group_by': 'som_current_calendar_id'}"/>
+            </xpath>
         </field>
     </record>
+
+    <record id="som_view_employee_tree" model="ir.ui.view">
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='work_email']" position="after">
+                <field name="som_current_calendar_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="som_hr_kanban_view_employees_kanban" model="ir.ui.view">
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.hr_kanban_view_employees"/>
+        <field name="arch" type="xml">
+            <xpath expr="//templates" position="before">
+                <field name="som_current_calendar_id"/>
+            </xpath>
+            <xpath expr="//li[@id='last_login']" position="after"
+                   t-if="record.som_current_calendar_id">
+                <li t-if="record.som_current_calendar_id.raw_value" class="o_text_overflow"><field name="som_current_calendar_id" /></li>
+           </xpath>
+        </field>
+    </record>
+
 </odoo>
