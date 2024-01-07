@@ -15,6 +15,16 @@
 <!--                    <br/>Només comptaran com a hores EFECTIVES d'absència, les hores on hi hagi solapament entre la FRANJA que triïs i la teva jornada teòrica, encara que la franja que indiquis no es correspongui amb l'horari REAL en què estaràs absent/a. Si vols deixar constància (informatiu) de l'horari REAL en què estaràs absent/a pots usar el camp Descripció.-->
                 </div>
             </xpath>
+            <xpath expr="//label[@for='supported_attachment_ids']" position="attributes">
+                <attribute name="attrs">
+                    {'invisible': [ ('leave_type_support_document', '=', False)]}
+                </attribute>
+            </xpath>
+            <xpath expr="//field[@name='supported_attachment_ids']" position="attributes">
+                <attribute name="attrs">
+                    {'invisible': [ ('leave_type_support_document', '=', False)]}
+                </attribute>
+            </xpath>
         </field>
     </record>
 </odoo>
