@@ -13,7 +13,7 @@
                       decoration-warning="(som_total_assigned_hours != 0 and som_total_unassigned_hours != 0 and som_total_worked_hours != 0) or (som_total_unassigned_hours &lt; 0)">
                     <field name="som_week_id"/>
                     <field name="som_employee_id" optional="hide" />
-                    <field name="som_timesheet_ids"/>
+                    <field name="som_timesheet_ids" optional="hide"/>
                     <field name="som_total_worked_hours"
                            widget="float_time"/>
                     <field name="som_total_assigned_hours"
