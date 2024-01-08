@@ -100,11 +100,11 @@
     </record>
 
     <menuitem
-        id="som_menu_hr_attendance_report"
+        id="som_menu_hr_attendance_overtime"
         name="Overtime control"
-        sequence="100"
+        sequence="110"
         parent="hr_attendance.menu_hr_attendance_report"
-        action="som_hr_attendance_report_action"
+        action="hr_attendance.hr_attendance_overtime_action"
         groups="hr_attendance.group_hr_attendance"/>
 
 

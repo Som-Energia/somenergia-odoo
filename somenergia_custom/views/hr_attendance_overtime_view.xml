@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="som_hr_attendance_overtime_search" model="ir.ui.view">
+        <field name="model">hr.attendance.overtime</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_overtime_search" />
+        <field name="arch" type="xml">
+            <field name="duration" position="after">
+                <filter name="month" string="Date" date="date"/>
+                <filter name="som_overtime_not_allowed"
+                        string="With overtime not allowed"
+                        domain="[('duration', '&gt;', 1.1)]"/>
+                <filter name="som_overtime_allowed"
+                        string="With overtime allowed"
+                        domain="[('duration', '&gt;', 0.1), ('duration', '&lt;', 1)]"/>
+                <filter name="som_without_overtime"
+                        string="Without overtime"
+                        domain="[('duration', '&lt;', 0)]"/>
+                <group expand="1" string="Group By">
+                    <filter string="Employee" name="groupby_employee" domain="[]" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Date" name="groupby_date" domain="[]" context="{'group_by': 'date'}"/>
+                </group>
+            </field>
+        </field>
+    </record>
+
+    <record id="som_view_attendance_overtime_tree" model="ir.ui.view">
+        <field name="model">hr.attendance.overtime</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_overtime_tree" />
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="decoration-danger">duration > 1.1</attribute>
+            </xpath>
+            <field name="duration" position="after">
+                <button string="View attendances"
+                    name="action_view_attendances"
+                    type="object"
+                    icon="fa-check"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

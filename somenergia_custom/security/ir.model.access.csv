@@ -4,3 +4,4 @@ access_som_calendar_week_user,som.calendar.week_user,model_som_calendar_week,bas
 access_som_worked_week_user,som.worked.week_user,model_som_worked_week,hr_timesheet.group_hr_timesheet_user,1,1,0,0
 access_hr_attendance_report_user,hr.attendance.report.user,model_hr_attendance_report,hr_attendance.group_hr_attendance,1,0,0,0
 access_hr_attendance_user,hr.attendance.system.user,model_hr_attendance,hr_attendance.group_hr_attendance,1,1,1,1
+access_hr_attendance_overtime_user,hr.attendance.overtime.user,model_hr_attendance_overtime,hr_attendance.group_hr_attendance,1,0,0,0

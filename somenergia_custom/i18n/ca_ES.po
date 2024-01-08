@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-04 06:05+0000\n"
-"PO-Revision-Date: 2024-01-04 06:05+0000\n"
+"POT-Creation-Date: 2024-01-08 11:42+0000\n"
+"PO-Revision-Date: 2024-01-08 11:42+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -105,6 +105,11 @@ msgid "Attendance"
 msgstr "Assistència"
 
 #. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_hr_attendance_overtime
+msgid "Attendance Overtime"
+msgstr "Hora d'assistència extraordinària"
+
+#. module: somenergia_custom
 #: model:ir.model,name:somenergia_custom.model_hr_attendance_report
 msgid "Attendance Statistics"
 msgstr "Estadístiques d'assistència"
@@ -145,13 +150,8 @@ msgid "Created on"
 msgstr ""
 
 #. module: somenergia_custom
-#: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee__som_current_calendar_id
-#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_employee_filter
-msgid "Current calendar"
-msgstr "Horari actual"
-
-#. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__som_cw_date
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_attendance_overtime_search
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_worked_week_search
 msgid "Date"
 msgstr "Data"
@@ -163,6 +163,7 @@ msgstr "Data Fi"
 
 #. module: somenergia_custom
 #. odoo-python
+#: code:addons/somenergia_custom/models/hr_attendance_overtime.py:0
 #: code:addons/somenergia_custom/models/hr_attendance_report.py:0
 #, python-format
 msgid "Day attendances %s"
@@ -183,6 +184,7 @@ msgstr ""
 #. module: somenergia_custom
 #: model:ir.model,name:somenergia_custom.model_hr_employee
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__som_employee_id
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_attendance_overtime_search
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_worked_week_search
 msgid "Employee"
 msgstr "Empleat"
@@ -208,6 +210,7 @@ msgid "Font awesome icon e.g. fa-tasks"
 msgstr ""
 
 #. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_attendance_overtime_search
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_worked_week_search
 msgid "Group By"
 msgstr ""
@@ -377,7 +380,7 @@ msgstr ""
 
 #. module: somenergia_custom
 #: model:ir.actions.act_window,name:somenergia_custom.som_hr_attendance_report_action
-#: model:ir.ui.menu,name:somenergia_custom.som_menu_hr_attendance_report
+#: model:ir.ui.menu,name:somenergia_custom.som_menu_hr_attendance_overtime
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.view_som_hr_attendance_report_tree
 msgid "Overtime control"
 msgstr "Control hores extra"
@@ -504,6 +507,7 @@ msgid "User"
 msgstr "Usuari"
 
 #. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_attendance_overtime_tree
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.view_som_hr_attendance_report_tree
 msgid "View attendances"
 msgstr "Veure assitències"
@@ -572,9 +576,20 @@ msgid "Week year"
 msgstr "Setmana any"
 
 #. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_attendance_overtime_search
+msgid "With overtime allowed"
+msgstr "Hores extres permeses"
+
+#. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.hr_attendance_report_view_search
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_attendance_overtime_search
 msgid "With overtime not allowed"
-msgstr "Hores extra no permeses"
+msgstr "Hores extres no permeses"
+
+#. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_attendance_overtime_search
+msgid "Without overtime"
+msgstr "Sense hores extres"
 
 #. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_worked_week_search

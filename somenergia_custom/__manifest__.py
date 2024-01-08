@@ -37,12 +37,14 @@
         'security/ir.model.access.csv',
         'security/som_worked_week_security.xml',
         'security/hr_attendance_report_security.xml',
+        'security/hr_attendance_overtime_security.xml',
         'views/hr_attendance_view.xml',
         'views/hr_leave_view.xml',
         'views/som_calendar_week_view.xml',
         'views/hr_timesheet_view.xml',
         'views/som_worked_week_view.xml',
         'views/hr_employee_view.xml',
+        'views/hr_attendance_overtime_view.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
