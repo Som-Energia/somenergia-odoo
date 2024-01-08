@@ -66,7 +66,7 @@
             <field name="department_id" position="after">
                 <filter name="som_overtime_not_allowed"
                         string="With overtime not allowed"
-                        domain="[('overtime_hours', '&gt;', 0)]"/>
+                        domain="[('overtime_hours', '&gt;', 1.1)]"/>
             </field>
         </field>
     </record>
@@ -76,12 +76,12 @@
         <field name="model">hr.attendance.report</field>
         <field name="type">tree</field>
         <field name="arch" type="xml">
-            <tree string="Overtime control">
+            <tree string="Overtime control" decoration-danger="overtime_hours > 1.1">
                 <field name="employee_id"/>
                 <field name="department_id"/>
                 <field name="check_in"/>
                 <field name="worked_hours" widget="float_time" invisible="1"/>
-                <field name="overtime_hours" decoration-danger="1==1" widget="float_time"/>
+                <field name="overtime_hours" widget="float_time"/>
                 <button string="View attendances"
                         name="action_view_attendances"
                         type="object"
@@ -95,7 +95,8 @@
         <field name="res_model">hr.attendance.report</field>
         <field name="view_mode">tree,pivot</field>
         <field name="search_view_id" ref="hr_attendance_report_view_search"/>
-        <field name="domain">[('overtime_hours', '&gt;', 1.1)]</field>
+        <field name="domain">[('overtime_hours', '&gt;', 0.1)]</field>
+<!--        <field name="context">{'search_default_som_overtime_not_allowed':1}</field>-->
     </record>
 
     <menuitem
