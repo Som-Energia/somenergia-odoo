@@ -25,6 +25,8 @@ class HolidaysRequest(models.Model):
     def _get_resource_calendar_attendance_target(self, date):
         employee_id = self.env['hr.employee'].search(
             [('user_id', '=', self.env.user.id)])
+        if self.employee_ids:
+            employee_id = self.employee_ids[0]
         resource_calendar_id = employee_id.resource_id.calendar_id
         target_ranges = []
         for r in resource_calendar_id.attendance_ids:
