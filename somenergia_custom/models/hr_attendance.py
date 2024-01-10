@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+import logging
 
 from odoo import models, fields, api, exceptions, _
 from datetime import datetime
 from datetime import timedelta
 from pytz import timezone, utc
+
+_logger = logging.getLogger(__name__)
 
 
 class HrAttendance(models.Model):
@@ -47,3 +50,42 @@ class HrAttendance(models.Model):
         if reason:
             vals["attendance_reason_ids"] = [(4, reason.id)]
         self.write(vals)
+        self.send_mail_autoclose()
+
+    def send_mail_autoclose(self):
+        somadmin_user_id = self.env.ref('base.somadmin')
+        for record in self:
+            employee_id = record.employee_id
+            checkout_time = record.check_out
+            try:
+                mail_html = _("""
+                    <t t-set="url" t-value="'www.odoo.com'"/>
+                    <div style="margin: 0px; padding: 0px;">
+                        <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                            Hello, %s 
+                            <br/><br/>
+                            Your attendance for the day %s has been closed automatically. Please check it and fix it to have your attendance right.
+                            <br/><br/>
+                            <a t-att-href="object.signup_url" style="background-color:#875A7B; padding:8px 16px 8px 16px; text-decoration:none; color:#fff; border-radius:5px" href="https://odoo.somenergia.coop/web#action=304&amp;model=hr.attendance&amp;view_type=list&amp;cids=1&amp;menu_id=207" target="_blank" class="btn btn-primary">Veure assistències</a>
+                            <br/><br/>
+                            Thanks,
+                        </p>
+                    </div>
+                """) % (
+                    employee_id.display_name,
+                    checkout_time.strftime('%d/%m/%Y'),
+                )
+
+                mail_values = {
+                    'author_id': somadmin_user_id.partner_id.id,
+                    'body_html': mail_html,
+                    'subject': _('Odoo Som - Attendance closed automatically %s') % checkout_time.strftime('%d/%m/%Y'),
+                    'email_from': somadmin_user_id.email_formatted or somadmin_user_id.company_id.catchall or somadmin_user_id.company_id.email,
+                    'email_to': employee_id.user_id.email_formatted,
+                    'auto_delete': False,
+                }
+
+                mail = self.env['mail.mail'].sudo().create(mail_values)
+                mail.send()
+            except Exception:
+                _logger.exception("Attendance autoclose - Unable to send email.")
