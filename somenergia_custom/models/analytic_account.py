@@ -37,6 +37,21 @@ class AccountAnalyticLine(models.Model):
         store=False,
     )
 
+    som_additional_project_domain_ids = fields.Many2many(
+        "project.project",
+        store=False,
+    )
+
+    som_additional_project_id = fields.Many2one(
+        comodel_name="project.project",
+        string="Transversal project"
+    )
+
+    som_additional_project_task_id = fields.Many2one(
+        comodel_name="project.task",
+        string="Transversal task"
+    )
+
     def unlink(self):
         for record in self:
             if record.som_is_cumulative:

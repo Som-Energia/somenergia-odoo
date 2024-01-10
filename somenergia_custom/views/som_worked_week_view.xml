@@ -75,6 +75,8 @@
                                        readonly="1"/>
                                 <field name="som_project_area_domain_ids"
                                        invisible="1"/>
+                                <field name="som_additional_project_domain_ids"
+                                       invisible="1"/>
                             </group>
 
                             <group>
@@ -83,7 +85,7 @@
                         </group>
                         <field name="som_timesheet_ids"
                                nolabel="1"
-                               context="{'default_som_week_id': som_week_id, 'default_som_project_area_domain_ids': som_project_area_domain_ids}">
+                               context="{'default_som_week_id': som_week_id, 'default_som_project_area_domain_ids': som_project_area_domain_ids, 'default_som_additional_project_domain_ids': som_additional_project_domain_ids}">
                             <tree editable="bottom"
                                   decoration-info="som_is_cumulative==True"
                                   default_order="id">
@@ -91,12 +93,20 @@
                                 <field name="date" invisible="1" force_save="1"/>
                                 <field name="som_week_id" invisible="1" force_save="1"/>
                                 <field name="som_project_area_domain_ids" invisible="1"/>
+                                <field name="som_additional_project_domain_ids" invisible="1"/>
                                 <field name="project_id"
                                        options="{'no_open': True}"
                                        attrs="{'readonly': [('som_is_cumulative', '=', True)]}"
                                        required="True"
                                        string="Scope"
                                        domain="[('id', 'in', som_project_area_domain_ids)]"
+                                       readonly="0"/>
+                                <field name="som_additional_project_id"
+                                       options="{'no_open': True}"
+                                       attrs="{'readonly': [('som_is_cumulative', '=', True)]}"
+                                       required="False"
+                                       string="Projecte"
+                                       domain="[('id', 'in', som_additional_project_domain_ids)]"
                                        readonly="0"/>
                                 <field name="name"
                                        attrs="{'readonly': [('som_is_cumulative', '=', True)]}"/>
