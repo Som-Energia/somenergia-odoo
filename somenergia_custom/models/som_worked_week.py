@@ -24,17 +24,18 @@ class SomWorkedWeek(models.Model):
                     record.som_total_worked_hours - record.som_total_assigned_hours
             ), 2)
 
-    def _compute_project_area_domain_ids(self):
+    def _compute_project_type_domain_ids(self):
         tag_area_id = self.env.ref("somenergia_custom.som_project_tag_area")
+        tag_transversal_id = self.env.ref("somenergia_custom.som_project_tag_transversal_project")
         for record in self:
             domain = [("tag_ids", "in", tag_area_id.ids)]
-            domain_no_area = [("tag_ids", "not in", tag_area_id.ids)]
+            domain_no_area = [("tag_ids", "in", tag_transversal_id.ids)]
 
-            project_ids = self.env['project.project'].search(domain)
-            project_no_area_ids = self.env['project.project'].search(domain_no_area)
+            project_area_ids = self.env['project.project'].search(domain)
+            project_transversal_ids = self.env['project.project'].search(domain_no_area)
 
-            record.som_project_area_domain_ids = project_ids
-            record.som_additional_project_domain_ids = project_no_area_ids
+            record.som_project_area_domain_ids = project_area_ids
+            record.som_additional_project_domain_ids = project_transversal_ids
 
     som_week_id = fields.Many2one(
         comodel_name="som.calendar.week",
@@ -81,14 +82,14 @@ class SomWorkedWeek(models.Model):
     som_project_area_domain_ids = fields.Many2many(
         "project.project",
         string="Projects area domain",
-        compute="_compute_project_area_domain_ids",
+        compute="_compute_project_type_domain_ids",
         store=False,
     )
 
     som_additional_project_domain_ids = fields.Many2many(
         "project.project",
         string="Projects no area domain",
-        compute="_compute_project_area_domain_ids",
+        compute="_compute_project_type_domain_ids",
         store=False,
     )
 

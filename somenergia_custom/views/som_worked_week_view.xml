@@ -94,6 +94,7 @@
                                 <field name="som_week_id" invisible="1" force_save="1"/>
                                 <field name="som_project_area_domain_ids" invisible="1"/>
                                 <field name="som_additional_project_domain_ids" invisible="1"/>
+                                <field name="write_date" readonly="1" force_save="1"/>
                                 <field name="project_id"
                                        options="{'no_open': True}"
                                        attrs="{'readonly': [('som_is_cumulative', '=', True)]}"
@@ -110,6 +111,7 @@
                                        readonly="0"/>
                                 <field name="name"
                                        attrs="{'readonly': [('som_is_cumulative', '=', True)]}"/>
+                                <field name="som_timesheet_add_id" readonly="1" optional="hide"/>
                                 <field name="unit_amount"
                                        attrs="{'readonly': [('som_is_cumulative', '=', True)]}"
                                        widget="float_time"

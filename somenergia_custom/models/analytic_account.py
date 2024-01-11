@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import uuid
 from logging import getLogger
 from odoo import api, fields, models, _
 from odoo.modules.module import get_module_resource
@@ -52,11 +52,63 @@ class AccountAnalyticLine(models.Model):
         string="Transversal task"
     )
 
+    som_timesheet_add_id = fields.Many2one(
+        comodel_name="account.analytic.line",
+        string="Linked timesheet"
+    )
+
+    som_timesheet_uuid_hook = fields.Char(
+        string="Timesheet UUID Hook",
+    )
+
+    def _match_timesheets(self, timesheet_ids):
+        list_uuid = list(set(timesheet_ids.mapped('som_timesheet_uuid_hook')))
+        for str_uuid in list_uuid:
+            linked_timesheet_ids = timesheet_ids.filtered(lambda x: x.som_timesheet_uuid_hook == str_uuid)
+            if len(linked_timesheet_ids) == 2:
+                linked_timesheet_ids[0].som_timesheet_add_id = linked_timesheet_ids[1].id
+                linked_timesheet_ids[1].som_timesheet_add_id = linked_timesheet_ids[0].id
+
     def unlink(self):
         for record in self:
             if record.som_is_cumulative:
                 return False
+            if record.som_worked_week_id and record.som_timesheet_add_id:
+                record.som_timesheet_add_id.unlink()
         return super().unlink()
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        flag_match = False
+        for values in vals_list:
+            if values.get('som_additional_project_id', False):
+                str_uuid = str(uuid.uuid4()).replace('-', '')
+                id_project_transversal = values.get('som_additional_project_id', False)
+                dict_vals_transversal_timesheet = {
+                    key: value for key, value in values.items() if key not in [
+                        'som_additional_project_id',
+                        'som_worked_week_id',
+                        'som_week_id',
+                    ]
+                }
+                dict_vals_transversal_timesheet.update({
+                    'project_id': id_project_transversal,
+                    'som_timesheet_uuid_hook': str_uuid,
+                })
+                values['som_timesheet_uuid_hook'] = str_uuid
+                vals_list.append(dict_vals_transversal_timesheet)
+                flag_match = True
+        res = super(AccountAnalyticLine, self).create(vals_list)
+        if flag_match:
+            self._match_timesheets(res)
+        return res
+
+    def write(self, vals):
+        if vals.get("unit_amount"):
+            for record in self:
+                if record.som_worked_week_id and record.som_timesheet_add_id:
+                    record.som_timesheet_add_id.unit_amount = vals.get("unit_amount")
+        return super().write(vals)
 
     @api.onchange('som_week_id')
     def onchange_week(self):
