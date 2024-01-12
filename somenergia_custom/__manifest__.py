@@ -28,6 +28,7 @@
         'analytic',
         'hr_timesheet',
         'hr_attendance_autoclose',
+        'hr_employee_multidepartment',
         'custom_pnt',
     ],
 

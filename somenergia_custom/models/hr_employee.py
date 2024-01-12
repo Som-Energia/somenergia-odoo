@@ -4,6 +4,12 @@ from odoo import models, fields, api, exceptions, _
 from odoo.exceptions import UserError
 
 
+class HrEmployeePublic(models.Model):
+    _inherit = "hr.employee"
+
+    department_ids = fields.Many2many(readonly=True)
+
+
 class HrEmployee(models.Model):
     _inherit = "hr.employee"
 
