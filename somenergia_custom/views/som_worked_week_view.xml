@@ -111,7 +111,10 @@
                                        readonly="0"/>
                                 <field name="name"
                                        attrs="{'readonly': [('som_is_cumulative', '=', True)]}"/>
-                                <field name="som_timesheet_add_id" readonly="1" optional="hide"/>
+                                <field name="som_timesheet_add_id"
+                                       options="{'no_open': True}"
+                                       readonly="1"
+                                       optional="hide"/>
                                 <field name="unit_amount"
                                        attrs="{'readonly': [('som_is_cumulative', '=', True)]}"
                                        widget="float_time"

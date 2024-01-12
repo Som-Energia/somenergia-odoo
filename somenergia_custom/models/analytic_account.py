@@ -104,10 +104,33 @@ class AccountAnalyticLine(models.Model):
         return res
 
     def write(self, vals):
-        if vals.get("unit_amount"):
+        if vals.get('unit_amount'):
             for record in self:
                 if record.som_worked_week_id and record.som_timesheet_add_id:
                     record.som_timesheet_add_id.unit_amount = vals.get("unit_amount")
+        if vals.get('som_additional_project_id'):
+            for record in self:
+                if record.som_timesheet_add_id:
+                    # change project of linked timesheet
+                    record.som_timesheet_add_id.project_id = vals.get('som_additional_project_id')
+                else:
+                    # create linked timesheet and link them
+                    som_timesheet_add_id = record.copy()
+                    som_timesheet_add_id.write({
+                        'som_additional_project_id': False,
+                        'som_worked_week_id': False,
+                        'som_week_id': False,
+                        'som_timesheet_add_id': record.id,
+                        'project_id': vals.get('som_additional_project_id'),
+                        'unit_amount': vals.get('unit_amount', record.unit_amount)
+                    })
+                    record.som_timesheet_add_id = som_timesheet_add_id.id
+        if 'som_additional_project_id' in vals and not vals.get('som_additional_project_id'):
+            # remove linked timesheet
+            for record in self:
+                if record.som_timesheet_add_id:
+                    record.som_timesheet_add_id.unlink()
+
         return super().write(vals)
 
     @api.onchange('som_week_id')
