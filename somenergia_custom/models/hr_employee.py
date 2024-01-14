@@ -7,7 +7,9 @@ from odoo.exceptions import UserError
 class HrEmployeePublic(models.Model):
     _inherit = "hr.employee"
 
-    department_ids = fields.Many2many(readonly=True)
+    department_ids = fields.Many2many(
+        readonly=True,
+    )
 
 
 class HrEmployee(models.Model):
