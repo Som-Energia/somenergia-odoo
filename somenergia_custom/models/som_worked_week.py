@@ -16,13 +16,16 @@ class SomWorkedWeek(models.Model):
                 lambda x: x.som_is_cumulative
             ).mapped("unit_amount")))
 
-            record.som_total_assigned_hours = sum(record.som_timesheet_ids.filtered(
+            record.som_total_assigned_hours = round(sum(record.som_timesheet_ids.filtered(
                 lambda x: not x.som_is_cumulative
-            ).mapped("unit_amount"))
+            ).mapped("unit_amount")), 2)
 
-            record.som_total_unassigned_hours = round((
+            som_total_unassigned_hours = round((
                     record.som_total_worked_hours - record.som_total_assigned_hours
             ), 2)
+
+            record.som_total_unassigned_hours = \
+                0 if abs(som_total_unassigned_hours) == 0.01 else som_total_unassigned_hours
 
     def _compute_project_type_domain_ids(self):
         tag_area_id = self.env.ref("somenergia_custom.som_project_tag_area")
