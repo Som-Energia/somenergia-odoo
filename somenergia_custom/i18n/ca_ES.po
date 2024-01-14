@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-10 15:42+0000\n"
-"PO-Revision-Date: 2024-01-10 15:42+0000\n"
+"POT-Creation-Date: 2024-01-14 07:13+0000\n"
+"PO-Revision-Date: 2024-01-14 07:13+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -110,6 +110,11 @@ msgid "Area"
 msgstr "Àmbit"
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee_public__department_ids
+msgid "Areas"
+msgstr "Àrees"
+
+#. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_worked_week_search
 msgid "Assignment Complete"
 msgstr "Assignació completa"
@@ -156,6 +161,11 @@ msgid "Avui no vinc 🤒"
 msgstr ""
 
 #. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_hr_employee_base
+msgid "Basic Employee"
+msgstr "Empleat bàsic"
+
+#. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.account_invoice_download_credentials_form
 msgid "Cancel"
 msgstr ""
@@ -183,6 +193,12 @@ msgstr ""
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__create_date
 msgid "Created on"
 msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee__som_current_calendar_id
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_employee_filter
+msgid "Current calendar"
+msgstr "Horari actual"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__som_cw_date
@@ -331,6 +347,11 @@ msgid "Last Updated on"
 msgstr ""
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_account_analytic_line__som_timesheet_add_id
+msgid "Linked timesheet"
+msgstr ""
+
+#. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__message_main_attachment_id
 msgid "Main Attachment"
 msgstr ""
@@ -439,15 +460,30 @@ msgid "Project"
 msgstr "Àmbit"
 
 #. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.view_som_worked_week_form
+msgid "Projecte"
+msgstr ""
+
+#. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__som_project_area_domain_ids
 msgid "Projects area domain"
 msgstr ""
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__som_additional_project_domain_ids
+msgid "Projects no area domain"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_hr_employee_public
+msgid "Public Employee"
+msgstr "Empleat Públic"
+
+#. module: somenergia_custom
 #: model:ir.actions.server,name:somenergia_custom.som_recompute_worked_weeks
 #: model:ir.ui.menu,name:somenergia_custom.menu_som_worked_week_attendances_recompute
 msgid "Recompute worked hours"
-msgstr "Recalcular hores treballades"
+msgstr "Recalcular setmanes"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__activity_user_id
@@ -478,9 +514,20 @@ msgid "Som - Load cumulative timesheets"
 msgstr ""
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_account_analytic_line__som_additional_project_domain_ids
+msgid "Som Additional Project Domain"
+msgstr ""
+
+#. module: somenergia_custom
 #: model:ir.model,name:somenergia_custom.model_som_calendar_week
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.view_som_calendar_week_tree
 msgid "Som Calendar Week"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee_base__som_current_calendar_id
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee_public__som_current_calendar_id
+msgid "Som Current Calendar"
 msgstr ""
 
 #. module: somenergia_custom
@@ -513,6 +560,11 @@ msgid "Time Off"
 msgstr "Absències"
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_account_analytic_line__som_timesheet_uuid_hook
+msgid "Timesheet UUID Hook"
+msgstr ""
+
+#. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_attendance_view_tree
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.view_som_worked_week_form
 msgid "Total"
@@ -534,9 +586,15 @@ msgid "Total worked hours"
 msgstr "Total hores treballades"
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_account_analytic_line__som_additional_project_id
 #: model:project.tags,name:somenergia_custom.som_project_tag_transversal_project
 msgid "Transversal project"
 msgstr "Transversal"
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_account_analytic_line__som_additional_project_task_id
+msgid "Transversal task"
+msgstr ""
 
 #. module: somenergia_custom
 #: model:ir.model.fields,help:somenergia_custom.field_som_worked_week__activity_exception_decoration

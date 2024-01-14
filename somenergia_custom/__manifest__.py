@@ -29,6 +29,7 @@
         'hr_timesheet',
         'hr_attendance_autoclose',
         'hr_employee_multidepartment',
+        'hr_employee_calendar_planning',
         'custom_pnt',
     ],
 
