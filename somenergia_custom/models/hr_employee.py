@@ -12,18 +12,6 @@ class HrEmployeeBase(models.AbstractModel):
     )
 
 
-class HrEmployeePublic(models.Model):
-    _inherit = "hr.employee.public"
-
-    department_ids = fields.Many2many(
-        readonly=True,
-    )
-
-    som_current_calendar_id = fields.Many2one(
-        readonly=True,
-    )
-
-
 class HrEmployee(models.Model):
     _inherit = "hr.employee"
 
@@ -60,4 +48,16 @@ class HrEmployee(models.Model):
         compute='_compute_current_calendar',
         store=True,
         compute_sudo=True,
+    )
+
+
+class HrEmployeePublic(models.Model):
+    _inherit = "hr.employee.public"
+
+    department_ids = fields.Many2many(
+        readonly=True,
+    )
+
+    som_current_calendar_id = fields.Many2one(
+        readonly=True,
     )
