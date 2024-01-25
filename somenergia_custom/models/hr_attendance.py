@@ -38,7 +38,7 @@ class HrAttendance(models.Model):
             return True
         return False
 
-    def autoclose_attendance(self, reason):
+    def get_checkout_time(self):
         self.ensure_one()
         check_out_aux = self.get_attendance_hour_limit()
         localtz = timezone('Europe/Madrid')
@@ -46,11 +46,34 @@ class HrAttendance(models.Model):
         checkout_time_utc = local_dt.astimezone(utc)
         checkout_str = checkout_time_utc.strftime("%m/%d/%Y %H:%M:%S")
         checkout_time = datetime.strptime(checkout_str, "%m/%d/%Y %H:%M:%S")
+        return checkout_time
+
+    def autoclose_attendance(self, reason):
+        self.ensure_one()
+        checkout_time = self.get_checkout_time()
         vals = {"check_out": checkout_time}
         if reason:
             vals["attendance_reason_ids"] = [(4, reason.id)]
         self.write(vals)
         self.send_mail_autoclose()
+
+    @api.model
+    def som_check_attendance_reason(self):
+        att_reason_id = self.env.ref('hr_attendance_autoclose.hr_attendance_reason_check_out')
+        att_ids = self.search([
+            ("attendance_reason_ids", "ilike", att_reason_id.name)
+        ])
+        att_remove_reason_ids = att_ids.filtered(
+            lambda x: x.check_out < x.get_checkout_time()
+        )
+        att_remove_reason_ids.write({
+            'attendance_reason_ids': [(3, att_reason_id.id)]
+        })
+
+    @api.model
+    def check_for_incomplete_attendances(self):
+        self.som_check_attendance_reason()
+        super().check_for_incomplete_attendances()
 
     def send_mail_autoclose(self):
         somadmin_user_id = self.env.ref('base.somadmin')
