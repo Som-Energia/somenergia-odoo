@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
+import logging
 
 from odoo import api, fields, models, tools, _
+from datetime import datetime, timedelta
+
+_logger = logging.getLogger(__name__)
 
 
 class SomWorkedWeek(models.Model):
@@ -129,3 +133,62 @@ class SomWorkedWeek(models.Model):
     )
 
     # -----
+
+    def get_incomplete_worked_weeks(self):
+        reference_day = datetime.now() - timedelta(days=datetime.now().weekday() + 1)
+        domain = [
+            "&",
+            "|",
+            "&",
+            ("som_total_assigned_hours", "=", 0),
+            ("som_total_worked_hours", "!=", 0),
+            "&",
+            "&",
+            ("som_total_assigned_hours", "!=", 0),
+            ("som_total_unassigned_hours", "!=", 0),
+            ("som_total_worked_hours", "!=", 0),
+            ("som_cw_date_rel", "<", fields.Date.to_string(reference_day)),
+        ]
+        worked_week_ids = self.env['som.worked.week'].search(domain)
+        return worked_week_ids
+
+    @api.model
+    def send_mail_worked_weeks_reminder(self):
+        incomplete_worked_week_ids = self.get_incomplete_worked_weeks()
+        employee_ids = incomplete_worked_week_ids.mapped('som_employee_id')
+
+        somadmin_user_id = self.env.ref('base.somadmin')
+        for employee_id in employee_ids:
+            try:
+                mail_html = _("""
+                        <t t-set="url" t-value="'www.odoo.com'"/>
+                        <div style="margin: 0px; padding: 0px;">
+                            <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                                Hello, %s
+                                <br/><br/>
+                                You have past worked weeks incomplete. Please check it and fix it ASAP to have everything right.
+                                <br/><br/>
+                                <a t-att-href="object.signup_url" style="background-color:#875A7B; padding:8px 16px 8px 16px; text-decoration:none; color:#fff; border-radius:5px" href="https://odoo.somenergia.coop/web#action=419&model=som.worked.week&view_type=list&cids=1&menu_id=207" target="_blank" class="btn btn-primary">See worked weeks</a>
+                                <br/><br/>
+                                Thanks,
+                            </p>
+                        </div>
+                    """) % (
+                    employee_id.display_name,
+                )
+
+                mail_values = {
+                    'author_id': somadmin_user_id.partner_id.id,
+                    'body_html': mail_html,
+                    'subject': _('Odoo Som - Worked weeks reminder %s') % datetime.now().strftime('%d/%m/%Y'),
+                    'email_from': somadmin_user_id.email_formatted or somadmin_user_id.company_id.catchall or somadmin_user_id.company_id.email,
+                    'email_to': employee_id.user_id.email_formatted,
+                    'auto_delete': False,
+                }
+
+                mail = self.env['mail.mail'].sudo().create(mail_values)
+                mail.send()
+
+                break
+            except Exception:
+                _logger.exception("Worked weeks reminder - Unable to send email.")
