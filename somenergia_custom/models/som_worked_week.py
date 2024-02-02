@@ -189,6 +189,5 @@ class SomWorkedWeek(models.Model):
                 mail = self.env['mail.mail'].sudo().create(mail_values)
                 mail.send()
 
-                break
-            except Exception:
+            except Exception as e:
                 _logger.exception("Worked weeks reminder - Unable to send email.")
