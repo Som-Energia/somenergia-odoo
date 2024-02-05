@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import datetime
+from dateutil.relativedelta import relativedelta
 from odoo import models, fields, api, exceptions, _
 from odoo.exceptions import UserError
 
@@ -7,17 +9,69 @@ from odoo.exceptions import UserError
 class HrEmployeeBase(models.AbstractModel):
     _inherit = "hr.employee.base"
 
+    def _compute_som_is_absent_regardless_state(self):
+        # Used SUPERUSER_ID to forcefully get status of other user's leave, to bypass record rule
+        holidays = self.env['hr.leave'].sudo().search([
+            ('employee_id', 'in', self.ids),
+            ('date_from', '<=', fields.Datetime.now()),
+            ('date_to', '>=', fields.Datetime.now()),
+        ])
+        leave_data = {}
+        for holiday in holidays:
+            leave_data[holiday.employee_id.id] = {}
+            leave_data[holiday.employee_id.id]['current_leave_state'] = holiday.state
+
+        for employee in self:
+            employee.som_is_absent_regardless_state = leave_data.get(employee.id)
+
+    def _compute_is_present(self):
+        for record in self:
+            record.is_present = not record.som_is_absent_regardless_state
+
+    def _search_present_employee(self, operator, value):
+        if operator not in ('=', '!=') or not isinstance(value, bool):
+            raise UserError(_('Operation not supported'))
+        employee_ids = self.env['hr.employee'].search([('som_is_absent_regardless_state', '=', False)])
+        operator = ['in', 'not in'][(operator == '=') != value]
+        return [('id', operator, employee_ids.ids)]
+
+    def _search_absent_regardless_state(self, operator, value):
+        if operator not in ('=', '!=') or not isinstance(value, bool):
+            raise UserError(_('Operation not supported'))
+        # This search is only used for the 'Absent today not validated' filter however
+        # this only returns employees that are absent right now.
+        today_date = datetime.datetime.utcnow().date()
+        today_start = fields.Datetime.to_string(today_date)
+        today_end = fields.Datetime.to_string(today_date + relativedelta(hours=23, minutes=59, seconds=59))
+        holidays = self.env['hr.leave'].sudo().search([
+            ('employee_id', '!=', False),
+            ('date_from', '<=', today_end),
+            ('date_to', '>=', today_start),
+        ])
+        operator = ['in', 'not in'][(operator == '=') != value]
+        return [('id', operator, holidays.mapped('employee_id').ids)]
+
     som_current_calendar_id = fields.Many2one(
         comodel_name="resource.calendar",
+    )
+
+    som_is_absent_regardless_state = fields.Boolean(
+        string='Absent today regardless of state',
+        compute='_compute_som_is_absent_regardless_state',
+        store=False,
+        search='_search_absent_regardless_state'
+    )
+
+    is_present = fields.Boolean(
+        string='Present today',
+        compute='_compute_is_present',
+        store=False,
+        search='_search_present_employee'
     )
 
 
 class HrEmployee(models.Model):
     _inherit = "hr.employee"
-
-    def _compute_is_present(self):
-        for record in self:
-            record.is_present = not record.is_absent
 
     @api.depends('calendar_ids', 'calendar_ids.date_start', 'calendar_ids.date_end')
     def _compute_current_calendar(self):
@@ -27,20 +81,6 @@ class HrEmployee(models.Model):
                           (not x.date_start and not x.date_end)
             )
             record.som_current_calendar_id = calendar_id[0].calendar_id.id if calendar_id else False
-
-    def _search_present_employee(self, operator, value):
-        if operator not in ('=', '!=') or not isinstance(value, bool):
-            raise UserError(_('Operation not supported'))
-        employee_ids = self.env['hr.employee'].search([('is_absent', '=', False)])
-        operator = ['in', 'not in'][(operator == '=') != value]
-        return [('id', operator, employee_ids.ids)]
-
-    is_present = fields.Boolean(
-        string='Present today',
-        compute='_compute_is_present',
-        store=False,
-        search='_search_present_employee'
-    )
 
     som_current_calendar_id = fields.Many2one(
         comodel_name="resource.calendar",
