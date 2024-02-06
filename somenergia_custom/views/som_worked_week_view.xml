@@ -136,7 +136,7 @@
             <field name="name">Worked weeks</field>
             <field name="res_model">som.worked.week</field>
             <field name="view_mode">tree,form</field>
-            <field name="context">{'search_default_month':1, 'search_default_groupby_date': 3}</field>
+            <field name="context">{'search_default_groupby_date': 3}</field>
             <field name="domain">[('som_employee_id.user_id','=',uid)]</field>
             <field name="view_id" ref="view_som_worked_week_tree"/>
         </record>
@@ -145,7 +145,7 @@
             <field name="name">Worked weeks (all)</field>
             <field name="res_model">som.worked.week</field>
             <field name="view_mode">tree,form</field>
-            <field name="context">{'search_default_month':1, 'search_default_groupby_date': 3, 'search_default_groupby_employee': 1}</field>
+            <field name="context">{'search_default_groupby_date': 3, 'search_default_groupby_employee': 1}</field>
             <field name="view_id" ref="view_som_worked_week_tree"/>
         </record>
 
