@@ -108,22 +108,18 @@ class HolidaysRequest(models.Model):
         format: {'worker': email, 'start_time': '2021-12-30','end_time': '2021-12-31'}
         """
         res = []
-        resources_calendar_leaves_model = self.env["resource.calendar.leaves"]
-        resource_resource_model = self.env["resource.resource"]
         search_params = [
             ('date_to', '>=', start_date),
             ('date_from', '<=', end_date),
-            ('holiday_id', '!=', False)
         ]
-        leaves = resources_calendar_leaves_model.search(search_params)
+        leave_ids = self.env['hr.leave'].search(search_params)
 
-        for leave_id in leaves.ids:
-            leave_data = resources_calendar_leaves_model.browse(leave_id)
-            worker = leave_data.resource_id.user_id.email
+        for leave_id in leave_ids:
+            worker = leave_id.employee_id.user_id.email
             res.append({
                 'worker': worker,
-                'start_time': leave_data.date_from,
-                'end_time': leave_data.date_to
+                'start_time': leave_id.date_from,
+                'end_time': leave_id.date_to
             })
 
         return res
