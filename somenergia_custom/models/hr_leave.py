@@ -26,7 +26,7 @@ class HolidaysRequest(models.Model):
         employee_id = self.env['hr.employee'].sudo().search(
             [('user_id', '=', self.env.user.id)])
         if self.sudo().employee_ids:
-            employee_id = self.employee_ids[0]
+            employee_id = self.sudo().employee_ids[0]
         resource_calendar_id = employee_id.resource_id.calendar_id
         target_ranges = []
         for r in resource_calendar_id.attendance_ids:
@@ -127,3 +127,6 @@ class HolidaysRequest(models.Model):
             })
 
         return res
+
+    def write(self, vals):
+        return super(HolidaysRequest, self.with_context(leave_skip_date_check=True)).write(vals)
