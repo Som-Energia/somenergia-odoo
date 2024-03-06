@@ -126,9 +126,13 @@ class AccountAnalyticLine(models.Model):
                     })
                     record.som_timesheet_add_id = som_timesheet_add_id.id
         if 'som_additional_project_id' in vals and not vals.get('som_additional_project_id'):
+            timesheet_ids = self.env['account.analytic.line'].search([
+                ('som_worked_week_id', '!=', False),
+                ('project_id', '!=', False),
+            ])
             # remove linked timesheet
             for record in self:
-                if record.som_timesheet_add_id:
+                if record.som_timesheet_add_id and record.som_timesheet_add_id.id not in timesheet_ids.ids:
                     record.som_timesheet_add_id.unlink()
 
         return super().write(vals)
