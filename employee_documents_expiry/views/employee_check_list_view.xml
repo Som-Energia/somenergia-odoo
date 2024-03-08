@@ -20,7 +20,7 @@
         </field>
     </record>
 
-     <record model='ir.ui.view' id='employee_check_list_tree_view'>
+    <record model='ir.ui.view' id='employee_check_list_tree_view'>
         <field name="name">employee.checklist.tree</field>
         <field name="model">employee.checklist</field>
         <field name="arch" type="xml">

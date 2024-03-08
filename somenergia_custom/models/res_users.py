@@ -18,3 +18,16 @@ class ResUsers(models.Model):
         )
         for user_id in user_ids:
             user_id._change_password(default_password)
+
+    def document_view(self):
+        self.ensure_one()
+        return {
+            "name": _("Documents"),
+            "domain": [("employee_ref", "=", self.employee_id.id)],
+            "res_model": "hr.employee.document",
+            "type": "ir.actions.act_window",
+            "view_mode": "tree,form",
+            "view_type": "form",
+            "limit": 80,
+            "context": {"default_employee_ref": self.employee_id.id},
+        }
