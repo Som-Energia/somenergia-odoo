@@ -34,6 +34,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='work_email']" position="after">
                 <field name="som_current_calendar_id" optional="show"/>
+                <field name="som_employe_document_ids" optional="show"/>
             </xpath>
         </field>
     </record>
@@ -49,6 +50,20 @@
                    t-if="record.som_current_calendar_id">
                 <li t-if="record.som_current_calendar_id.raw_value" class="o_text_overflow"><field name="som_current_calendar_id" /></li>
            </xpath>
+        </field>
+    </record>
+
+    <!-- user preferences -->
+    <record id="res_users_view_form_preference" model="ir.ui.view">
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="hr.res_users_view_form_profile"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="employee_id" invisible="1"/>
+                <button class="oe_stat_button" name="document_view" type="object"
+                        icon="fa-list-ol" string="Documents">
+                </button>
+            </xpath>
         </field>
     </record>
 

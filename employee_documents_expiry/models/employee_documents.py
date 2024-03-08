@@ -29,6 +29,21 @@ class HrEmployeeDocument(models.Model):
     _name = 'hr.employee.document'
     _description = 'HR Employee Documents'
 
+    @api.depends("expiry_date")
+    def _compute_expiration(self):
+        date_today = datetime.today().date()
+        for record in self:
+            if record.expiry_date and record.expiry_date < date_today:
+                record.som_expired = True
+                record.som_expired_days = abs((date_today - record.expiry_date).days)
+                record.som_days_until_expiration = 0
+            else:
+                record.som_expired = False
+                record.som_expired_days = 0
+                record.som_days_until_expiration = (
+                    abs((record.expiry_date - date_today).days)
+                ) if record.expiry_date else 9999
+
     def mail_reminder(self):
         now = datetime.now() + timedelta(days=1)
         date_now = now.date()
@@ -67,6 +82,21 @@ class HrEmployeeDocument(models.Model):
     doc_attachment_id = fields.Many2many('ir.attachment', 'doc_attach_rel', 'doc_id', 'attach_id3', string="Attachment",
                                          help='You can attach the copy of your document', copy=False)
     issue_date = fields.Date(string='Issue Date', default=fields.Date.context_today, copy=False)
+    som_expired = fields.Boolean(
+        string="Expired",
+        compute='_compute_expiration',
+        store=True,
+    )
+    som_expired_days = fields.Integer(
+        string="Expired days",
+        compute='_compute_expiration',
+        store=True,
+    )
+    som_days_until_expiration = fields.Integer(
+        string="Days until expiration",
+        compute='_compute_expiration',
+        store=True,
+    )
 
 
 class HrEmployee(models.Model):

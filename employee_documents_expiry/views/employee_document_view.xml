@@ -17,6 +17,9 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
+                    <field name="som_expired" invisible="1"/>
+                    <widget name="web_ribbon" title="Expired" bg_color="bg-danger"
+                            attrs="{'invisible': [('som_expired', '=', False)]}"/>
                     <group>
                         <group>
                             <field name="name"/>
@@ -27,6 +30,10 @@
                         <group>
                             <field name="issue_date"/>
                             <field name="expiry_date"/>
+                            <field name="som_expired_days"
+                                   attrs="{'invisible': [('som_expired', '=', False)]}"/>
+                            <field name="som_days_until_expiration"
+                                   attrs="{'invisible': [('expiry_date', '=', False)]}"/>
                         </group>
                     </group>
                     <notebook>
@@ -39,14 +46,43 @@
         </field>
     </record>
 
+    <record id="employee_document_search" model="ir.ui.view">
+        <field name="name">employee.document.search</field>
+        <field name="model">hr.employee.document</field>
+        <field name="arch" type="xml">
+            <search string="Documents">
+                <field name="name"/>
+                <field name="employee_ref"/>
+                <field name="document_name"/>
+                <field name="expiry_date"/>
+                <filter name="expired"
+                        string="Expired"
+                        domain="[('som_expired', '=', True)]"/>
+                <filter name="valid"
+                        string="Valid"
+                        domain="[('som_expired', '=', False)]"/>
+                <separator/>
+                <group expand="1" string="Group By">
+                    <filter string="Employee" name="groupby_employee" domain="[]" context="{'group_by': 'employee_ref'}"/>
+                    <filter string="Expiry Date" name="groupby_expiry_date" domain="[]" context="{'group_by': 'expiry_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
     <record id='employee_document_tree_view' model='ir.ui.view'>
         <field name="name">hr.employee.document.tree</field>
         <field name="model">hr.employee.document</field>
         <field name="arch" type="xml">
-            <tree string="docs">
+            <tree string="docs"
+                  decoration-danger="som_expired == True">
                 <field name="name"/>
+                <field name="doc_attachment_id"/>
                 <field name="issue_date"/>
                 <field name="expiry_date"/>
+                <field name="som_expired" invisible="1"/>
+                <field name="som_expired_days" optional="show"/>
+                <field name="som_days_until_expiration" optional="show"/>
             </tree>
         </field>
     </record>
