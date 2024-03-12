@@ -34,7 +34,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='work_email']" position="after">
                 <field name="som_current_calendar_id" optional="show"/>
-                <field name="som_employe_document_ids" optional="show"/>
+                <field name="som_employe_document_ids" widget="many2many_tags" optional="show"/>
             </xpath>
         </field>
     </record>
