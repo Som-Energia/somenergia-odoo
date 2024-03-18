@@ -112,8 +112,9 @@
                                 <field name="name"
                                        attrs="{'readonly': [('som_is_cumulative', '=', True)]}"/>
                                 <field name="som_timesheet_add_id"
-                                       options="{'no_open': True}"
+                                       options="{'no_open': False}"
                                        readonly="1"
+                                       groups="hr_attendance.group_hr_attendance_manager"
                                        optional="hide"/>
                                 <field name="unit_amount"
                                        attrs="{'readonly': [('som_is_cumulative', '=', True)]}"

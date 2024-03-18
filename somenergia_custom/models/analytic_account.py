@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import uuid
 from logging import getLogger
-from odoo import api, fields, models, _
+from odoo import api, fields, models, exceptions, _
 from odoo.modules.module import get_module_resource
 
 _logger = getLogger(__name__)
@@ -64,10 +64,13 @@ class AccountAnalyticLine(models.Model):
     def _match_timesheets(self, timesheet_ids):
         list_uuid = list(set(timesheet_ids.mapped('som_timesheet_uuid_hook')))
         for str_uuid in list_uuid:
-            linked_timesheet_ids = timesheet_ids.filtered(lambda x: x.som_timesheet_uuid_hook == str_uuid)
+            linked_timesheet_ids = timesheet_ids.filtered(
+                lambda x: x.som_timesheet_uuid_hook == str_uuid and not x.som_timesheet_add_id
+            )
             if len(linked_timesheet_ids) == 2:
-                linked_timesheet_ids[0].som_timesheet_add_id = linked_timesheet_ids[1].id
-                linked_timesheet_ids[1].som_timesheet_add_id = linked_timesheet_ids[0].id
+                timesheet_week_id = linked_timesheet_ids.filtered(lambda x: x.som_worked_week_id)[0]
+                timesheet_add_id = linked_timesheet_ids.filtered(lambda x: not x.som_worked_week_id)[0]
+                timesheet_week_id.som_timesheet_add_id = timesheet_add_id.id
 
     def unlink(self):
         for record in self:
@@ -120,7 +123,6 @@ class AccountAnalyticLine(models.Model):
                         'som_additional_project_id': False,
                         'som_worked_week_id': False,
                         'som_week_id': False,
-                        'som_timesheet_add_id': record.id,
                         'project_id': vals.get('som_additional_project_id'),
                         'unit_amount': vals.get('unit_amount', record.unit_amount)
                     })
