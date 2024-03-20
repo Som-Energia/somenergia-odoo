@@ -1,0 +1,38 @@
+[
+    {
+        "id": 1,
+        "name_l1": "Serveis de Comercialització",
+        "name_l2": "Estat instal·lacions",
+        "name_l3": "Procediment",
+        "key_words": [
+            "serveis",
+            "comer"
+        ],
+        "code": "SC_EI_PR",
+        "name": "Serveis de Comercialització - Estat instal·lacions - Procediment"
+    },
+    {
+        "id": 2,
+        "name_l1": "Serveis de Comercialització",
+        "name_l2": "Facturació",
+        "name_l3": "Transversal",
+        "key_words": [
+            "serveis",
+            "comer"
+        ],
+        "code": "SC_FA_TR",
+        "name": "Serveis de Comercialització - Facturació - Transversal"
+    },
+    {
+        "id": 3,
+        "name_l1": "Serveis de Comercialització",
+        "name_l2": "Facturació",
+        "name_l3": "Generation kWh",
+        "key_words": [
+            "serveis",
+            "comer"
+        ],
+        "code": "SC_FA_GE",
+        "name": "Serveis de Comercialització - Facturació - Transversal"
+    }
+]
