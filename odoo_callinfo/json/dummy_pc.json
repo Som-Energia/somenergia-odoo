@@ -1,16 +1,32 @@
-[
-    {
-        "id": 1,
-        "operator": "operadora01",
-        "call_timestamp": "2024-03-20T12:00:00+03:00",
-        "pbx_call_id": 35153,
-        "phone_number": "625036666",
-        "caller_erp_id": false,
-        "caller_name": "",
-        "contract_erp_id": "",
-        "contract_number": "",
-        "contract_address": "",
-        "category_ids": [],
-        "comments": ""
-    }
-]
+{
+    "calls": [
+        {
+            "id": 1,
+            "operator": "operadora01",
+            "call_timestamp": "2024-03-20T12:00:00+03:00",
+            "pbx_call_id": "35153",
+            "phone_number": "625036666",
+            "caller_erp_id": false,
+            "caller_name": "",
+            "contract_erp_id": "",
+            "contract_number": "",
+            "contract_address": "",
+            "category_ids": [],
+            "comments": ""
+        },
+        {
+            "id": 2,
+            "operator": "operadora02",
+            "call_timestamp": "2024-03-21T12:00:00+03:00",
+            "pbx_call_id": "35190",
+            "phone_number": "688036666",
+            "caller_erp_id": false,
+            "caller_name": "",
+            "contract_erp_id": "",
+            "contract_number": "",
+            "contract_address": "",
+            "category_ids": [],
+            "comments": ""
+        }
+    ]
+}

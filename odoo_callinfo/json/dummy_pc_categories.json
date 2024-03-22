@@ -1,38 +1,55 @@
-[
-    {
-        "id": 1,
-        "name_l1": "Serveis de Comercialització",
-        "name_l2": "Estat instal·lacions",
-        "name_l3": "Procediment",
-        "key_words": [
-            "serveis",
-            "comer"
-        ],
-        "code": "SC_EI_PR",
-        "name": "Serveis de Comercialització - Estat instal·lacions - Procediment"
-    },
-    {
-        "id": 2,
-        "name_l1": "Serveis de Comercialització",
-        "name_l2": "Facturació",
-        "name_l3": "Transversal",
-        "key_words": [
-            "serveis",
-            "comer"
-        ],
-        "code": "SC_FA_TR",
-        "name": "Serveis de Comercialització - Facturació - Transversal"
-    },
-    {
-        "id": 3,
-        "name_l1": "Serveis de Comercialització",
-        "name_l2": "Facturació",
-        "name_l3": "Generation kWh",
-        "key_words": [
-            "serveis",
-            "comer"
-        ],
-        "code": "SC_FA_GE",
-        "name": "Serveis de Comercialització - Facturació - Transversal"
-    }
-]
+{
+   "categories": [
+        {
+            "id": 1,
+            "name_l1": "Serveis de Comercialització",
+            "name_l2": "Estat instal·lacions",
+            "name_l3": "Procediment",
+            "keywords": [
+                "serveis",
+                "comer"
+            ],
+            "code": "SC_EI_PR",
+            "name": "Serveis de Comercialització - Estat instal·lacions - Procediment",
+            "color": {
+              "hex": "#30C381",
+              "rgb": [48,195,129]
+            },
+            "enabled": true
+        },
+        {
+            "id": 2,
+            "name_l1": "Serveis de Comercialització",
+            "name_l2": "Facturació",
+            "name_l3": "Transversal",
+            "keywords": [
+                "serveis",
+                "comer"
+            ],
+            "code": "SC_FA_TR",
+            "name": "Serveis de Comercialització - Facturació - Transversal",
+            "color": {
+              "hex": "#F06050",
+              "rgb": [240,96,80]
+            },
+            "enabled": true
+        },
+        {
+            "id": 3,
+            "name_l1": "Serveis de Comercialització",
+            "name_l2": "Facturació",
+            "name_l3": "Generation kWh",
+            "keywords": [
+                "serveis",
+                "comer"
+            ],
+            "code": "SC_FA_GE",
+            "name": "Serveis de Comercialització - Facturació - Transversal",
+            "color": {
+              "hex": "#F7CD1F",
+              "rgb": [247,205,31]
+            },
+            "enabled": false
+        }
+    ]
+}
