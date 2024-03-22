@@ -11,10 +11,7 @@
             ],
             "code": "SC_EI_PR",
             "name": "Serveis de Comercialització - Estat instal·lacions - Procediment",
-            "color": {
-              "hex": "#30C381",
-              "rgb": [48,195,129]
-            },
+            "color": "#30C381",
             "enabled": true
         },
         {
@@ -28,10 +25,7 @@
             ],
             "code": "SC_FA_TR",
             "name": "Serveis de Comercialització - Facturació - Transversal",
-            "color": {
-              "hex": "#F06050",
-              "rgb": [240,96,80]
-            },
+            "color": "#F06050",
             "enabled": true
         },
         {
@@ -45,10 +39,7 @@
             ],
             "code": "SC_FA_GE",
             "name": "Serveis de Comercialització - Facturació - Transversal",
-            "color": {
-              "hex": "#F7CD1F",
-              "rgb": [247,205,31]
-            },
+            "color": "#F7CD1F",
             "enabled": false
         }
     ]
