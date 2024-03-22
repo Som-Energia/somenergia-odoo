@@ -105,6 +105,7 @@ class CrmPhonecall(models.Model):
             calls_data = self._get_calls()
             call = list(filter(lambda x: x["id"] == data["odoo_id"], calls_data["calls"]))[0]
             for k, v in data.items():
+                cv = call[k]
                 call[k] = v
             calls = list(filter(lambda x: x["operator"] == call["operator"], calls_data["calls"]))
             res = {
