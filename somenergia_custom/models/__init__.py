@@ -9,3 +9,4 @@ from . import hr_attendance
 from . import hr_attendance_report
 from . import hr_employee
 from . import hr_attendance_overtime
+from . import ir_ui_menu
