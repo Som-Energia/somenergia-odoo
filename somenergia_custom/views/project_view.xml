@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="project.open_view_project_all" model="ir.actions.act_window">
+            <field name="domain">[('is_internal_project', '=', False), ('som_is_internal_project', '=', False)]</field>
+        </record>
+    </data>
+</odoo>

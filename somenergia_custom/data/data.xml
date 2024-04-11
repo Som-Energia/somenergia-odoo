@@ -46,6 +46,10 @@
         <record id="som_project_tag_transversal_project" model="project.tags">
             <field name="name">Transversal project</field>
         </record>
+
+        <record id="som_project_tag_worked" model="project.tags">
+            <field name="name">Worked project</field>
+        </record>
         <!-- -->
 
         <record id="som_cumulative_hours_project" model="project.project">

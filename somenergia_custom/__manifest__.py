@@ -47,6 +47,7 @@
         'views/som_worked_week_view.xml',
         'views/hr_employee_view.xml',
         'views/hr_attendance_overtime_view.xml',
+        'views/project_view.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
