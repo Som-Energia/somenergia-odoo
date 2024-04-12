@@ -38,17 +38,20 @@
 
         <!--PROJECTS-->
 
-        <!-- Project categories -->
+        <!-- Project tags internal categories -->
         <record id="som_project_tag_area" model="project.tags">
             <field name="name">Area</field>
+            <field name="som_for_internal_project">True</field>
         </record>
 
         <record id="som_project_tag_transversal_project" model="project.tags">
             <field name="name">Transversal project</field>
+            <field name="som_for_internal_project">True</field>
         </record>
 
         <record id="som_project_tag_worked" model="project.tags">
             <field name="name">Worked project</field>
+            <field name="som_for_internal_project">True</field>
         </record>
         <!-- -->
 

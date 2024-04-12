@@ -54,3 +54,12 @@ class Project(models.Model):
     def _do_initialize_projects(self):
         self._load_default_tasks()
         self._load_table_calendar_weeks()
+
+
+class ProjectTags(models.Model):
+    _inherit = "project.tags"
+
+    som_for_internal_project = fields.Boolean(
+        string='Som for internal project',
+        store=True,
+    )
