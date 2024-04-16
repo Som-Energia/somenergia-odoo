@@ -9,10 +9,18 @@ class Project(models.Model):
 
     @api.depends('tag_ids')
     def _compute_som_is_internal_project(self):
-        tag_area_id = self.env.ref("somenergia_custom.som_project_tag_area")
-        tag_transversal_id = self.env.ref("somenergia_custom.som_project_tag_transversal_project")
-        tag_worked_id = self.env.ref("somenergia_custom.som_project_tag_worked")
-        list_tags = [tag_area_id.id, tag_transversal_id.id, tag_worked_id.id]
+        tag_area_id = (
+                self.env.ref("somenergia_custom.som_project_tag_area", raise_if_not_found=False) or False
+        )
+        tag_transversal_id = (
+                self.env.ref("somenergia_custom.som_project_tag_transversal_project", raise_if_not_found=False) or False
+        )
+        tag_worked_id = self.env.ref("somenergia_custom.som_project_tag_worked", raise_if_not_found=False) or False
+        list_tags = [
+            tag_area_id.id if tag_area_id else 0,
+            tag_transversal_id.id if tag_transversal_id else 0,
+            tag_worked_id.id if tag_worked_id else 0,
+        ]
         for project_id in self:
             list_aux = [id for id in project_id.tag_ids.ids if id in list_tags]
             project_id.som_is_internal_project = (len(list_aux) > 0)
