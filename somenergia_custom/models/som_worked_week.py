@@ -9,7 +9,7 @@ _logger = logging.getLogger(__name__)
 
 class SomWorkedWeek(models.Model):
     _name = "som.worked.week"
-    _inherit = ["mail.thread", "mail.activity.mixin"]
+    _inherit = ["som.common.project", "mail.thread", "mail.activity.mixin"]
     _description = "Som Worked Week"
 
     @api.depends('som_timesheet_ids', 'som_timesheet_ids.unit_amount')
@@ -30,19 +30,6 @@ class SomWorkedWeek(models.Model):
 
             record.som_total_unassigned_hours = \
                 0 if abs(som_total_unassigned_hours) == 0.01 else som_total_unassigned_hours
-
-    def _compute_project_type_domain_ids(self):
-        tag_area_id = self.env.ref("somenergia_custom.som_project_tag_area")
-        tag_transversal_id = self.env.ref("somenergia_custom.som_project_tag_transversal_project")
-        for record in self:
-            domain = [("tag_ids", "in", tag_area_id.ids)]
-            domain_no_area = [("tag_ids", "in", tag_transversal_id.ids)]
-
-            project_area_ids = self.env['project.project'].search(domain)
-            project_transversal_ids = self.env['project.project'].search(domain_no_area)
-
-            record.som_project_area_domain_ids = project_area_ids
-            record.som_additional_project_domain_ids = project_transversal_ids
 
     som_week_id = fields.Many2one(
         comodel_name="som.calendar.week",
@@ -84,20 +71,6 @@ class SomWorkedWeek(models.Model):
         'Total assigned hours',
         compute='_compute_totals',
         store=True,
-    )
-
-    som_project_area_domain_ids = fields.Many2many(
-        "project.project",
-        string="Projects area domain",
-        compute="_compute_project_type_domain_ids",
-        store=False,
-    )
-
-    som_additional_project_domain_ids = fields.Many2many(
-        "project.project",
-        string="Projects no area domain",
-        compute="_compute_project_type_domain_ids",
-        store=False,
     )
 
     # related field from som.calendar.week

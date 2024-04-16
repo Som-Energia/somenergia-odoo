@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="project.open_view_project_all" model="ir.actions.act_window">
+            <field name="domain">[('is_internal_project', '=', False), ('som_is_internal_project', '=', False)]</field>
+        </record>
+
+        <record id="som_project_tags_tree_view" model="ir.ui.view">
+            <field name="model">project.tags</field>
+            <field name="inherit_id" ref="project.project_tags_tree_view"/>
+            <field name="priority">90</field>
+            <field name="arch" type="xml">
+                <xpath expr="//tree/field[@name='name']" position="after">
+                    <field name="som_for_internal_project"
+                           optional="hide"
+                           groups="base.group_system"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="som_project_tags_action" model="ir.actions.act_window">
+            <field name="name">Tags</field>
+            <field name="res_model">project.tags</field>
+            <field name="domain">[('som_for_internal_project', '=', False)]</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                No tags found. Let's create one!
+              </p>
+              <p>
+                  Use tags to categorize your tasks.
+              </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_project_tags_act"
+                  action="somenergia_custom.som_project_tags_action"
+                  parent="project.menu_main_pm"/>
+
+    </data>
+</odoo>

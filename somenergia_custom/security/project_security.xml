@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record model="ir.module.category" id ="som_project_collaboration">
+        <field name="name">Project Collaboration</field>
+        <field name="sequence">999</field>
+    </record>
+
+    <record model="res.groups" id ="som_group_project_coll_user">
+        <field name="name">Project external collaborator</field>
+        <field name="category_id" ref="som_project_collaboration"/>
+    </record>
+
+</odoo>

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-06 11:34+0000\n"
-"PO-Revision-Date: 2024-02-06 11:34+0000\n"
+"POT-Creation-Date: 2024-04-16 07:19+0000\n"
+"PO-Revision-Date: 2024-04-16 07:19+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -93,6 +93,16 @@ msgid "'%s' with value '%s' out of time table"
 msgstr ""
 
 #. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_task_kanban
+msgid "<span>[#</span>"
+msgstr ""
+
+#. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_task_kanban
+msgid "<span>]&amp;nbsp;</span>"
+msgstr ""
+
+#. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee__som_is_absent_regardless_state
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee_base__som_is_absent_regardless_state
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee_public__som_is_absent_regardless_state
@@ -148,7 +158,13 @@ msgstr "Línia analítica"
 
 #. module: somenergia_custom
 #: model:project.tags,name:somenergia_custom.som_project_tag_area
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_project_view_task_form2
 msgid "Area"
+msgstr "Àmbit"
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_project_task__som_project_id
+msgid "Area project"
 msgstr "Àmbit"
 
 #. module: somenergia_custom
@@ -263,6 +279,11 @@ msgid "Day attendances %s"
 msgstr "Assistències dia %s"
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_project_task__som_department_ids
+msgid "Departments"
+msgstr "Departaments"
+
+#. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_account_analytic_line__name
 msgid "Description"
 msgstr "Descripció"
@@ -272,6 +293,14 @@ msgstr "Descripció"
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__display_name
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__display_name
 msgid "Display Name"
+msgstr ""
+
+#. module: somenergia_custom
+#. odoo-python
+#: code:addons/somenergia_custom/models/res_users.py:0
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.res_users_view_form_preference
+#, python-format
+msgid "Documents"
 msgstr ""
 
 #. module: somenergia_custom
@@ -399,6 +428,11 @@ msgid "Main Attachment"
 msgstr ""
 
 #. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_ir_ui_menu
+msgid "Menu"
+msgstr "Menú"
+
+#. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__message_has_error
 msgid "Message Delivery error"
 msgstr ""
@@ -447,6 +481,11 @@ msgstr ""
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__activity_type_id
 msgid "Next Activity Type"
+msgstr ""
+
+#. module: somenergia_custom
+#: model_terms:ir.actions.act_window,help:somenergia_custom.som_project_tags_action
+msgid "No tags found. Let's create one!"
 msgstr ""
 
 #. module: somenergia_custom
@@ -508,8 +547,24 @@ msgstr "Present avui"
 
 #. module: somenergia_custom
 #: model:ir.model,name:somenergia_custom.model_project_project
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_project_view_task_form2
 msgid "Project"
-msgstr "Àmbit"
+msgstr "Projecte"
+
+#. module: somenergia_custom
+#: model:ir.module.category,name:somenergia_custom.som_project_collaboration
+msgid "Project Collaboration"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_project_tags
+msgid "Project Tags"
+msgstr "Etiquetes del projecte"
+
+#. module: somenergia_custom
+#: model:res.groups,name:somenergia_custom.som_group_project_coll_user
+msgid "Project external collaborator"
+msgstr ""
 
 #. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.view_som_worked_week_form
@@ -517,11 +572,15 @@ msgid "Projecte"
 msgstr ""
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_project_task__som_project_area_domain_ids
+#: model:ir.model.fields,field_description:somenergia_custom.field_som_common_project__som_project_area_domain_ids
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__som_project_area_domain_ids
 msgid "Projects area domain"
 msgstr ""
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_project_task__som_additional_project_domain_ids
+#: model:ir.model.fields,field_description:somenergia_custom.field_som_common_project__som_additional_project_domain_ids
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__som_additional_project_domain_ids
 msgid "Projects no area domain"
 msgstr ""
@@ -583,6 +642,11 @@ msgid "Som Calendar Week"
 msgstr ""
 
 #. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_som_common_project
+msgid "Som Common Project"
+msgstr ""
+
+#. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee_base__som_current_calendar_id
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee_public__som_current_calendar_id
 msgid "Som Current Calendar"
@@ -599,6 +663,16 @@ msgid "Som Worked Week"
 msgstr ""
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_project_tags__som_for_internal_project
+msgid "Som for internal project"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_project_project__som_is_internal_project
+msgid "Som internal project"
+msgstr ""
+
+#. module: somenergia_custom
 #: model:ir.model.fields,help:somenergia_custom.field_som_worked_week__activity_state
 msgid ""
 "Status based on activities\n"
@@ -606,6 +680,17 @@ msgid ""
 "Today: Activity date is today\n"
 "Planned: Future activities."
 msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.actions.act_window,name:somenergia_custom.som_project_tags_action
+#: model:ir.ui.menu,name:somenergia_custom.menu_project_tags_act
+msgid "Tags"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_project_task
+msgid "Task"
+msgstr "Tasca"
 
 #. module: somenergia_custom
 #: model:project.project,label_tasks:somenergia_custom.som_cumulative_hours_project
@@ -645,9 +730,10 @@ msgstr "Total hores treballades"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_account_analytic_line__som_additional_project_id
+#: model:ir.model.fields,field_description:somenergia_custom.field_project_task__som_additional_project_id
 #: model:project.tags,name:somenergia_custom.som_project_tag_transversal_project
 msgid "Transversal project"
-msgstr "Transversal"
+msgstr "Projecte transversal"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_account_analytic_line__som_additional_project_task_id
@@ -657,6 +743,11 @@ msgstr ""
 #. module: somenergia_custom
 #: model:ir.model.fields,help:somenergia_custom.field_som_worked_week__activity_exception_decoration
 msgid "Type of the exception activity on record."
+msgstr ""
+
+#. module: somenergia_custom
+#: model_terms:ir.actions.act_window,help:somenergia_custom.som_project_tags_action
+msgid "Use tags to categorize your tasks."
 msgstr ""
 
 #. module: somenergia_custom
@@ -754,6 +845,11 @@ msgstr "Sense hores extres"
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.view_som_worked_week_form
 msgid "Worked Week"
 msgstr "Setmana Treballada"
+
+#. module: somenergia_custom
+#: model:project.tags,name:somenergia_custom.som_project_tag_worked
+msgid "Worked project"
+msgstr "Projecte Hores Treballades"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_account_analytic_line__som_worked_week_id
