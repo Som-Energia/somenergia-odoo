@@ -49,6 +49,7 @@
         'views/hr_employee_view.xml',
         'views/hr_attendance_overtime_view.xml',
         'views/project_view.xml',
+        'views/project_task_view.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
