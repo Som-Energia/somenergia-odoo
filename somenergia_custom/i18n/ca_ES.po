@@ -685,7 +685,7 @@ msgstr ""
 #: model:ir.actions.act_window,name:somenergia_custom.som_project_tags_action
 #: model:ir.ui.menu,name:somenergia_custom.menu_project_tags_act
 msgid "Tags"
-msgstr ""
+msgstr "Etiquetes"
 
 #. module: somenergia_custom
 #: model:ir.model,name:somenergia_custom.model_project_task
