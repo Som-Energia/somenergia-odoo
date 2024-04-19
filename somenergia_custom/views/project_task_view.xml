@@ -6,6 +6,15 @@
             <field name="model">project.task</field>
             <field name="inherit_id" ref="project.view_task_form2"/>
             <field name="arch" type="xml">
+                <xpath expr="//field[@name='project_id']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                    <attribute name="force_save">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='partner_id']" position="attributes">
+                    <attribute name="attrs">
+                        {'invisible': 1}
+                    </attribute>
+                </xpath>
                 <xpath expr="//field[@name='company_id']" position="after">
                     <field name="som_project_area_domain_ids"
                            invisible="1"/>
@@ -19,17 +28,17 @@
                 </xpath>
                 <xpath expr="//field[@name='user_ids']" position="after">
                     <field name="som_department_ids" widget="many2many_tags"/>
+                    <field name="som_additional_project_id"
+                           options="{'no_open': True}"
+                           string="Transversal Project"
+                           domain="[('id', 'in', som_additional_project_domain_ids)]"
+                           readonly="0"/>
+                </xpath>
+                <xpath expr="//field[@name='tag_ids']" position="after">
                     <field name="som_project_id"
                            options="{'no_open': True}"
                            string="Area"
                            domain="[('id', 'in', som_project_area_domain_ids)]"
-                           readonly="0"/>
-                </xpath>
-                <xpath expr="//field[@name='tag_ids']" position="after">
-                    <field name="som_additional_project_id"
-                           options="{'no_open': True}"
-                           string="Project"
-                           domain="[('id', 'in', som_additional_project_domain_ids)]"
                            readonly="0"/>
                 </xpath>
             </field>
