@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-16 07:19+0000\n"
-"PO-Revision-Date: 2024-04-16 07:19+0000\n"
+"POT-Creation-Date: 2024-04-22 05:41+0000\n"
+"PO-Revision-Date: 2024-04-22 05:41+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -222,6 +222,11 @@ msgstr ""
 #: model:ir.model,name:somenergia_custom.model_hr_employee_base
 msgid "Basic Employee"
 msgstr "Empleat bàsic"
+
+#. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_project_view_task_form2
+msgid "Blocked"
+msgstr "Bloquejat"
 
 #. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.account_invoice_download_credentials_form
@@ -547,7 +552,6 @@ msgstr "Present avui"
 
 #. module: somenergia_custom
 #: model:ir.model,name:somenergia_custom.model_project_project
-#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_project_view_task_form2
 msgid "Project"
 msgstr "Projecte"
 
@@ -589,6 +593,11 @@ msgstr ""
 #: model:ir.model,name:somenergia_custom.model_hr_employee_public
 msgid "Public Employee"
 msgstr "Empleat Públic"
+
+#. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_project_view_task_form2
+msgid "Ready"
+msgstr "Preparat"
 
 #. module: somenergia_custom
 #: model:ir.actions.server,name:somenergia_custom.som_recompute_worked_weeks
@@ -727,6 +736,11 @@ msgstr "Total hores per assignar"
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__som_total_worked_hours
 msgid "Total worked hours"
 msgstr "Total hores treballades"
+
+#. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_project_view_task_form2
+msgid "Transversal Project"
+msgstr "Projecte transversal"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_account_analytic_line__som_additional_project_id

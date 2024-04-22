@@ -6,6 +6,14 @@
             <field name="model">project.task</field>
             <field name="inherit_id" ref="project.view_task_form2"/>
             <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']" position="after">
+                    <field name="som_project_area_domain_ids"
+                           invisible="1"/>
+                    <field name="som_additional_project_domain_ids"
+                           invisible="1"/>
+                    <field name="kanban_state"
+                           invisible="1"/>
+                </xpath>
                 <xpath expr="//field[@name='project_id']" position="attributes">
                     <attribute name="readonly">1</attribute>
                     <attribute name="force_save">1</attribute>
@@ -14,12 +22,6 @@
                     <attribute name="attrs">
                         {'invisible': 1}
                     </attribute>
-                </xpath>
-                <xpath expr="//field[@name='company_id']" position="after">
-                    <field name="som_project_area_domain_ids"
-                           invisible="1"/>
-                    <field name="som_additional_project_domain_ids"
-                           invisible="1"/>
                 </xpath>
                 <xpath expr="//field[@name='tag_ids']" position="attributes">
                     <attribute name="domain">
@@ -40,6 +42,16 @@
                            string="Area"
                            domain="[('id', 'in', som_project_area_domain_ids)]"
                            readonly="0"/>
+                </xpath>
+                <xpath expr="//widget[@name='web_ribbon']" position="after">
+                    <widget name="web_ribbon"
+                            title="Ready"
+                            bg_color="bg-success"
+                            attrs="{'invisible': [('kanban_state', '!=', 'done')]}"/>
+                    <widget name="web_ribbon"
+                            title="Blocked"
+                            bg_color="bg-danger"
+                            attrs="{'invisible': [('kanban_state', '!=', 'blocked')]}"/>
                 </xpath>
             </field>
         </record>
