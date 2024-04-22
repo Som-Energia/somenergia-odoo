@@ -36,6 +36,12 @@
             </field>
         </record>
 
+        <!--feature flag 'Remove default project task followers'-->
+        <record id="som_avoid_default_task_followers" model="ir.config_parameter">
+            <field name="key">som_avoid_default_task_followers</field>
+            <field name="value">True</field>
+        </record>
+
         <!--PROJECTS-->
 
         <!-- Project tags internal categories -->

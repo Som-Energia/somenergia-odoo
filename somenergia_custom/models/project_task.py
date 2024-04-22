@@ -29,3 +29,18 @@ class Task(models.Model):
             name = "[#%s] %s" % (str(task_id.id), task_id.name)
             res += [(task_id.id, name)]
         return res
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        task_ids = super().create(vals_list)
+        flag_avoid_default_followers = (
+            self.env["ir.config_parameter"].sudo().get_param("som_avoid_default_task_followers")
+        )
+        if flag_avoid_default_followers:
+            for task_id in task_ids:
+                partner_to_remove_ids = (task_id.message_partner_ids.user_ids - task_id.user_ids).partner_id
+                if partner_to_remove_ids:
+                    task_id.sudo().message_follower_ids.filtered(
+                        lambda x: x.partner_id.id in partner_to_remove_ids.ids
+                    ).unlink()
+        return task_ids
