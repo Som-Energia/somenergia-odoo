@@ -73,7 +73,7 @@ class CrmPhonecall(models.Model):
                 "contract_erp_id": data.get('contract_erp_id', False),
                 "contract_number": data.get("contract_number", ""),
                 "contract_address": data.get("contract_address", ""),
-                "category_ids": [],
+                "category_ids": data.get("category_ids", []),
             }
 
             calls_data["calls"].append(new_call)
