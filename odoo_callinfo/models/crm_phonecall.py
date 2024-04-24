@@ -68,6 +68,7 @@ class CrmPhonecall(models.Model):
                 "pbx_call_id": data["pbx_call_id"],
                 "phone_number": data["phone_number"],
                 "caller_erp_id": data.get("caller_erp_id", False),
+                "caller_vat": data.get("caller_vat", ""),
                 "caller_name": data.get("caller_name", ""),
                 "contract_erp_id": data.get('contract_erp_id', False),
                 "contract_number": data.get("contract_number", ""),
