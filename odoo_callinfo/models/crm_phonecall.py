@@ -91,9 +91,10 @@ class CrmPhonecall(models.Model):
         """
         sample param data expected:
         data = {
-            "odoo_id": 1,
+            "id": 1,
             "caller_erp_id": 16852,
             "caller_name": "Pere Garc",
+            "caller_vat": "ES12345678Z",
             "contract_erp_id": 52613,
             "contract_number": "0026076",
             "contract_address": "C/ ALACANT, 76, 12 46680 (Algemesí)",
@@ -103,9 +104,9 @@ class CrmPhonecall(models.Model):
         """
         try:
             calls_data = self._get_calls()
-            call = list(filter(lambda x: x["id"] == data["odoo_id"], calls_data["calls"]))[0]
+            call = list(filter(lambda x: x["id"] == data["id"], calls_data["calls"]))[0]
             for k, v in data.items():
-                if k != "odoo_id":
+                if k != "id":
                     call[k]
                 call[k] = v
             calls = list(filter(lambda x: x["operator"] == call["operator"], calls_data["calls"]))
