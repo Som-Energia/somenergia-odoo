@@ -3,30 +3,47 @@
         {
             "id": 1,
             "operator": "operadora01",
-            "call_timestamp": "2024-03-20T12:00:00+03:00",
+            "call_timestamp": "2024-04-24T08:29:34.279876Z",
             "pbx_call_id": "35153",
             "phone_number": "625036666",
-            "caller_erp_id": false,
-            "caller_name": "",
-            "contract_erp_id": "",
-            "contract_number": "",
-            "contract_address": "",
-            "category_ids": [],
-            "comments": ""
+            "caller_erp_id": 666,
+            "caller_name": "Pere",
+            "caller_vat": "64006778D",
+            "contract_erp_id": 12344,
+            "contract_number": "5432100",
+            "contract_address": "15, rue del percebe",
+            "category_ids": [1,2],
+            "comments": "Està molt content amb nosaltres"
         },
         {
             "id": 2,
             "operator": "operadora02",
-            "call_timestamp": "2024-03-21T12:00:00+03:00",
+            "call_timestamp": "2024-04-24T07:15:34.279876Z",
             "pbx_call_id": "35190",
             "phone_number": "688036666",
+            "caller_erp_id": 777,
+            "caller_name": "Sonia",
+            "caller_vat": "W6746026A",
+            "contract_erp_id": 123456,
+            "contract_number": "0012345",
+            "contract_address": "13, rue del percebe, Barnacity",
+            "category_ids": [3],
+            "comments": "Vol més informació al respecte del producte"
+        },
+        {
+            "id": 3,
+            "operator": "operadora02",
+            "call_timestamp": "2024-04-24T07:41:34.279876Z",
+            "pbx_call_id": "35190",
+            "phone_number": "655536666",
             "caller_erp_id": false,
-            "caller_name": "",
-            "contract_erp_id": "",
+            "caller_name": "Zoe",
+            "caller_vat": "61191021G",
+            "contract_erp_id": false,
             "contract_number": "",
-            "contract_address": "",
-            "category_ids": [],
-            "comments": ""
+            "contract_address": "3.1415269, cBucle infinito, MadriZ",
+            "category_ids": [2,3],
+            "comments": "sol·licita una alta nova"
         }
     ]
 }
