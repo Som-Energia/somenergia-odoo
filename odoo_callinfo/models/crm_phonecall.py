@@ -10,7 +10,7 @@ class CrmPhonecall(models.Model):
     _inherit = 'crm.phonecall'
 
     @api.model
-    def get_phonecall_categories(self, include_disabled=False):
+    def get_phonecall_categories(self):
         # Example date with timezone information
         iso_date_with_tz = "2024-03-20T12:00:00+03:00"
         # Convert ISO date string to datetime object
@@ -22,12 +22,7 @@ class CrmPhonecall(models.Model):
         )
         with open(file, 'r') as f:
             data = json.load(f)
-
-        if include_disabled:
-            return data
-        else:
-            data_filtered = list(filter(lambda x: x.get("enabled", False), data["categories"]))
-            return data_filtered
+        return data
 
     def _get_calls(self):
         file_name = "dummy_pc.json"
@@ -37,6 +32,10 @@ class CrmPhonecall(models.Model):
         with open(file, 'r') as f:
             json_data = json.load(f)
         return json_data
+
+    def _get_operator_calls(self, operator):
+        calls_data = self._get_calls()
+        return list(filter(lambda x: x["operator"] == operator, calls_data["calls"]))
 
     def _exception(self, e):
         if isinstance(e, KeyError):
@@ -68,19 +67,19 @@ class CrmPhonecall(models.Model):
                 "call_timestamp": data["call_timestamp"],
                 "pbx_call_id": data["pbx_call_id"],
                 "phone_number": data["phone_number"],
-                "caller_erp_id": False,
-                "caller_name": "",
-                "contract_erp_id": "",
-                "contract_number": "",
-                "contract_address": "",
+                "caller_erp_id": data.get("caller_erp_id", False),
+                "caller_name": data.get("caller_name", ""),
+                "contract_erp_id": data.get('contract_erp_id', False),
+                "contract_number": data.get("contract_number", ""),
+                "contract_address": data.get("contract_address", ""),
                 "category_ids": [],
             }
 
             calls_data["calls"].append(new_call)
             calls = list(filter(lambda x: x["operator"] == data["operator"], calls_data["calls"]))
             res = {
-                "odoo_id": new_id,
-                "operator_calls": calls,
+                "new_id": new_id,
+                "calls": calls,
             }
             return res
         except Exception as e:
@@ -110,8 +109,28 @@ class CrmPhonecall(models.Model):
                 call[k] = v
             calls = list(filter(lambda x: x["operator"] == call["operator"], calls_data["calls"]))
             res = {
-                "odoo_id": call["id"],
-                "operator_calls": calls,
+                "updated_id": call["id"],
+                "calls": calls,
+            }
+            return res
+        except Exception as e:
+            return self._exception(e)
+
+    @api.model
+    def get_operator_calls(self, data):
+        """
+        sample param data expected:
+        data = {
+            "operator": "name",
+            "date_from": "2024-01-01",
+            "date_to": "2024-12-31",
+            "limit": 1000,
+        }
+        """
+        try:
+            calls = self._get_operator_calls(data["operator"])
+            res = {
+                "calls": calls,
             }
             return res
         except Exception as e:

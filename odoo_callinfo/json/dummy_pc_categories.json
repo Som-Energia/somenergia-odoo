@@ -2,9 +2,6 @@
    "categories": [
         {
             "id": 1,
-            "name_l1": "Serveis de Comercialització",
-            "name_l2": "Estat instal·lacions",
-            "name_l3": "Procediment",
             "keywords": [
                 "serveis",
                 "comer",
@@ -17,9 +14,6 @@
         },
         {
             "id": 2,
-            "name_l1": "Serveis de Comercialització",
-            "name_l2": "Facturació",
-            "name_l3": "Transversal",
             "keywords": [
                 "serveis",
                 "comer",
@@ -32,9 +26,6 @@
         },
         {
             "id": 3,
-            "name_l1": "Serveis de Comercialització",
-            "name_l2": "Facturació",
-            "name_l3": "Generation kWh",
             "keywords": [
                 "serveis",
                 "comer",
