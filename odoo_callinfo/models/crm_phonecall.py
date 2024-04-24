@@ -33,9 +33,18 @@ class CrmPhonecall(models.Model):
             json_data = json.load(f)
         return json_data
 
-    def _get_operator_calls(self, operator):
-        calls_data = self._get_calls()
-        return list(filter(lambda x: x["operator"] == operator, calls_data["calls"]))
+    def _get_operator_calls(self, operator, calls_data):
+        # Turn all calls into operator's
+        # Temporary hack to be able to play with dummy
+        return [
+            dict(x, operator=data["operator"])
+            for x in calls_data["calls"]
+        ]
+        # Filter in operators call, legit code
+        return [
+            x for x in calls_data["calls"]
+            if x["operator"] == data["operator"]
+        ]
 
     def _exception(self, e):
         if isinstance(e, KeyError):
@@ -77,7 +86,7 @@ class CrmPhonecall(models.Model):
             }
 
             calls_data["calls"].append(new_call)
-            calls = list(filter(lambda x: x["operator"] == data["operator"], calls_data["calls"]))
+            calls = self._get_operator_calls(data["operator"], calls_data)
             res = {
                 "new_id": new_id,
                 "calls": calls,
@@ -109,7 +118,7 @@ class CrmPhonecall(models.Model):
                 if k != "id":
                     call[k]
                 call[k] = v
-            calls = list(filter(lambda x: x["operator"] == call["operator"], calls_data["calls"]))
+            calls = self._get_operator_calls(data["operator"], calls_data)
             res = {
                 "updated_id": call["id"],
                 "calls": calls,
@@ -130,7 +139,8 @@ class CrmPhonecall(models.Model):
         }
         """
         try:
-            calls = self._get_operator_calls(data["operator"])
+            calls_data = self._get_calls()
+            calls = self._get_operator_calls(data["operator"], calls_data)
             res = {
                 "calls": calls,
             }
