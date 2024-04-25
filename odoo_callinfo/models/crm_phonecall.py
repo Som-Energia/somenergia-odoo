@@ -79,7 +79,7 @@ class CrmPhonecall(models.Model):
             calls_data["calls"].append(new_call)
             calls = list(filter(lambda x: x["operator"] == data["operator"], calls_data["calls"]))
             res = {
-                "new_id": new_id,
+                "updated_id": new_id,
                 "calls": calls,
             }
             return res
