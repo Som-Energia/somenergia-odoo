@@ -33,9 +33,18 @@ class CrmPhonecall(models.Model):
             json_data = json.load(f)
         return json_data
 
-    def _get_operator_calls(self, operator):
-        calls_data = self._get_calls()
-        return list(filter(lambda x: x["operator"] == operator, calls_data["calls"]))
+    def _get_operator_calls(self, operator, calls_data):
+        # Turn all calls into operator's
+        # Temporary hack to be able to play with dummy
+        return [
+            dict(x, operator=operator)
+            for x in calls_data["calls"]
+        ]
+        # Filter in operators call, legit code
+        # return [
+        #     x for x in calls_data["calls"]
+        #     if x["operator"] == data["operator"]
+        # ]
 
     def _exception(self, e):
         if isinstance(e, KeyError):
@@ -68,17 +77,18 @@ class CrmPhonecall(models.Model):
                 "pbx_call_id": data["pbx_call_id"],
                 "phone_number": data["phone_number"],
                 "caller_erp_id": data.get("caller_erp_id", False),
+                "caller_vat": data.get("caller_vat", ""),
                 "caller_name": data.get("caller_name", ""),
                 "contract_erp_id": data.get('contract_erp_id', False),
                 "contract_number": data.get("contract_number", ""),
                 "contract_address": data.get("contract_address", ""),
-                "category_ids": [],
+                "category_ids": data.get("category_ids", []),
             }
 
             calls_data["calls"].append(new_call)
-            calls = list(filter(lambda x: x["operator"] == data["operator"], calls_data["calls"]))
+            calls = self._get_operator_calls(data["operator"], calls_data)
             res = {
-                "new_id": new_id,
+                "updated_id": new_id,
                 "calls": calls,
             }
             return res
@@ -90,9 +100,10 @@ class CrmPhonecall(models.Model):
         """
         sample param data expected:
         data = {
-            "odoo_id": 1,
+            "id": 1,
             "caller_erp_id": 16852,
             "caller_name": "Pere Garc",
+            "caller_vat": "ES12345678Z",
             "contract_erp_id": 52613,
             "contract_number": "0026076",
             "contract_address": "C/ ALACANT, 76, 12 46680 (Algemesí)",
@@ -102,12 +113,10 @@ class CrmPhonecall(models.Model):
         """
         try:
             calls_data = self._get_calls()
-            call = list(filter(lambda x: x["id"] == data["odoo_id"], calls_data["calls"]))[0]
+            call = list(filter(lambda x: x["id"] == data["id"], calls_data["calls"]))[0]
             for k, v in data.items():
-                if k != "odoo_id":
-                    call[k]
                 call[k] = v
-            calls = list(filter(lambda x: x["operator"] == call["operator"], calls_data["calls"]))
+            calls = self._get_operator_calls(data["operator"], calls_data)
             res = {
                 "updated_id": call["id"],
                 "calls": calls,
@@ -128,7 +137,8 @@ class CrmPhonecall(models.Model):
         }
         """
         try:
-            calls = self._get_operator_calls(data["operator"])
+            calls_data = self._get_calls()
+            calls = self._get_operator_calls(data["operator"], calls_data)
             res = {
                 "calls": calls,
             }
