@@ -44,6 +44,21 @@
             "contract_address": "3.1415269, cBucle infinito, MadriZ",
             "category_ids": [2,3],
             "comments": "sol·licita una alta nova"
+        },
+        {
+            "id": 4,
+            "operator": "operadora02",
+            "call_timestamp": "2024-04-24T07:02:34.279876Z",
+            "pbx_call_id": "35190",
+            "phone_number": "655536111",
+            "caller_erp_id": false,
+            "caller_name": "",
+            "caller_vat": "",
+            "contract_erp_id": false,
+            "contract_number": "",
+            "contract_address": "",
+            "category_ids": [],
+            "comments": ""
         }
     ]
 }
