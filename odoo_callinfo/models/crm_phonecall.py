@@ -107,8 +107,7 @@ class CrmPhonecall(models.Model):
             call = list(filter(lambda x: x["id"] == data["id"], calls_data["calls"]))[0]
             for k, v in data.items():
                 if k != "id":
-                    call[k]
-                call[k] = v
+                    call[k] = v
             calls = list(filter(lambda x: x["operator"] == call["operator"], calls_data["calls"]))
             res = {
                 "updated_id": call["id"],
