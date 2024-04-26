@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Product category form view -->
+    <record id="product_category_form_view" model="ir.ui.view">
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='parent_id']" position="after">
+                <field name="som_code"/>
+                <field name="som_full_code"/>
+                <field name="som_level" readonly="1"/>
+                <field name="som_color" widget="color_picker"/>
+                <field name="som_keyword_ids" widget="many2many_tags"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_category_list_view" model="ir.ui.view">
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_list_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='display_name']" position="after">
+                <field name="som_code"/>
+                <field name="som_full_code" readonly="1"/>
+                <field name="som_level"/>
+                <field name="som_color" widget="color_picker"/>
+                <field name="som_keyword_ids" widget="many2many_tags"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

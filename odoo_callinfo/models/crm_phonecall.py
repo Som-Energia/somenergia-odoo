@@ -9,6 +9,15 @@ import json
 class CrmPhonecall(models.Model):
     _inherit = 'crm.phonecall'
 
+    som_category_ids = fields.Many2many(
+        comodel_name="product.category",
+        relation="som_call_category_rel",
+        column1="call_id",
+        column2="category_id",
+        string="Categories",
+        store=True,
+    )
+
     @api.model
     def get_phonecall_categories(self):
         # Example date with timezone information

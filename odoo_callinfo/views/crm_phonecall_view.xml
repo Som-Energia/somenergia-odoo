@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="som_crm_case_inbound_phone_tree_view" model="ir.ui.view">
+        <field name="model">crm.phonecall</field>
+        <field name="inherit_id" ref="crm_phonecall.crm_case_inbound_phone_tree_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='campaign_id']" position="before">
+                <field name="som_category_ids" widget="many2many_tags"/>
+                <field name="description"/>
+            </xpath>
+            <xpath expr="//field[@name='direction']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='campaign_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='medium_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='source_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
