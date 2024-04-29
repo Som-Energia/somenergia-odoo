@@ -6,17 +6,17 @@ from random import randint
 import json
 
 RGB_COLORS = {
-    1: "#F06050",
-    2: "#F4A460",
-    3: "#F7CD1F",
-    4: "#6CC1ED",
-    5: "#814968",
-    6: "#EB7E7F",
-    7: "#2C8397",
-    8: "#475577",
-    9: "#D6145F",
-    10: "#30C381",
-    11: "#9365B8",
+    1: {'rgb': "#F06050", 'name': 'Red'},
+    2: {'rgb': "#F4A460", 'name': 'Orange'},
+    3: {'rgb': "#F7CD1F", 'name': 'Yellow'},
+    4: {'rgb': "#6CC1ED", 'name': 'Light blue'},
+    5: {'rgb': "#814968", 'name': 'Dark purple'},
+    6: {'rgb': "#EB7E7F", 'name': 'Salmon pink'},
+    7: {'rgb': "#2C8397", 'name': 'Medium blue'},
+    8: {'rgb': "#475577", 'name': 'Dark blue'},
+    9: {'rgb': "#D6145F", 'name': 'Fushia'},
+    10: {'rgb': "#30C381", 'name': 'Green'},
+    11: {'rgb': "#9365B8", 'name': 'Purple'},
 }
 
 
@@ -33,11 +33,11 @@ class ProductCategory(models.Model):
     def _get_ancestors(self):
         self.ensure_one()
         if self.parent_id:
-            parents = self.parent_id._get_ancestors()
+            ancestors = self.parent_id._get_ancestors()
         else:
-            parents = []
-        parents.append(self.id)
-        return parents
+            ancestors = []
+        ancestors.append(self.id)
+        return ancestors
 
     @api.depends('som_code', 'parent_id.som_code', 'parent_id.som_full_code')
     def _compute_full_code(self):
@@ -49,8 +49,29 @@ class ProductCategory(models.Model):
     @api.depends('parent_id')
     def _compute_level(self):
         for record in self:
-            parents_list = record._get_ancestors()
-            record.som_level = len(parents_list)
+            ancestors_list = record._get_ancestors()
+            count_ancestors = len(ancestors_list) - 1
+            # set ancestors
+            field_name = 'som_ancestor_level'
+            for i in range(0, 3):
+                field_name_aux = field_name + str(i)
+                if i < count_ancestors:
+                    record[field_name_aux] = ancestors_list[i]
+                else:
+                    record[field_name_aux] = False
+            # set level
+            record.som_level = count_ancestors
+
+    @api.depends('som_ancestor_level1', 'som_ancestor_level1.som_color', 'som_color')
+    def _compute_family_color(self):
+        for record in self:
+            record.som_family_color = (
+                record.som_ancestor_level1.som_color
+                if record.som_ancestor_level1
+                else record.som_color
+            )
+
+    som_code = fields.Char(string="Code")
 
     som_full_code = fields.Char(
         string="Full code",
@@ -65,9 +86,42 @@ class ProductCategory(models.Model):
         store=True,
     )
 
-    som_code = fields.Char(string="Code")
+    som_ancestor_level0 = fields.Many2one(
+        comodel_name= 'product.category',
+        string='Ancestor Level 0',
+        index=True,
+        compute='_compute_level',
+        store=True,
+    )
+    som_ancestor_level1 = fields.Many2one(
+        comodel_name='product.category',
+        string='Ancestor Level 1',
+        index=True,
+        compute='_compute_level',
+        store=True,
+    )
+    som_ancestor_level2 = fields.Many2one(
+        comodel_name='product.category',
+        string='Ancestor Level 2',
+        index=True,
+        compute='_compute_level',
+        store=True,
+    )
+    som_ancestor_level3 = fields.Many2one(
+        comodel_name='product.category',
+        string='Ancestor Level 3',
+        index=True,
+        compute='_compute_level',
+        store=True,
+    )
 
     som_color = fields.Integer('Color', default=_get_default_color)
+
+    som_family_color = fields.Integer(
+        string='Family color',
+        compute='_compute_family_color',
+        store=True,
+    )
 
     som_keyword_ids = fields.Many2many(
         comodel_name="crm.tag",
