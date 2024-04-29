@@ -132,3 +132,7 @@ class ProductCategory(models.Model):
         store=True,
     )
 
+    active = fields.Boolean(
+        default=True,
+    )
+
