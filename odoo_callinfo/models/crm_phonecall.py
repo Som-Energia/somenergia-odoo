@@ -3,7 +3,19 @@
 from odoo import api, fields, models, _, _lt
 from odoo.modules.module import get_module_resource
 from datetime import datetime, timezone, timedelta
+from odoo.addons.odoo_callinfo.pydantic.pydantic_models import Employee
+from odoo.addons.odoo_callinfo.pydantic.callinfo_models import Categories
+from odoo.addons.odoo_callinfo.pydantic.callinfo_models import Category
+from odoo.addons.odoo_callinfo.pydantic.callinfo_models import NewCall
+from odoo.addons.odoo_callinfo.pydantic.callinfo_models import Call
+from odoo.addons.odoo_callinfo.pydantic.callinfo_models import CallLog
+from odoo.addons.odoo_callinfo.pydantic.callinfo_models import UpdatedCallLog
+from odoo.exceptions import UserError, ValidationError
+from pydantic import ValidationError
 import json
+
+#TODO: define as system setting
+CATEGORY_LEVEL = 3
 
 
 class CrmPhonecall(models.Model):
@@ -18,8 +30,90 @@ class CrmPhonecall(models.Model):
         store=True,
     )
 
+    def do_action(self):
+        # self.check_pydantic_model()
+        # self.check_category_model()
+        # self.check_call_models()
+        self.get_phonecall_categories()
+
+    # -------------- VALIDATIONS ----------------
+
     @api.model
-    def get_phonecall_categories(self):
+    def check_category_model(self):
+        try:
+            category_dict = {
+                "id": 1,
+                "keywords": [
+                    "serveis",
+                    "comer",
+                    "instal·lacions"
+                ],
+                "code": "SC_EI_PR",
+                "name": "Serveis de Comercialització - Estat instal·lacions - Procediment",
+                "color": "#30C381",
+                "enabled": True
+            }
+            cat_obj = Category.model_validate(category_dict)
+            print(cat_obj)
+        except ValidationError as e:
+            print(e)
+
+    @api.model
+    def check_call_models(self):
+        try:
+            dict_test = {
+                "operator": "operadora01",
+                "call_timestamp": "2024-04-24T08:29:34.279876Z",
+                "pbx_call_id": "35153",
+                "phone_number": "625036666",
+                "caller_erp_id": 666,
+                "caller_name": "Pere",
+                "caller_vat": "ES64006778D",
+                "contract_erp_id": 12344,
+                "contract_number": "5432100",
+                "contract_address": "15, rue del percebe",
+                "category_ids": [1, 2],
+                "comments": "Està molt content amb nosaltres"
+            }
+            obj = NewCall.model_validate(dict_test)
+            print(obj)
+
+            dict_test['id'] = 5
+            obj = Call.model_validate(dict_test)
+            print(obj)
+
+            dict_list_test = {'calls': [dict_test]}
+            obj = CallLog.model_validate(dict_list_test)
+            print(obj)
+
+            dict_list_test['updated_id'] = 10
+            obj = UpdatedCallLog.model_validate(dict_list_test)
+            print(obj)
+
+        except ValidationError as e:
+            print(e)
+
+    @api.model
+    def check_pydantic_model(self):
+        try:
+            new_employee_dict = {
+                "name": "juan",
+                "email": "cdetuma@example.com",
+                "date_of_birth": "1984-04-02",
+                "salary": 30000.00,
+                "department": "IT",
+                "elected_benefits": True,
+            }
+            empl = Employee.model_validate(new_employee_dict)
+
+            print("ok")
+        except ValidationError as e:
+            print(e)
+
+    # -------------- ENDPOINTS ----------------
+
+    @api.model
+    def get_phonecall_categories_dummy(self):
         # Example date with timezone information
         iso_date_with_tz = "2024-03-20T12:00:00+03:00"
         # Convert ISO date string to datetime object
@@ -32,6 +126,35 @@ class CrmPhonecall(models.Model):
         with open(file, 'r') as f:
             data = json.load(f)
         return data
+
+    @api.model
+    def get_phonecall_categories(self):
+        som_dummy = eval(self.env["ir.config_parameter"].sudo().get_param("som_callinfo_dummy", "False"))
+        if som_dummy:
+            res = self.get_phonecall_categories_dummy()
+        else:
+            cat_ids = self.env['product.category'].with_context(active_test=False).search([
+                ('som_level', '=', CATEGORY_LEVEL),
+            ])
+            res = {}
+            cat_list = []
+            for cat_id in cat_ids:
+                color = cat_id._get_color_rgb(cat_id.som_family_color)['rgb']
+                cat_dict = {
+                    "id": cat_id.id,
+                    "keywords": cat_id.som_keyword_ids.mapped('name') if cat_id.som_keyword_ids else [],
+                    "code": cat_id.som_full_code or '',
+                    "name": cat_id.complete_name,
+                    "color": color,
+                    "enabled": cat_id.active,
+                }
+                cat_list.append(cat_dict)
+            res['categories'] = cat_list
+        try:
+            Categories.model_validate(res)
+            return res
+        except ValidationError as e:
+            return self._exception(e)
 
     def _get_calls(self):
         file_name = "dummy_pc.json"

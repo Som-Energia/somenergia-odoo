@@ -23,6 +23,7 @@
 
     # always loaded
     'data': [
+        'data/data.xml',
         'views/crm_phonecall_view.xml',
         'views/product_category.xml',
     ],
