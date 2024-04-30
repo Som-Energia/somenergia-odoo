@@ -14,9 +14,6 @@ from odoo.exceptions import UserError, ValidationError
 from pydantic import ValidationError
 import json
 
-#TODO: define as system setting
-CATEGORY_LEVEL = 3
-
 
 class CrmPhonecall(models.Model):
     _inherit = 'crm.phonecall'
@@ -130,11 +127,14 @@ class CrmPhonecall(models.Model):
     @api.model
     def get_phonecall_categories(self):
         som_dummy = eval(self.env["ir.config_parameter"].sudo().get_param("som_callinfo_dummy", "False"))
+        som_category_level = eval(
+            self.env["ir.config_parameter"].sudo().get_param("som_callinfo_category_level", "3")
+        )
         if som_dummy:
             res = self.get_phonecall_categories_dummy()
         else:
             cat_ids = self.env['product.category'].with_context(active_test=False).search([
-                ('som_level', '=', CATEGORY_LEVEL),
+                ('som_level', '=', som_category_level),
             ])
             res = {}
             cat_list = []
