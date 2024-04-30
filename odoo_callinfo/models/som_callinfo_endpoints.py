@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+import logging
+import json
+import inspect
+import traceback
 
 from odoo import api, fields, models, _, _lt
 from odoo.modules.module import get_module_resource
@@ -14,7 +18,7 @@ from odoo.exceptions import UserError, ValidationError
 from pydantic import ValidationError
 from datetime import datetime
 
-import json
+_logger = logging.getLogger(__name__)
 
 
 class SomCallInfoEndpoint(models.AbstractModel):
@@ -24,7 +28,7 @@ class SomCallInfoEndpoint(models.AbstractModel):
     # -------------- MODELS VALIDATIONS ----------------
 
     @api.model
-    def check_category_model(self):
+    def check_category_models(self):
         try:
             category_dict = {
                 "id": 1,
@@ -40,6 +44,23 @@ class SomCallInfoEndpoint(models.AbstractModel):
             }
             cat_obj = Category.model_validate(category_dict)
             print(cat_obj)
+
+            category_dict_2 = {
+                "id": 'a',
+                "keywords": [
+                    "serveis",
+                    "comer",
+                    "instal·lacions"
+                ],
+                "code": "SC_EI_PR",
+                "name": "Serveis de Comercialització - Estat instal·lacions - Procediment",
+                "color": "#30C381",
+                "enabled": True
+            }
+
+            categories_dict = {'categories': [category_dict, category_dict_2]}
+            categories_obj = Categories.model_validate(categories_dict)
+            print(categories_obj)
         except ValidationError as e:
             print(e)
 
@@ -97,6 +118,17 @@ class SomCallInfoEndpoint(models.AbstractModel):
 
     # -------------- ENDPOINTS ----------------
 
+    def _exception(self, e):
+        if isinstance(e, KeyError):
+            error_msg = f"KeyError: {e}"
+        else:
+            error_msg = str(e)
+        res = {
+            "error": error_msg,
+        }
+        _logger.exception(str(res))
+        return res
+
     @api.model
     def get_phonecall_categories_dummy(self):
         # Example date with timezone information
@@ -114,38 +146,41 @@ class SomCallInfoEndpoint(models.AbstractModel):
 
     @api.model
     def get_phonecall_categories(self):
-        som_dummy = eval(self.env["ir.config_parameter"].sudo().get_param("som_callinfo_dummy", "False"))
-        som_category_level = eval(
-            self.env["ir.config_parameter"].sudo().get_param("som_callinfo_category_level", "3")
-        )
-        if som_dummy:
-            res = self.get_phonecall_categories_dummy()
-        else:
-            cat_ids = self.env['product.category'].with_context(active_test=False).search([
-                ('som_level', '=', som_category_level),
-            ])
-            res = {}
-            cat_list = []
-            for cat_id in cat_ids:
-                color = cat_id._get_color_rgb(cat_id.som_family_color)['rgb']
-                keywords = (
-                    cat_id.with_context(lang="ca_ES").som_keyword_ids.mapped('name') if cat_id.som_keyword_ids else []
-                )
-                cat_dict = {
-                    "id": cat_id.id,
-                    "keywords": keywords,
-                    "code": cat_id.som_full_code or '',
-                    "name": cat_id.complete_name,
-                    "color": color,
-                    "enabled": cat_id.active,
-                }
-                cat_list.append(cat_dict)
-            res['categories'] = cat_list
         try:
-            Categories.model_validate(res)
-            return res
-        except ValidationError as e:
-            return self._exception(e)
+            som_dummy = eval(self.env["ir.config_parameter"].sudo().get_param("som_callinfo_dummy", "False"))
+            som_category_level = eval(
+                self.env["ir.config_parameter"].sudo().get_param("som_callinfo_category_level", "3")
+            )
+            if som_dummy:
+                res = self.get_phonecall_categories_dummy()
+            else:
+                cat_ids = self.env['product.category'].with_context(active_test=False).search([
+                    ('som_level', '=', som_category_level),
+                ])
+                res = {}
+                cat_list = []
+                for cat_id in cat_ids:
+                    color = cat_id._get_color_rgb(cat_id.som_family_color)['rgb']
+                    keywords = (
+                        cat_id.with_context(lang="ca_ES").som_keyword_ids.mapped('name') if cat_id.som_keyword_ids else []
+                    )
+                    cat_dict = {
+                        "id": cat_id.id,
+                        "keywords": keywords,
+                        "code": cat_id.som_full_code or '',
+                        "name": cat_id.complete_name,
+                        "color": color,
+                        "enabled": cat_id.active,
+                    }
+                    cat_list.append(cat_dict)
+                res['categories'] = cat_list
+            try:
+                Categories.model_validate(res)
+                return res
+            except ValidationError as e:
+                return self._exception(e)
+        except Exception:
+            return self._exception(traceback.format_exc())
 
     def _get_calls(self):
         file_name = "dummy_pc.json"
@@ -168,15 +203,6 @@ class SomCallInfoEndpoint(models.AbstractModel):
         #     x for x in calls_data["calls"]
         #     if x["operator"] == data["operator"]
         # ]
-
-    def _exception(self, e):
-        if isinstance(e, KeyError):
-            error_msg = f"KeyError: {e}"
-        else:
-            error_msg = str(e)
-        return {
-            "error": error_msg,
-        }
 
     @api.model
     def create_call_and_get_operator_calls(self, data):

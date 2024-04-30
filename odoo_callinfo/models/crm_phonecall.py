@@ -18,6 +18,7 @@ class CrmPhonecall(models.Model):
 
     def do_action(self):
         # self.check_pydantic_model()
-        # self.check_category_model()
-        self.check_call_models()
-        self.get_phonecall_categories()
+        # self.check_category_models()
+        # self.check_call_models()
+        res = self.get_phonecall_categories()
+        pass
