@@ -140,9 +140,12 @@ class CrmPhonecall(models.Model):
             cat_list = []
             for cat_id in cat_ids:
                 color = cat_id._get_color_rgb(cat_id.som_family_color)['rgb']
+                keywords = (
+                    cat_id.with_context(lang="ca_ES").som_keyword_ids.mapped('name') if cat_id.som_keyword_ids else []
+                )
                 cat_dict = {
                     "id": cat_id.id,
-                    "keywords": cat_id.som_keyword_ids.mapped('name') if cat_id.som_keyword_ids else [],
+                    "keywords": keywords,
                     "code": cat_id.som_full_code or '',
                     "name": cat_id.complete_name,
                     "color": color,
