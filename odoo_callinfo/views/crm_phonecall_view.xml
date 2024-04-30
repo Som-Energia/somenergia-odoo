@@ -23,6 +23,22 @@
             <xpath expr="//field[@name='source_id']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
+            <xpath expr="//button[@name='action_make_meeting']" position="before">
+                <button icon="fa-check" name="do_action" string="Check" type="object"/>
+            </xpath>
         </field>
     </record>
+
+    <record id="crm_phonecall.menu_crm_case_phonecall-act" model="ir.ui.menu">
+        <field name="name">Keywords</field>
+    </record>
+
+    <menuitem
+        action="product.product_category_action_form"
+        id="som_menu_product_category"
+        name="CallInfo Categories"
+        parent="crm_phonecall.menu_crm_config_phonecall"
+        sequence="0"
+    />
+
 </odoo>

@@ -24,6 +24,8 @@
     # always loaded
     'data': [
         'data/data.xml',
+        'security/project_category_security.xml',
+        'security/ir.model.access.csv',
         'views/crm_phonecall_view.xml',
         'views/product_category.xml',
     ],
