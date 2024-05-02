@@ -249,7 +249,7 @@ class SomCallInfoEndpoint(models.AbstractModel):
             list(set(obj_new_call.category_ids))
         )
         if cat_not_found:
-            return self._exception(
+            raise UserError(
                 _("List of not found categories {}".format(', '.join([str(cat_id) for cat_id in cat_not_found])))
             )
 
