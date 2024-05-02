@@ -5,5 +5,9 @@
             <field name="key">som_callinfo_dummy</field>
             <field name="value">True</field>
         </record>
+        <record id="som_callinfo_category_level" model="ir.config_parameter">
+            <field name="key">som_callinfo_category_level</field>
+            <field name="value">3</field>
+        </record>
     </data>
 </odoo>

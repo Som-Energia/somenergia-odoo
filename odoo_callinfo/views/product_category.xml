@@ -59,4 +59,30 @@
         </field>
     </record>
 
+    <record model="ir.ui.view" id="product_category_search_view">
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_search_view" />
+        <field name="arch" type="xml">
+            <field name="parent_id" position="after">
+                <field name="som_code"/>
+                <field name="som_full_code"/>
+                <field name="som_level"/>
+                <field name="active"/>
+                <field name="som_keyword_ids"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <filter name="level0" string="Level 0" domain="[('som_level', '=', 0)]"/>
+                <filter name="level1" string="Level 1" domain="[('som_level', '=', 1)]"/>
+                <filter name="level2" string="Level 2" domain="[('som_level', '=', 2)]"/>
+                <filter name="level3" string="Level 3" domain="[('som_level', '=', 3)]"/>
+                <separator/>
+                <group expand="1" string="Group By">
+                    <filter string="Ancestor Level 0" name="groupby_level0" domain="[]" context="{'group_by': 'som_ancestor_level0'}"/>
+                    <filter string="Ancestor Level 1" name="groupby_level1" domain="[]" context="{'group_by': 'som_ancestor_level1'}"/>
+                    <filter string="Ancestor Level 2" name="groupby_level2" domain="[]" context="{'group_by': 'som_ancestor_level2'}"/>
+                    <filter string="Ancestor Level 3" name="groupby_level3" domain="[]" context="{'group_by': 'som_ancestor_level3'}"/>
+                </group>
+            </field>
+        </field>
+    </record>
+
 </odoo>
