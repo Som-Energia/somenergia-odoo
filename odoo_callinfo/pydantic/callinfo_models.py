@@ -1,6 +1,7 @@
 import pydantic
 from typing import Literal, Optional, Union, List
 from pydantic import constr, field_validator
+from datetime import date
 import stdnum.eu.vat
 
 # VatNumber = Annotated[
@@ -75,3 +76,10 @@ class CallLog(pydantic.BaseModel):
 
 class UpdatedCallLog(CallLog):
     updated_id: int
+
+
+class CallSearchParam(pydantic.BaseModel):
+    operator: str
+    date_from: Optional[date] = None
+    date_to: Optional[date] = None
+    to_retrieve: Optional[int] = None

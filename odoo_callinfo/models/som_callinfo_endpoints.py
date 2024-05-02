@@ -14,6 +14,7 @@ from odoo.addons.odoo_callinfo.pydantic.callinfo_models import NewCall
 from odoo.addons.odoo_callinfo.pydantic.callinfo_models import Call
 from odoo.addons.odoo_callinfo.pydantic.callinfo_models import CallLog
 from odoo.addons.odoo_callinfo.pydantic.callinfo_models import UpdatedCallLog
+from odoo.addons.odoo_callinfo.pydantic.callinfo_models import CallSearchParam
 from odoo.exceptions import UserError, ValidationError
 from pydantic import ValidationError
 from datetime import datetime
@@ -218,9 +219,11 @@ class SomCallInfoEndpoint(models.AbstractModel):
     def _cast_str_date(self, date):
         return fields.Datetime.to_string(date).replace(' ', 'T') + 'Z'
 
-    def _get_operator_calls(self, operator, limit):
+    def _get_operator_calls(self, operator, limit, date_from=None, date_to=None):
         call_list = []
-        call_ids = self.env['crm.phonecall']._get_calls_by_operator(operator, limit)
+        call_ids = self.env['crm.phonecall']._get_calls_by_operator(
+            operator, limit, date_from, date_to
+        )
         for call_id in call_ids:
             call = {
                 "id": call_id.id,
@@ -430,14 +433,14 @@ class SomCallInfoEndpoint(models.AbstractModel):
 
 
     @api.model
-    def get_operator_calls(self, data):
+    def get_operator_calls_dummy(self, data):
         """
         sample param data expected:
         data = {
             "operator": "name",
             "date_from": "2024-01-01",
             "date_to": "2024-12-31",
-            "limit": 1000,
+            "to_retrieve": 1000,
         }
         """
         try:
@@ -449,3 +452,38 @@ class SomCallInfoEndpoint(models.AbstractModel):
             return res
         except Exception as e:
             return self._exception(e)
+
+    @api.model
+    def get_operator_calls(self, data):
+        """
+        sample param data expected:
+        data = {
+            "operator": "name",
+            "date_from": "2024-01-01",
+            "date_to": "2024-12-31",
+            "to_retrieve": 1000,
+        }
+        """
+        try:
+            try:
+                obj_call_param = CallSearchParam.model_validate(data)
+            except ValidationError as e:
+                return self._exception(e)
+            som_dummy = eval(self.env["ir.config_parameter"].sudo().get_param("som_callinfo_dummy", "False"))
+            if som_dummy:
+                return self.get_operator_calls_dummy(data)
+            else:
+                calls = self._get_operator_calls(
+                    obj_call_param.operator,
+                    obj_call_param.to_retrieve,
+                    obj_call_param.date_from,
+                    obj_call_param.date_to,
+                )
+                result = {'calls': calls}
+                try:
+                    CallLog.model_validate(result)
+                except ValidationError as e:
+                    self._exception(e)
+                return result
+        except Exception:
+            return self._exception(traceback.format_exc())

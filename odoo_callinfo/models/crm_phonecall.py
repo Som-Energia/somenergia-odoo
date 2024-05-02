@@ -56,8 +56,14 @@ class CrmPhonecall(models.Model):
         pass
 
     @api.model
-    def _get_calls_by_operator(self, operator, limit=None):
-        call_ids = self.search([
+    def _get_calls_by_operator(self, operator, limit=None, date_from=None, date_to=None):
+        domain = [
             ('som_operator', '=', operator)
-        ], order='date desc', limit=limit)
+        ]
+        if date_from:
+            domain.append(('date', '>=', fields.Date.to_string(date_from)))
+        if date_to:
+            domain.append(('date', '<=', fields.Date.to_string(date_to)))
+
+        call_ids = self.search(domain, order='date desc', limit=limit)
         return call_ids
