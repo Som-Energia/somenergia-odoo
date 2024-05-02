@@ -61,7 +61,7 @@ class NewCall(pydantic.BaseModel):
 
     @field_validator('caller_vat')
     def validate_vat(cls, v):
-        if not stdnum.eu.vat.is_valid(v):
+        if v and not stdnum.eu.vat.is_valid(v):
             raise ValueError('Invalid VAT number')
         return v
 
