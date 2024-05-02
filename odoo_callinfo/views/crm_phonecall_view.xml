@@ -7,6 +7,21 @@
             <xpath expr="//field[@name='campaign_id']" position="before">
                 <field name="som_category_ids" options="{'color_field': 'som_family_color'}" widget="many2many_tags"/>
                 <field name="description"/>
+                <field name="som_operator"/>
+                <field name="som_pbx_call_id"/>
+                <field name="som_phone"/>
+                <field name="som_caller_erp_id"/>
+                <field name="som_caller_name"/>
+                <field name="som_caller_vat"/>
+                <field name="som_contract_erp_id"/>
+                <field name="som_contract_name"/>
+                <field name="som_contract_address"/>
+            </xpath>
+            <xpath expr="//field[@name='user_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//field[@name='direction']" position="attributes">
                 <attribute name="invisible">1</attribute>
@@ -25,6 +40,12 @@
             </xpath>
             <xpath expr="//button[@name='action_make_meeting']" position="before">
                 <button icon="fa-check" name="do_action" string="Check" type="object"/>
+            </xpath>
+            <xpath expr="//button[@name='action_make_meeting']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_button_convert2opportunity']" position="attributes">
+                <attribute name="invisible">1</attribute>
             </xpath>
         </field>
     </record>

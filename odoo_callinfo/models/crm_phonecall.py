@@ -54,3 +54,10 @@ class CrmPhonecall(models.Model):
         # self.check_call_models()
         res = self.get_phonecall_categories()
         pass
+
+    @api.model
+    def _get_calls_by_operator(self, operator, limit=None):
+        call_ids = self.search([
+            ('som_operator', '=', operator)
+        ], order='date desc', limit=limit)
+        return call_ids

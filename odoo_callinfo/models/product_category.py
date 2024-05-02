@@ -136,3 +136,15 @@ class ProductCategory(models.Model):
         default=True,
     )
 
+    @api.model
+    def _check_category_exists(self, list_id_categories):
+        list_exists = []
+        list_not_exists = []
+        for id_category in list_id_categories:
+            c_id = self.search([('id', '=', id_category)])
+            if c_id:
+                list_exists.append(id_category)
+            else:
+                list_not_exists.append(id_category)
+        return list_exists, list_not_exists
+

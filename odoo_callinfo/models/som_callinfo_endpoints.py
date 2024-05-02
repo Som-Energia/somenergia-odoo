@@ -191,7 +191,7 @@ class SomCallInfoEndpoint(models.AbstractModel):
             json_data = json.load(f)
         return json_data
 
-    def _get_operator_calls(self, operator, calls_data):
+    def _get_operator_calls_dummy(self, operator, calls_data):
         # Turn all calls into operator's
         # Temporary hack to be able to play with dummy
         return [
@@ -203,6 +203,62 @@ class SomCallInfoEndpoint(models.AbstractModel):
         #     x for x in calls_data["calls"]
         #     if x["operator"] == data["operator"]
         # ]
+
+    def _cast_str_date(self, date):
+        return fields.Datetime.to_string(date).replace(' ', 'T') + 'Z'
+
+    def _get_operator_calls(self, operator, limit):
+        call_list = []
+        call_ids = self.env['crm.phonecall']._get_calls_by_operator(operator, limit)
+        for call_id in call_ids:
+            call = {
+                "id": call_id.id,
+                "operator": call_id.som_operator,
+                "call_timestamp": self._cast_str_date(call_id.date),
+                "pbx_call_id": call_id.som_pbx_call_id,
+                "phone_number": call_id.som_phone,
+                "caller_erp_id": call_id.som_caller_erp_id,
+                "caller_name": call_id.som_caller_name,
+                "caller_vat": call_id.som_caller_vat,
+                "contract_erp_id": call_id.som_contract_erp_id,
+                "contract_number": call_id.som_contract_name,
+                "contract_address": call_id.som_contract_address,
+                "comments": call_id.description,
+                "category_ids": call_id.som_category_ids.ids if call_id.som_category_ids else [],
+            }
+            call_list.append(call)
+        return call_list
+
+    @api.model
+    def _create_call(self, obj_new_call):
+        cat_found, cat_not_found = self.env['product.category']._check_category_exists(
+            list(set(obj_new_call.category_ids))
+        )
+        if cat_not_found:
+            return self._exception(
+                _("List of not found categories {}".format(', '.join([str(cat_id) for cat_id in cat_not_found])))
+            )
+
+        str_call_ts = fields.Datetime.to_string(obj_new_call.call_timestamp)
+        str_comments = obj_new_call.comments.strip()
+        new_dict = {
+            'date': str_call_ts,
+            'name': str_comments.split("\n")[0][:50],
+            'description': str_comments,
+            'som_category_ids': cat_found,
+            'som_operator': obj_new_call.operator,
+            'som_pbx_call_id': obj_new_call.pbx_call_id,
+            'som_phone': obj_new_call.phone_number,
+            'som_caller_name': obj_new_call.caller_name,
+            'som_caller_vat': obj_new_call.caller_vat,
+            'som_contract_name': obj_new_call.contract_number,
+            'som_contract_address': obj_new_call.contract_address,
+        }
+        if obj_new_call.caller_erp_id:
+            new_dict['som_caller_erp_id'] = obj_new_call.caller_erp_id
+        if obj_new_call.contract_erp_id:
+            new_dict['som_contract_erp_id'] = obj_new_call.contract_erp_id
+        return self.create(new_dict)
 
     @api.model
     def create_call_and_get_operator_calls_dummy(self, data):
@@ -235,7 +291,7 @@ class SomCallInfoEndpoint(models.AbstractModel):
             }
 
             calls_data["calls"].append(new_call)
-            calls = self._get_operator_calls(data["operator"], calls_data)
+            calls = self._get_operator_calls_dummy(data["operator"], calls_data)
             res = {
                 "updated_id": new_id,
                 "calls": calls,
@@ -248,11 +304,25 @@ class SomCallInfoEndpoint(models.AbstractModel):
     def create_call_and_get_operator_calls(self, data):
         try:
             try:
-                obj = NewCall.model_validate(data)
-                str_call_ts = fields.Datetime.to_string(obj.call_timestamp)
-                return self.create_call_and_get_operator_calls_dummy(data)
+                obj_new_call = NewCall.model_validate(data)
             except ValidationError as e:
                 return self._exception(e)
+            som_dummy = eval(self.env["ir.config_parameter"].sudo().get_param("som_callinfo_dummy", "False"))
+            if som_dummy:
+                return self.create_call_and_get_operator_calls_dummy(data)
+            else:
+                created_id = self._create_call(obj_new_call)
+                call_list = self._get_operator_calls(obj_new_call.operator, obj_new_call.to_retrieve)
+
+                result = {
+                    'updated_id': created_id.id,
+                    'calls': call_list,
+                }
+                try:
+                    UpdatedCallLog.model_validate(result)
+                except ValidationError as e:
+                    self._exception(e)
+                return result
         except Exception:
             return self._exception(traceback.format_exc())
 
@@ -277,7 +347,7 @@ class SomCallInfoEndpoint(models.AbstractModel):
             call = list(filter(lambda x: x["id"] == data["id"], calls_data["calls"]))[0]
             for k, v in data.items():
                 call[k] = v
-            calls = self._get_operator_calls(data["operator"], calls_data)
+            calls = self._get_operator_calls_dummy(data["operator"], calls_data)
             res = {
                 "updated_id": call["id"],
                 "calls": calls,

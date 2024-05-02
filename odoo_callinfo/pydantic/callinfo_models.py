@@ -56,6 +56,8 @@ class NewCall(pydantic.BaseModel):
     category_ids: List[int] = []
     comments: str = ""
 
+    to_retrieve: Optional[int] = None
+
     @field_validator('caller_vat')
     def validate_vat(cls, v):
         if not stdnum.eu.vat.is_valid(v):
