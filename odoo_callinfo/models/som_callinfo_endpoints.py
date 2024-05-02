@@ -17,8 +17,19 @@ from odoo.addons.odoo_callinfo.pydantic.callinfo_models import UpdatedCallLog
 from odoo.exceptions import UserError, ValidationError
 from pydantic import ValidationError
 from datetime import datetime
-
 _logger = logging.getLogger(__name__)
+
+MAPPED_FIELDS = {
+    'operator': 'som_operator',
+    'pbx_call_id': 'som_pbx_call_id',
+    'phone_number': 'som_phone',
+    'caller_erp_id': 'som_caller_erp_id',
+    'caller_name': 'som_caller_name',
+    'caller_vat': 'som_caller_vat',
+    'contract_erp_id': 'som_contract_erp_id',
+    'contract_number': 'som_contract_name',
+    'contract_address': 'som_contract_address',
+}
 
 
 class SomCallInfoEndpoint(models.AbstractModel):
@@ -327,7 +338,7 @@ class SomCallInfoEndpoint(models.AbstractModel):
             return self._exception(traceback.format_exc())
 
     @api.model
-    def update_call_and_get_operator_calls(self, data):
+    def update_call_and_get_operator_calls_dummy(self, data):
         """
         sample param data expected:
         data = {
@@ -355,6 +366,68 @@ class SomCallInfoEndpoint(models.AbstractModel):
             return res
         except Exception as e:
             return self._exception(e)
+
+    @api.model
+    def _update_call(self, data, obj_call):
+        id_call = data['id']
+        call_id = self.env['crm.phonecall'].search([('id', '=', id_call)])
+        if not call_id:
+            msg = _("Call id {} does not exist!!!".format(id_call))
+            raise UserError(msg)
+
+        to_write = {}
+        for key, value in data.items():
+            if key == 'category_ids':
+                cat_found, cat_not_found = self.env['product.category']._check_category_exists(
+                    list(set(value))
+                )
+                if cat_not_found:
+                    raise UserError(
+                        _("List of not found categories {}".format(
+                            ', '.join([str(cat_id) for cat_id in cat_not_found])))
+                    )
+                to_write['som_category_ids'] = [(6, 0, cat_found)]
+
+            if key == 'call_timestamp':
+                to_write['date'] = fields.Datetime.to_string(obj_call.call_timestamp)
+
+            if key == 'comments':
+                str_comments = value.strip()
+                to_write['description'] = str_comments
+                to_write['name'] = str_comments.split("\n")[0][:50]
+
+            if key in MAPPED_FIELDS.keys():
+                to_write[MAPPED_FIELDS[key]] = value
+
+        call_id.write(to_write)
+        return call_id
+
+    @api.model
+    def update_call_and_get_operator_calls(self, data):
+        try:
+            try:
+                obj_call = Call.model_validate(data)
+            except ValidationError as e:
+                return self._exception(e)
+            som_dummy = eval(self.env["ir.config_parameter"].sudo().get_param("som_callinfo_dummy", "False"))
+            if som_dummy:
+                return self.update_call_and_get_operator_calls_dummy(data)
+            else:
+                updated_id = self._update_call(data, obj_call)
+                call_list = self._get_operator_calls(updated_id.som_operator, obj_call.to_retrieve)
+
+                result = {
+                    'updated_id': updated_id.id,
+                    'calls': call_list,
+                }
+                try:
+                    UpdatedCallLog.model_validate(result)
+                except ValidationError as e:
+                    self._exception(e)
+                return result
+        except Exception:
+            return self._exception(traceback.format_exc())
+
 
     @api.model
     def get_operator_calls(self, data):
