@@ -205,7 +205,7 @@ class SomCallInfoEndpoint(models.AbstractModel):
         # ]
 
     @api.model
-    def create_call_and_get_operator_calls(self, data):
+    def create_call_and_get_operator_calls_dummy(self, data):
         """
         sample param data expected:
         {'call_timestamp': '2024-03-20T12:00:00+03:00',
@@ -243,6 +243,18 @@ class SomCallInfoEndpoint(models.AbstractModel):
             return res
         except Exception as e:
             return self._exception(e)
+
+    @api.model
+    def create_call_and_get_operator_calls(self, data):
+        try:
+            try:
+                obj = NewCall.model_validate(data)
+                str_call_ts = fields.Datetime.to_string(obj.call_timestamp)
+                return self.create_call_and_get_operator_calls_dummy(data)
+            except ValidationError as e:
+                return self._exception(e)
+        except Exception:
+            return self._exception(traceback.format_exc())
 
     @api.model
     def update_call_and_get_operator_calls(self, data):
