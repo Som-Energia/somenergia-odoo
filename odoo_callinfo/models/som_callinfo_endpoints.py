@@ -38,7 +38,6 @@ class SomCallInfoEndpoint(models.AbstractModel):
     _description = 'Som CallInfo Endpoint'
 
     # -------------- MODELS VALIDATIONS ----------------
-
     @api.model
     def check_category_models(self):
         try:
@@ -128,19 +127,7 @@ class SomCallInfoEndpoint(models.AbstractModel):
         except ValidationError as e:
             print(e)
 
-    # -------------- ENDPOINTS ----------------
-
-    def _exception(self, e):
-        if isinstance(e, KeyError):
-            error_msg = f"KeyError: {e}"
-        else:
-            error_msg = str(e)
-        res = {
-            "error": error_msg,
-        }
-        _logger.exception(str(res))
-        return res
-
+    # -------------- DUMMY ENDPOINTS ----------------
     @api.model
     def get_phonecall_categories_dummy(self):
         # Example date with timezone information
@@ -155,6 +142,135 @@ class SomCallInfoEndpoint(models.AbstractModel):
         with open(file, 'r') as f:
             data = json.load(f)
         return data
+
+    def _get_calls(self):
+        file_name = "dummy_pc.json"
+        file = get_module_resource(
+            "odoo_callinfo", "json", file_name
+        )
+        with open(file, 'r') as f:
+            json_data = json.load(f)
+        return json_data
+
+    def _get_operator_calls_dummy(self, operator, calls_data):
+        # Turn all calls into operator's
+        # Temporary hack to be able to play with dummy
+        return [
+            dict(x, operator=operator)
+            for x in calls_data["calls"]
+        ]
+        # Filter in operators call, legit code
+        # return [
+        #     x for x in calls_data["calls"]
+        #     if x["operator"] == data["operator"]
+        # ]
+
+    @api.model
+    def create_call_and_get_operator_calls_dummy(self, data):
+        """
+        sample param data expected:
+        {'call_timestamp': '2024-03-20T12:00:00+03:00',
+         'operator': 'operadora01',
+         'pbx_call_id': '6265',
+         'phone_number': '666444777'
+        }
+        """
+        try:
+            calls_data = self._get_calls()
+            max_id = max([item["id"] for item in calls_data["calls"]])
+            new_id = max_id + 1
+
+            new_call = {
+                "id": new_id,
+                "operator": data["operator"],
+                "call_timestamp": data["call_timestamp"],
+                "pbx_call_id": data["pbx_call_id"],
+                "phone_number": data["phone_number"],
+                "caller_erp_id": data.get("caller_erp_id", False),
+                "caller_vat": data.get("caller_vat", ""),
+                "caller_name": data.get("caller_name", ""),
+                "contract_erp_id": data.get('contract_erp_id', False),
+                "contract_number": data.get("contract_number", ""),
+                "contract_address": data.get("contract_address", ""),
+                "category_ids": data.get("category_ids", []),
+            }
+
+            calls_data["calls"].append(new_call)
+            calls = self._get_operator_calls_dummy(data["operator"], calls_data)
+            res = {
+                "updated_id": new_id,
+                "calls": calls,
+            }
+            return res
+        except Exception as e:
+            return self._exception(e)
+
+    @api.model
+    def update_call_and_get_operator_calls_dummy(self, data):
+        """
+        sample param data expected:
+        data = {
+            "id": 1,
+            "caller_erp_id": 16852,
+            "caller_name": "Pere Garc",
+            "caller_vat": "ES12345678Z",
+            "contract_erp_id": 52613,
+            "contract_number": "0026076",
+            "contract_address": "C/ ALACANT, 76, 12 46680 (Algemesí)",
+            "category_ids": [2, 3],
+            "comments": "update test",
+        }
+        """
+        try:
+            calls_data = self._get_calls()
+            call = list(filter(lambda x: x["id"] == data["id"], calls_data["calls"]))[0]
+            for k, v in data.items():
+                call[k] = v
+            calls = self._get_operator_calls_dummy(data["operator"], calls_data)
+            res = {
+                "updated_id": call["id"],
+                "calls": calls,
+            }
+            return res
+        except Exception as e:
+            return self._exception(e)
+
+    @api.model
+    def get_operator_calls_dummy(self, data):
+        """
+        sample param data expected:
+        data = {
+            "operator": "name",
+            "date_from": "2024-01-01",
+            "date_to": "2024-12-31",
+            "to_retrieve": 1000,
+        }
+        """
+        try:
+            calls_data = self._get_calls()
+            calls = self._get_operator_calls(data["operator"], calls_data)
+            res = {
+                "calls": calls,
+            }
+            return res
+        except Exception as e:
+            return self._exception(e)
+
+    # -------------- ENDPOINTS ----------------
+
+    def _exception(self, e):
+        if isinstance(e, KeyError):
+            error_msg = f"KeyError: {e}"
+        else:
+            error_msg = str(e)
+        res = {
+            "error": error_msg,
+        }
+        _logger.exception(str(res))
+        return res
+
+    def _cast_str_date(self, date):
+        return fields.Datetime.to_string(date).replace(' ', 'T') + 'Z'
 
     @api.model
     def get_phonecall_categories(self):
@@ -193,31 +309,6 @@ class SomCallInfoEndpoint(models.AbstractModel):
                 return self._exception(e)
         except Exception:
             return self._exception(traceback.format_exc())
-
-    def _get_calls(self):
-        file_name = "dummy_pc.json"
-        file = get_module_resource(
-            "odoo_callinfo", "json", file_name
-        )
-        with open(file, 'r') as f:
-            json_data = json.load(f)
-        return json_data
-
-    def _get_operator_calls_dummy(self, operator, calls_data):
-        # Turn all calls into operator's
-        # Temporary hack to be able to play with dummy
-        return [
-            dict(x, operator=operator)
-            for x in calls_data["calls"]
-        ]
-        # Filter in operators call, legit code
-        # return [
-        #     x for x in calls_data["calls"]
-        #     if x["operator"] == data["operator"]
-        # ]
-
-    def _cast_str_date(self, date):
-        return fields.Datetime.to_string(date).replace(' ', 'T') + 'Z'
 
     def _get_operator_calls(self, operator, limit, date_from=None, date_to=None):
         call_list = []
@@ -275,46 +366,6 @@ class SomCallInfoEndpoint(models.AbstractModel):
         return self.create(new_dict)
 
     @api.model
-    def create_call_and_get_operator_calls_dummy(self, data):
-        """
-        sample param data expected:
-        {'call_timestamp': '2024-03-20T12:00:00+03:00',
-         'operator': 'operadora01',
-         'pbx_call_id': '6265',
-         'phone_number': '666444777'
-        }
-        """
-        try:
-            calls_data = self._get_calls()
-            max_id = max([item["id"] for item in calls_data["calls"]])
-            new_id = max_id + 1
-
-            new_call = {
-                "id": new_id,
-                "operator": data["operator"],
-                "call_timestamp": data["call_timestamp"],
-                "pbx_call_id": data["pbx_call_id"],
-                "phone_number": data["phone_number"],
-                "caller_erp_id": data.get("caller_erp_id", False),
-                "caller_vat": data.get("caller_vat", ""),
-                "caller_name": data.get("caller_name", ""),
-                "contract_erp_id": data.get('contract_erp_id', False),
-                "contract_number": data.get("contract_number", ""),
-                "contract_address": data.get("contract_address", ""),
-                "category_ids": data.get("category_ids", []),
-            }
-
-            calls_data["calls"].append(new_call)
-            calls = self._get_operator_calls_dummy(data["operator"], calls_data)
-            res = {
-                "updated_id": new_id,
-                "calls": calls,
-            }
-            return res
-        except Exception as e:
-            return self._exception(e)
-
-    @api.model
     def create_call_and_get_operator_calls(self, data):
         try:
             try:
@@ -339,36 +390,6 @@ class SomCallInfoEndpoint(models.AbstractModel):
                 return result
         except Exception:
             return self._exception(traceback.format_exc())
-
-    @api.model
-    def update_call_and_get_operator_calls_dummy(self, data):
-        """
-        sample param data expected:
-        data = {
-            "id": 1,
-            "caller_erp_id": 16852,
-            "caller_name": "Pere Garc",
-            "caller_vat": "ES12345678Z",
-            "contract_erp_id": 52613,
-            "contract_number": "0026076",
-            "contract_address": "C/ ALACANT, 76, 12 46680 (Algemesí)",
-            "category_ids": [2, 3],
-            "comments": "update test",
-        }
-        """
-        try:
-            calls_data = self._get_calls()
-            call = list(filter(lambda x: x["id"] == data["id"], calls_data["calls"]))[0]
-            for k, v in data.items():
-                call[k] = v
-            calls = self._get_operator_calls_dummy(data["operator"], calls_data)
-            res = {
-                "updated_id": call["id"],
-                "calls": calls,
-            }
-            return res
-        except Exception as e:
-            return self._exception(e)
 
     @api.model
     def _update_call(self, data, obj_call):
@@ -433,37 +454,7 @@ class SomCallInfoEndpoint(models.AbstractModel):
 
 
     @api.model
-    def get_operator_calls_dummy(self, data):
-        """
-        sample param data expected:
-        data = {
-            "operator": "name",
-            "date_from": "2024-01-01",
-            "date_to": "2024-12-31",
-            "to_retrieve": 1000,
-        }
-        """
-        try:
-            calls_data = self._get_calls()
-            calls = self._get_operator_calls(data["operator"], calls_data)
-            res = {
-                "calls": calls,
-            }
-            return res
-        except Exception as e:
-            return self._exception(e)
-
-    @api.model
     def get_operator_calls(self, data):
-        """
-        sample param data expected:
-        data = {
-            "operator": "name",
-            "date_from": "2024-01-01",
-            "date_to": "2024-12-31",
-            "to_retrieve": 1000,
-        }
-        """
         try:
             try:
                 obj_call_param = CallSearchParam.model_validate(data)
