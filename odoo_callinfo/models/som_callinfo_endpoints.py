@@ -282,23 +282,25 @@ class SomCallInfoEndpoint(models.AbstractModel):
             if som_dummy:
                 res = self.get_phonecall_categories_dummy()
             else:
-                cat_ids = self.env['product.category'].with_context(active_test=False).search([
-                    ('som_level', '=', som_category_level),
-                ])
+                cat_ids = self.env['product.category'].with_context(active_test=False).search([])
                 res = {}
                 cat_list = []
                 for cat_id in cat_ids:
                     color = cat_id._get_color_rgb(cat_id.som_family_color)['rgb']
+                    ancestors = cat_id._get_ancestors()[:-1]
                     keywords = (
-                        cat_id.with_context(lang="ca_ES").som_keyword_ids.mapped('name') if cat_id.som_keyword_ids else []
+                        cat_id.with_context(lang="ca_ES").som_keyword_ids.mapped('name')
+                        if cat_id.som_keyword_ids else []
                     )
                     cat_dict = {
                         "id": cat_id.id,
                         "keywords": keywords,
+                        "ancestors": ancestors,
                         "code": cat_id.som_full_code or '',
                         "name": cat_id.complete_name,
                         "color": color,
                         "enabled": cat_id.active,
+                        "is_final": cat_id.som_level == 3,
                     }
                     cat_list.append(cat_dict)
                 res['categories'] = cat_list

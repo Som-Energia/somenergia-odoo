@@ -87,7 +87,7 @@ class ProductCategory(models.Model):
     )
 
     som_ancestor_level0 = fields.Many2one(
-        comodel_name= 'product.category',
+        comodel_name='product.category',
         string='Ancestor Level 0',
         index=True,
         compute='_compute_level',
@@ -147,4 +147,3 @@ class ProductCategory(models.Model):
             else:
                 list_not_exists.append(id_category)
         return list_exists, list_not_exists
-
