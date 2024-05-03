@@ -348,9 +348,12 @@ class SomCallInfoEndpoint(models.AbstractModel):
 
         str_call_ts = fields.Datetime.to_string(obj_new_call.call_timestamp)
         str_comments = obj_new_call.comments.strip()
+        str_name = _("New call")
+        if str_comments:
+            str_name = str_comments.split("\n")[0][:50]
         new_dict = {
             'date': str_call_ts,
-            'name': str_comments.split("\n")[0][:50],
+            'name': str_name,
             'description': str_comments,
             'som_category_ids': cat_found,
             'som_operator': obj_new_call.operator,
