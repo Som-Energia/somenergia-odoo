@@ -316,8 +316,12 @@ class SomCallInfoEndpoint(models.AbstractModel):
         except Exception:
             return self._exception(traceback.format_exc())
 
-    def _get_operator_calls(self, operator, limit, date_from=None, date_to=None):
+    def _get_operator_calls(self, operator, limit=None, date_from=None, date_to=None):
         call_list = []
+        if not limit:
+            limit = eval(
+                self.env["ir.config_parameter"].sudo().get_param("som_callinfo_get_categories_limit", "20")
+            )
         call_ids = self.env['crm.phonecall']._get_calls_by_operator(
             operator, limit, date_from, date_to
         )
@@ -460,7 +464,6 @@ class SomCallInfoEndpoint(models.AbstractModel):
                 return result
         except Exception:
             return self._exception(traceback.format_exc())
-
 
     @api.model
     def get_operator_calls(self, data):
