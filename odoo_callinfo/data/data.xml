@@ -9,8 +9,8 @@
             <field name="key">som_callinfo_category_level</field>
             <field name="value">3</field>
         </record>
-        <record id="som_callinfo_get_categories_limit" model="ir.config_parameter">
-            <field name="key">som_callinfo_get_categories_limit</field>
+        <record id="som_callinfo_get_calls_default_limit" model="ir.config_parameter">
+            <field name="key">som_callinfo_get_calls_default_limit</field>
             <field name="value">20</field>
         </record>
     </data>

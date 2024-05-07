@@ -320,7 +320,7 @@ class SomCallInfoEndpoint(models.AbstractModel):
         call_list = []
         if not limit:
             limit = eval(
-                self.env["ir.config_parameter"].sudo().get_param("som_callinfo_get_categories_limit", "20")
+                self.env["ir.config_parameter"].sudo().get_param("som_callinfo_get_calls_default_limit", "20")
             )
         call_ids = self.env['crm.phonecall']._get_calls_by_operator(
             operator, limit, date_from, date_to
