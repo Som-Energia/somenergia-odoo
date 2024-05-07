@@ -23,7 +23,7 @@ class Category(
     name: str
     code: str
     keywords: List[str] = []
-    ancestors: List[int] = []
+    levels: List[str] = []
     # color: Optional[RgbColor] = None
     color: Optional[constr(
         pattern="^#([a-fA-F0-9]{3}){1,2}$",
@@ -31,7 +31,6 @@ class Category(
         strip_whitespace=True)
     ] = None
     enabled: bool = True
-    is_final: bool = False
 
 
 class Categories(pydantic.BaseModel):
@@ -58,8 +57,6 @@ class NewCall(pydantic.BaseModel):
 
     category_ids: List[int] = []
     comments: str = ""
-
-    to_retrieve: Optional[int] = None
 
     @field_validator('caller_vat')
     def validate_vat(cls, v):

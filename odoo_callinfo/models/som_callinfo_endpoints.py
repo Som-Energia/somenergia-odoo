@@ -282,12 +282,17 @@ class SomCallInfoEndpoint(models.AbstractModel):
             if som_dummy:
                 res = self.get_phonecall_categories_dummy()
             else:
-                cat_ids = self.env['product.category'].with_context(active_test=False).search([])
+                cat_ids = self.env['product.category'].with_context(active_test=False).search([
+                    ('som_level', '=', som_category_level),
+                ])
                 res = {}
                 cat_list = []
                 for cat_id in cat_ids:
                     color = cat_id._get_color_rgb(cat_id.som_family_color)['rgb']
-                    ancestors = cat_id._get_ancestors()[:-1]
+                    ids_ancestor = cat_id._get_ancestors()
+                    ancestors = self.env['product.category'].with_context(active_test=False).search([
+                        ('id', 'in', ids_ancestor)
+                    ]).mapped('name')
                     keywords = (
                         cat_id.with_context(lang="ca_ES").som_keyword_ids.mapped('name')
                         if cat_id.som_keyword_ids else []
@@ -295,12 +300,11 @@ class SomCallInfoEndpoint(models.AbstractModel):
                     cat_dict = {
                         "id": cat_id.id,
                         "keywords": keywords,
-                        "ancestors": ancestors,
+                        "levels": ancestors,
                         "code": cat_id.som_full_code or '',
                         "name": cat_id.complete_name,
                         "color": color,
                         "enabled": cat_id.active,
-                        "is_final": cat_id.som_level == 3,
                     }
                     cat_list.append(cat_dict)
                 res['categories'] = cat_list
@@ -312,8 +316,12 @@ class SomCallInfoEndpoint(models.AbstractModel):
         except Exception:
             return self._exception(traceback.format_exc())
 
-    def _get_operator_calls(self, operator, limit, date_from=None, date_to=None):
+    def _get_operator_calls(self, operator, limit=None, date_from=None, date_to=None):
         call_list = []
+        if not limit:
+            limit = eval(
+                self.env["ir.config_parameter"].sudo().get_param("som_callinfo_get_calls_default_limit", "20")
+            )
         call_ids = self.env['crm.phonecall']._get_calls_by_operator(
             operator, limit, date_from, date_to
         )
@@ -456,7 +464,6 @@ class SomCallInfoEndpoint(models.AbstractModel):
                 return result
         except Exception:
             return self._exception(traceback.format_exc())
-
 
     @api.model
     def get_operator_calls(self, data):

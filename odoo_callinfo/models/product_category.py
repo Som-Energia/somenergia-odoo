@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import api, fields, models, _, _lt
-from datetime import datetime, timezone, timedelta
+from odoo.exceptions import UserError, ValidationError
 from random import randint
 import json
 
@@ -39,7 +39,7 @@ class ProductCategory(models.Model):
         ancestors.append(self.id)
         return ancestors
 
-    @api.depends('som_code', 'parent_id.som_code', 'parent_id.som_full_code')
+    @api.depends('som_code', 'som_ancestor_level1.som_code', 'som_ancestor_level2.som_code')
     def _compute_full_code(self):
         for record in self:
             parents_list = record._get_ancestors()
@@ -147,3 +147,16 @@ class ProductCategory(models.Model):
             else:
                 list_not_exists.append(id_category)
         return list_exists, list_not_exists
+
+    @api.constrains('som_full_code')
+    def _check_som_full_code(self):
+        for record in self:
+            count = self.search_count(
+                [
+                    ("id", "!=", record.id),
+                    ("som_full_code", "!=", ""),
+                    ("som_full_code", "=", record.som_full_code),
+                ]
+            )
+            if count:
+                raise ValidationError(_('The full code must be unique.'))
