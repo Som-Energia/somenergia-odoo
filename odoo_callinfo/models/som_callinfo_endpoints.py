@@ -390,7 +390,7 @@ class SomCallInfoEndpoint(models.AbstractModel):
                 return self.create_call_and_get_operator_calls_dummy(data)
             else:
                 created_id = self._create_call(obj_new_call)
-                call_list = self._get_operator_calls(obj_new_call.operator, obj_new_call.to_retrieve)
+                call_list = self._get_operator_calls(obj_new_call.operator)
 
                 result = {
                     'updated_id': created_id.id,
@@ -451,7 +451,7 @@ class SomCallInfoEndpoint(models.AbstractModel):
                 return self.update_call_and_get_operator_calls_dummy(data)
             else:
                 updated_id = self._update_call(data, obj_call)
-                call_list = self._get_operator_calls(updated_id.som_operator, obj_call.to_retrieve)
+                call_list = self._get_operator_calls(updated_id.som_operator)
 
                 result = {
                     'updated_id': updated_id.id,
