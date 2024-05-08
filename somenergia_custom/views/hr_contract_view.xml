@@ -1,9 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="hr_contract.action_hr_contract" model="ir.actions.act_window">
+        <field name="view_mode">tree,kanban,calendar,form,activity</field>
+    </record>
+
     <record id="som_hr_menu_contracts" model="ir.ui.menu">
         <field name="name">Contracts</field>
         <field name="action" ref="hr_contract.action_hr_contract"/>
         <field name="parent_id" ref="hr.menu_hr_employee_payroll"/>
         <field name="sequence">10</field>
     </record>
+
+    <record id="som_view_hr_contract_calendar" model="ir.ui.view">
+        <field name="model">hr.contract</field>
+        <field name="arch" type="xml">
+            <calendar
+                string="Contracts"
+                date_start="date_start"
+                color="employee_id"
+                quick_add="false"
+                scales="month,year"
+            >
+                <field name="employee_id" />
+                <field name="date_start" />
+                <field name="date_end" />
+                <field name="pnt_grade_id" />
+                <field name="pnt_rank_id" />
+            </calendar>
+        </field>
+    </record>
+
+    <record id="som_view_hr_contract_search" model="ir.ui.view">
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_search" />
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='not_running']" position="after">
+                <filter name="date_start" string="Date start" date="date_start"/>
+                <filter name="date_end" string="Date end" date="date_end"/>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>
