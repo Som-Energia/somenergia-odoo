@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="som_hr_menu_contracts" model="ir.ui.menu">
+        <field name="name">Contracts</field>
+        <field name="action" ref="hr_contract.action_hr_contract"/>
+        <field name="parent_id" ref="hr.menu_hr_employee_payroll"/>
+        <field name="sequence">10</field>
+    </record>
+</odoo>
