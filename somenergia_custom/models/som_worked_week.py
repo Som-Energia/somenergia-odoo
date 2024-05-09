@@ -3,6 +3,9 @@ import logging
 
 from odoo import api, fields, models, tools, _
 from datetime import datetime, timedelta
+from odoo.addons.somenergia_custom.pydantic.pydantic_models import WorkRegister
+from pydantic import ValidationError
+import traceback
 
 _logger = logging.getLogger(__name__)
 
@@ -164,3 +167,47 @@ class SomWorkedWeek(models.Model):
 
             except Exception as e:
                 _logger.exception("Worked weeks reminder - Unable to send email.")
+
+    def _exception(self, e):
+        error_msg = str(e)
+        res = {
+            "error": error_msg,
+        }
+        _logger.exception(str(res))
+        return res
+
+    @api.model
+    def create_worked_week_register(self, data):
+        try:
+            try:
+                obj_wr = WorkRegister.model_validate(data)
+            except ValidationError as e:
+                return self._exception(e)
+            ww_id = self.env['som.worked.week'].search([('id', '=', obj_wr.worked_week_id)])
+            if not ww_id:
+                return self._exception('The worked week does not exist')
+            area_project_id = self.env['project.project'].search([('id', '=', obj_wr.area_project_id)])
+            if not area_project_id:
+                return self._exception('The area project does not exist')
+            if obj_wr.additional_project_id:
+                additional_project_id = self.env['project.project'].search([('id', '=', obj_wr.additional_project_id)])
+                if not additional_project_id:
+                    return self._exception('The additional project does not exist')
+
+            ww_date = ww_id.som_week_id.som_cw_date
+            dic_create = {
+                "date": fields.Date.to_string(ww_date),
+                "som_worked_week_id": ww_id.id,
+                "som_week_id": ww_id.som_week_id.id,
+                "som_is_cumulative": False,
+                "employee_id": ww_id.som_employee_id.id,
+                "project_id": obj_wr.area_project_id,
+                "name": obj_wr.description,
+                "unit_amount": obj_wr.hours,
+            }
+            if obj_wr.additional_project_id:
+                dic_create['som_additional_project_id'] = obj_wr.additional_project_id
+            timesheet_id = self.env['account.analytic.line'].create(dic_create)
+            return {'timesheet_id': timesheet_id.ids}
+        except ValidationError as e:
+            return self._exception(traceback.format_exc())
