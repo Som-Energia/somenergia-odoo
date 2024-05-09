@@ -7,6 +7,8 @@ class CrmPhonecall(models.Model):
     _name = 'crm.phonecall'
     _inherit = ['crm.phonecall', 'som.callinfo.endpoint']
 
+    direction = fields.Selection(default="in")
+
     som_operator = fields.Char(
         string="Operator",
     )
