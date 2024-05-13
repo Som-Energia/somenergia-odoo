@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-09 14:00+0000\n"
-"PO-Revision-Date: 2024-05-09 14:00+0000\n"
+"POT-Creation-Date: 2024-05-11 05:21+0000\n"
+"PO-Revision-Date: 2024-05-11 05:21+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -85,26 +85,6 @@ msgid "Caller name"
 msgstr "Persona"
 
 #. module: odoo_callinfo
-#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__cat_1_fullcode
-msgid "Cat1 FullCode"
-msgstr "Cat1 Codi Complet"
-
-#. module: odoo_callinfo
-#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__cat_1_name
-msgid "Cat1 Name"
-msgstr "Cat1"
-
-#. module: odoo_callinfo
-#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__cat_2_fullcode
-msgid "Cat2 FullCode"
-msgstr "Cat2 Codi Complet"
-
-#. module: odoo_callinfo
-#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__cat_2_name
-msgid "Cat2 Name"
-msgstr "Cat2"
-
-#. module: odoo_callinfo
 #: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall__som_category_ids
 #: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_crm_case_phonecalls_filter
 msgid "Categories"
@@ -116,24 +96,14 @@ msgid "Categorized"
 msgstr "Categoritzat"
 
 #. module: odoo_callinfo
-#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_report_crm_phonecall_filter
-msgid "Category1 full code"
-msgstr "Categoria#1 Codi Complet"
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__category_name
+msgid "Category"
+msgstr "Categoria"
 
 #. module: odoo_callinfo
-#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_report_crm_phonecall_filter
-msgid "Category1 name"
-msgstr "Categoria#1"
-
-#. module: odoo_callinfo
-#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_report_crm_phonecall_filter
-msgid "Category2 full code"
-msgstr "Categoria#2 Codi Complet"
-
-#. module: odoo_callinfo
-#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_report_crm_phonecall_filter
-msgid "Category2 name"
-msgstr "Categoria#2"
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__category_fullcode
+msgid "Category code"
+msgstr "Codi Categoria"
 
 #. module: odoo_callinfo
 #: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_crm_case_inbound_phone_tree_view
@@ -306,6 +276,11 @@ msgstr ""
 #, python-format
 msgid "The full code must be unique."
 msgstr "El codi complet ha de ser únic."
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__total_calls
+msgid "Total calls"
+msgstr "Total trucades"
 
 #. module: odoo_callinfo
 #: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_crm_case_phonecalls_filter

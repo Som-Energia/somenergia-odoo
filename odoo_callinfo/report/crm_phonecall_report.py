@@ -18,70 +18,58 @@ class CrmPhonecallReport(models.Model):
     _inherit = "crm.phonecall.report"
 
     som_operator = fields.Char(
-        string="Operator",
+        string="Operator", readonly=True
     )
     som_caller_name = fields.Char(
-        string="Caller name",
+        string="Caller name", readonly=True
     )
     som_contract_name = fields.Char(
-        string="Contract name",
+        string="Contract name", readonly=True
     )
 
-    cat_1_name = fields.Char(
-        string="Cat1 Name",
+    category_name = fields.Char(
+        string="Category", readonly=True
     )
-    cat_1_fullcode = fields.Char(
-        string="Cat1 FullCode",
+    category_fullcode = fields.Char(
+        string="Category code", readonly=True
     )
 
-    cat_2_name = fields.Char(
-        string="Cat2 Name",
-    )
-    cat_2_fullcode = fields.Char(
-        string="Cat2 FullCode",
+    total_calls = fields.Integer(
+        string="Total calls", readonly=True,
+        group_operator="max",
     )
 
     def _select(self):
-        select_str = super()._select()
-        select_str += """
-                    , c.som_operator
-                    , c.som_caller_name
-                    , c.som_contract_name
-                    , sq_cat_1.complete_name as cat_1_name
-                    , sq_cat_1.som_full_code as cat_1_fullcode
-                    , sq_cat_2.complete_name as cat_2_name
-                    , sq_cat_2.som_full_code as cat_2_fullcode
+        # select_str = super()._select()
+        select_str = """
+                select
+                    c.id,
+                    c.date_open AS opening_date,
+                    c.date_closed,
+                    c.state,
+                    c.user_id,
+                    c.team_id,
+                    c.partner_id,
+                    c.duration,
+                    c.company_id,
+                    c.priority,
+                    1 AS nbr_cases,
+                    c.create_date,
+                    EXTRACT(epoch FROM c.date_closed - c.create_date) / (3600 * 24)::numeric AS delay_close,
+                    EXTRACT(epoch FROM c.date_open - c.create_date) / (3600 * 24)::numeric AS delay_open,
+                    c.som_operator,
+                    c.som_caller_name,
+                    c.som_contract_name,
+                    pc.complete_name as category_name,
+                    pc.som_full_code as category_fullcode,
+                    (select count(*) from crm_phonecall) as total_calls
                     """
         return select_str
 
     def _from(self):
         select_str = super()._from()
         select_str += """
-                    left join 
-                   (
-                    select * from 
-                    (
-                        select 
-                        ROW_NUMBER () OVER (
-                            PARTITION BY sccr.call_id 
-                        ) as rn	
-                        ,sccr.*,pc.complete_name, pc.som_full_code
-                        from som_call_category_rel sccr
-                        left join product_category pc ON pc.id = sccr.category_id 
-                    )sq where rn = 1
-                   ) as sq_cat_1 on sq_cat_1.call_id = c.id 
-                   left join
-                   (
-                    select * from 
-                    (
-                        select 
-                        ROW_NUMBER () OVER (
-                            PARTITION BY sccr.call_id 
-                        ) as rn	
-                        ,sccr.*,pc.complete_name, pc.som_full_code
-                        from som_call_category_rel sccr
-                        left join product_category pc ON pc.id = sccr.category_id 
-                    )sq where rn = 2
-                   ) as sq_cat_2 on sq_cat_2.call_id = c.id
+                    left join som_call_category_rel sccr on c.id = sccr.call_id
+                    left join product_category pc on pc.id = sccr.category_id
                     """
         return select_str

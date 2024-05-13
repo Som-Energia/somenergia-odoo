@@ -7,12 +7,10 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='team_id']" position="replace">
                 <field name="som_operator" type="row"/>
-<!--                <field name="som_caller_name" type="row"/>-->
-<!--                <field name="som_contract_name" type="row"/>-->
             </xpath>
-            <xpath expr="//field[@name='duration']" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </xpath>
+<!--            <xpath expr="//field[@name='duration']" position="attributes">-->
+<!--                <attribute name="invisible">1</attribute>-->
+<!--            </xpath>-->
         </field>
     </record>
 
@@ -24,19 +22,15 @@
                 <field name="som_operator"/>
                 <field name="som_caller_name"/>
                 <field name="som_contract_name"/>
-                <field name="cat_1_name" string="Category1 name"/>
-                <field name="cat_2_name" string="Category2 name"/>
-                <field name="cat_1_fullcode" string="Category1 full code"/>
-                <field name="cat_2_fullcode" string="Category2 full code"/>
+                <field name="category_name"/>
+                <field name="category_fullcode"/>
             </xpath>
             <xpath expr="//filter[@name='status']" position="after">
                 <filter context="{'group_by':'som_operator'}" name="som_operator" string="Operator"/>
                 <filter context="{'group_by':'som_caller_name'}" name="som_caller_name" string="Caller name"/>
                 <filter context="{'group_by':'som_contract_name'}" name="som_contract_name" string="Contract name"/>
-                <filter context="{'group_by':'cat_1_name'}" name="cat_1_name" string="Category1 name"/>
-                <filter context="{'group_by':'cat_1_fullcode'}" name="cat_1_fullcode" string="Category1 full code"/>
-                <filter context="{'group_by':'cat_2_name'}" name="cat_2_name" string="Category2 name"/>
-                <filter context="{'group_by':'cat_2_fullcode'}" name="cat_2_fullcode" string="Category2 full code"/>
+                <filter context="{'group_by':'category_name'}" name="category_name"/>
+                <filter context="{'group_by':'category_fullcode'}" name="category_fullcode"/>
             </xpath>
         </field>
     </record>
