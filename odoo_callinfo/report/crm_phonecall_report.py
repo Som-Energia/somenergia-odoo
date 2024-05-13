@@ -39,6 +39,27 @@ class CrmPhonecallReport(models.Model):
         group_operator="max",
     )
 
+    category_l0_name = fields.Char(
+        string="Category Level0", readonly=True
+    )
+    category_l0_fullcode = fields.Char(
+        string="Category Level0 code", readonly=True
+    )
+
+    category_l1_name = fields.Char(
+        string="Category Level1", readonly=True
+    )
+    category_l1_fullcode = fields.Char(
+        string="Category Level1 code", readonly=True
+    )
+
+    category_l2_name = fields.Char(
+        string="Category Level2", readonly=True
+    )
+    category_l2_fullcode = fields.Char(
+        string="Category Level2 code", readonly=True
+    )
+
     def _select(self):
         # select_str = super()._select()
         select_str = """
@@ -62,7 +83,13 @@ class CrmPhonecallReport(models.Model):
                     c.som_contract_name,
                     pc.complete_name as category_name,
                     pc.som_full_code as category_fullcode,
-                    (select count(*) from crm_phonecall) as total_calls
+                    (select count(*) from crm_phonecall) as total_calls,
+                    pc_l0.complete_name as category_l0_name,
+                    pc_l0.som_full_code as category_l0_fullcode,
+                    pc_l1.complete_name as category_l1_name,
+                    pc_l1.som_full_code as category_l1_fullcode,
+                    pc_l2.complete_name as category_l2_name,
+                    pc_l2.som_full_code as category_l2_fullcode
                     """
         return select_str
 
@@ -71,5 +98,8 @@ class CrmPhonecallReport(models.Model):
         select_str += """
                     left join som_call_category_rel sccr on c.id = sccr.call_id
                     left join product_category pc on pc.id = sccr.category_id
+                    left join product_category pc_l0 on pc.som_ancestor_level0 = pc_l0.id
+                    left join product_category pc_l1 on pc.som_ancestor_level1 = pc_l1.id
+                    left join product_category pc_l2 on pc.som_ancestor_level2 = pc_l2.id
                     """
         return select_str
