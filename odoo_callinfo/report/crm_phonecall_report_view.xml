@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="som_view_report_crm_phonecall_pivot" model="ir.ui.view">
+        <field name="model">crm.phonecall.report</field>
+        <field name="inherit_id" ref="crm_phonecall.view_report_crm_phonecall_pivot" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='team_id']" position="replace">
+                <field name="som_operator" type="row"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="som_view_report_crm_phonecall_filter" model="ir.ui.view">
+        <field name="model">crm.phonecall.report</field>
+        <field name="inherit_id" ref="crm_phonecall.view_report_crm_phonecall_filter" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="som_operator"/>
+                <field name="som_caller_name"/>
+                <field name="som_contract_name"/>
+                <field name="category_name"/>
+                <field name="category_fullcode"/>
+                <field name="category_l0_name"/>
+                <field name="category_l0_fullcode"/>
+                <field name="category_l1_name"/>
+                <field name="category_l1_fullcode"/>
+                <field name="category_l2_name"/>
+                <field name="category_l2_fullcode"/>
+            </xpath>
+            <xpath expr="//filter[@name='status']" position="after">
+                <filter context="{'group_by':'som_operator'}" name="som_operator" string="Operator"/>
+                <filter context="{'group_by':'som_caller_name'}" name="som_caller_name" string="Caller name"/>
+                <filter context="{'group_by':'som_contract_name'}" name="som_contract_name" string="Contract name"/>
+                <filter context="{'group_by':'category_name'}" name="category_name"/>
+                <filter context="{'group_by':'category_fullcode'}" name="category_fullcode"/>
+                <filter context="{'group_by':'category_l0_name'}" name="category_l0_name"/>
+                <filter context="{'group_by':'category_l0_fullcode'}" name="category_l0_fullcode"/>
+                <filter context="{'group_by':'category_l1_name'}" name="category_l1_name"/>
+                <filter context="{'group_by':'category_l1_fullcode'}" name="category_l1_fullcode"/>
+                <filter context="{'group_by':'category_l2_name'}" name="category_l2_name"/>
+                <filter context="{'group_by':'category_l2_fullcode'}" name="category_l2_fullcode"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

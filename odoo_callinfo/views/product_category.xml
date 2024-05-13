@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Product category form view -->
+    <record id="product_category_form_view" model="ir.ui.view">
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class='oe_title']" position="before">
+                <widget name="web_ribbon" title="Archived" bg_color="bg-danger"
+                            attrs="{'invisible': [('active', '=', True)]}"/>
+            </xpath>
+            <xpath expr="//div[@class='oe_title']" position="inside">
+                <label for="parent_id" string="Parent Category"/>
+                <field name="parent_id" col="4"/>
+            </xpath>
+            <xpath expr="//group[@name='first']" position="replace">
+                <group name="first" col="4">
+                    <group string="Data" name="first_1" col="2">
+                        <field name="som_code"/>
+                        <field name="som_full_code"/>
+                        <field name="som_family_color"
+                               readonly="1"
+                               attrs="{'invisible':[('som_ancestor_level1', '=', False)]}"
+                               widget="color_picker"/>
+                        <field name="som_color"
+                               attrs="{'invisible':[('som_ancestor_level1', '!=', False)]}"
+                               widget="color_picker"/>
+                        <field name="som_keyword_ids" options="{'color_field': 'color'}" widget="many2many_tags"/>
+                        <field name="active" widget="boolean_toggle"/>
+                    </group>
+                    <group string="Hierarchy" name="first_2" col="2">
+                        <field name="som_level" readonly="1"/>
+                        <field name="som_ancestor_level0"/>
+                        <field name="som_ancestor_level1"/>
+                        <field name="som_ancestor_level2"/>
+                        <field name="som_ancestor_level3"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_category_list_view" model="ir.ui.view">
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_list_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='display_name']" position="after">
+                <field name="complete_name"/>
+                <field name="som_code"/>
+                <field name="som_full_code" readonly="1"/>
+                <field name="som_level"/>
+                <field name="som_color" widget="color_picker" invisible="1"/>
+                <field name="som_family_color" widget="color_picker"/>
+                <field name="som_keyword_ids" options="{'color_field': 'color'}" widget="many2many_tags"/>
+            </xpath>
+            <xpath expr="//field[@name='display_name']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="product_category_search_view">
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_search_view" />
+        <field name="arch" type="xml">
+            <field name="parent_id" position="after">
+                <field name="som_code"/>
+                <field name="som_full_code"/>
+                <field name="som_level"/>
+                <field name="active"/>
+                <field name="som_keyword_ids"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <filter name="level0" string="Level 0" domain="[('som_level', '=', 0)]"/>
+                <filter name="level1" string="Level 1" domain="[('som_level', '=', 1)]"/>
+                <filter name="level2" string="Level 2" domain="[('som_level', '=', 2)]"/>
+                <filter name="level3" string="Level 3" domain="[('som_level', '=', 3)]"/>
+                <separator/>
+                <group expand="1" string="Group By">
+                    <filter string="Ancestor Level 0" name="groupby_level0" domain="[]" context="{'group_by': 'som_ancestor_level0'}"/>
+                    <filter string="Ancestor Level 1" name="groupby_level1" domain="[]" context="{'group_by': 'som_ancestor_level1'}"/>
+                    <filter string="Ancestor Level 2" name="groupby_level2" domain="[]" context="{'group_by': 'som_ancestor_level2'}"/>
+                    <filter string="Ancestor Level 3" name="groupby_level3" domain="[]" context="{'group_by': 'som_ancestor_level3'}"/>
+                </group>
+            </field>
+        </field>
+    </record>
+
+</odoo>

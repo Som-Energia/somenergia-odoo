@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="som_crm_case_inbound_phone_tree_view" model="ir.ui.view">
+        <field name="model">crm.phonecall</field>
+        <field name="inherit_id" ref="crm_phonecall.crm_case_inbound_phone_tree_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="editable" />
+            </xpath>
+            <xpath expr="//field[@name='campaign_id']" position="before">
+                <field name="som_category_ids" options="{'color_field': 'som_family_color'}" widget="many2many_tags"/>
+                <field name="description"/>
+                <field name="som_operator"/>
+                <field name="som_pbx_call_id"/>
+                <field name="som_phone"/>
+                <field name="som_caller_erp_id"/>
+                <field name="som_caller_name"/>
+                <field name="som_caller_vat"/>
+                <field name="som_contract_erp_id"/>
+                <field name="som_contract_name"/>
+                <field name="som_contract_address"/>
+            </xpath>
+            <xpath expr="//field[@name='user_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='direction']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='campaign_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='medium_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='source_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_make_meeting']" position="before">
+                <button icon="fa-check" name="do_action" string="Check" type="object"/>
+            </xpath>
+            <xpath expr="//button[@name='action_make_meeting']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_button_convert2opportunity']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="som_crm_case_phone_form_view" model="ir.ui.view">
+        <field name="model">crm.phonecall</field>
+        <field name="inherit_id" ref="crm_phonecall.crm_case_phone_form_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_phone']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_phone']" position="before">
+                <field name="som_phone"/>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="before">
+                <field name="som_category_ids" options="{'color_field': 'som_family_color'}" widget="many2many_tags"/>
+                <field name="som_operator"/>
+                <field name="som_pbx_call_id"/>
+            </xpath>
+            <xpath expr="//field[@name='user_id']" position="before">
+                <field name="som_caller_erp_id"/>
+                <field name="som_caller_name"/>
+                <field name="som_caller_vat"/>
+                <field name="som_contract_erp_id"/>
+                <field name="som_contract_name"/>
+                <field name="som_contract_address"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="crm_phonecall.menu_crm_case_phonecall-act" model="ir.ui.menu">
+        <field name="name">Keywords</field>
+    </record>
+
+    <record id="crm_phonecall.crm_case_categ_phone_incoming0" model="ir.actions.act_window">
+        <field name="context">{}</field>
+    </record>
+
+    <record id="som_view_crm_case_phonecalls_filter" model="ir.ui.view">
+        <field name="model">crm.phonecall</field>
+        <field name="inherit_id" ref="crm_phonecall.view_crm_case_phonecalls_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="som_category_ids"/>
+                <field name="description"/>
+                <field name="som_operator"/>
+                <field name="som_pbx_call_id"/>
+                <field name="som_phone"/>
+                <field name="som_caller_erp_id"/>
+                <field name="som_caller_name"/>
+                <field name="som_caller_vat"/>
+                <field name="som_contract_erp_id"/>
+                <field name="som_contract_name"/>
+                <field name="som_contract_address"/>
+            </xpath>
+            <xpath expr="//filter[@name='my_phonecalls']" position="before">
+                <filter domain="[('som_category_ids', '!=', False)]" name="categorized" string="Categorized"/>
+                <filter domain="[('som_category_ids', '=', False)]" name="no_categorized" string="No categorized"/>
+                <filter domain="[('som_caller_erp_id', '!=', False)]" name="with_erp_contact" string="With ERP file"/>
+                <filter domain="[('som_caller_erp_id', '=', False)]" name="without_erp_contact" string="Without ERP file"/>
+                <filter domain="[('som_contract_erp_id', '!=', False)]" name="with_erp_contract" string="With ERP contract"/>
+                <filter domain="[('som_contract_erp_id', '=', False)]" name="with_erp_contract" string="Without ERP contract"/>
+                <separator/>
+            </xpath>
+            <xpath expr="//filter[@name='groupby_partner']" position="before">
+                <filter string="Categories" name="groupby_som_category_ids" context="{'group_by':'som_category_ids'}"/>
+                <filter string="Operator" name="groupby_som_operator" context="{'group_by':'som_operator'}"/>
+            </xpath>
+            <xpath expr="//filter[@name='groupby_month']" position="replace">
+                <filter string="Date" name="groupby_date" context="{'group_by':'date'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <menuitem
+        action="product.product_category_action_form"
+        id="som_menu_product_category"
+        name="CallInfo Categories"
+        parent="crm_phonecall.menu_crm_config_phonecall"
+        sequence="0"
+    />
+
+</odoo>

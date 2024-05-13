@@ -1,0 +1,40 @@
+{
+   "categories": [
+        {
+            "id": 1,
+            "keywords": [
+                "serveis",
+                "comer",
+                "instal·lacions"
+            ],
+            "code": "SC_EI_PR",
+            "name": "Serveis de Comercialització - Estat instal·lacions - Procediment",
+            "color": "#30C381",
+            "enabled": true
+        },
+        {
+            "id": 2,
+            "keywords": [
+                "serveis",
+                "comer",
+                "factura"
+            ],
+            "code": "SC_FA_TR",
+            "name": "Serveis de Comercialització - Facturació - Transversal",
+            "color": "#F06050",
+            "enabled": true
+        },
+        {
+            "id": 3,
+            "keywords": [
+                "serveis",
+                "comer",
+                "generation"
+            ],
+            "code": "SC_FA_GE",
+            "name": "Serveis de Comercialització - Facturació - Generation kWh",
+            "color": "#F7CD1F",
+            "enabled": false
+        }
+    ]
+}

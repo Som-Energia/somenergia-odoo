@@ -1,0 +1,333 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* odoo_callinfo
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-13 05:36+0000\n"
+"PO-Revision-Date: 2024-05-13 05:36+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_product_category__active
+msgid "Active"
+msgstr "Actiu"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_product_category__som_ancestor_level0
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_search_view
+msgid "Ancestor Level 0"
+msgstr "Ascendent Nivell 0"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_product_category__som_ancestor_level1
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_search_view
+msgid "Ancestor Level 1"
+msgstr "Ascendent Nivell 1"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_product_category__som_ancestor_level2
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_search_view
+msgid "Ancestor Level 2"
+msgstr "Ascendent Nivell 2"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_product_category__som_ancestor_level3
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_search_view
+msgid "Ancestor Level 3"
+msgstr "Ascendent Nivell 3"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_form_view
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_search_view
+msgid "Archived"
+msgstr "Arxivat"
+
+#. module: odoo_callinfo
+#. odoo-python
+#: code:addons/odoo_callinfo/models/som_callinfo_endpoints.py:0
+#, python-format
+msgid "Call id {} does not exist!!!"
+msgstr ""
+
+#. module: odoo_callinfo
+#: model:ir.module.category,name:odoo_callinfo.som_callinfo
+msgid "CallInfo"
+msgstr ""
+
+#. module: odoo_callinfo
+#: model:ir.ui.menu,name:odoo_callinfo.som_menu_product_category
+msgid "CallInfo Categories"
+msgstr "Categories CallInfo"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall__som_caller_erp_id
+msgid "Caller ERP Id"
+msgstr "Id fitxa persona ERP"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall__som_caller_vat
+msgid "Caller VAT"
+msgstr "NIF/CIF persona"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall__som_caller_name
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__som_caller_name
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_report_crm_phonecall_filter
+msgid "Caller name"
+msgstr "Persona"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall__som_category_ids
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_crm_case_phonecalls_filter
+msgid "Categories"
+msgstr ""
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_crm_case_phonecalls_filter
+msgid "Categorized"
+msgstr "Categoritzat"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__category_name
+msgid "Category"
+msgstr "Categoria"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__category_l0_name
+msgid "Category Level0"
+msgstr "Categoria N0"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__category_l0_fullcode
+msgid "Category Level0 code"
+msgstr "Categoria N0 Codi"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__category_l1_name
+msgid "Category Level1"
+msgstr "Categoria N1"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__category_l1_fullcode
+msgid "Category Level1 code"
+msgstr "Categoria N1 Codi"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__category_l2_name
+msgid "Category Level2"
+msgstr "Categoria N2"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__category_l2_fullcode
+msgid "Category Level2 code"
+msgstr "Categoria N2 Codi"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__category_fullcode
+msgid "Category code"
+msgstr "Categoria Codi"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_crm_case_inbound_phone_tree_view
+msgid "Check"
+msgstr ""
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_product_category__som_code
+msgid "Code"
+msgstr "Codi"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_product_category__som_color
+msgid "Color"
+msgstr ""
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall__som_contract_erp_id
+msgid "Contract ERP Id"
+msgstr "Id contracte ERP"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall__som_contract_address
+msgid "Contract address"
+msgstr "Adreça contracte"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall__som_contract_name
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__som_contract_name
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_report_crm_phonecall_filter
+msgid "Contract name"
+msgstr "Contracte"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_form_view
+msgid "Data"
+msgstr ""
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_crm_case_phonecalls_filter
+msgid "Date"
+msgstr "Data"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall__direction
+msgid "Direction"
+msgstr "Direcció"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_product_category__som_family_color
+msgid "Family color"
+msgstr "Color agrupant"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_product_category__som_full_code
+msgid "Full code"
+msgstr "Codi complet"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_search_view
+msgid "Group By"
+msgstr "Agrupat per"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_form_view
+msgid "Hierarchy"
+msgstr "Jerarquia"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_product_category__som_keyword_ids
+msgid "Keywords"
+msgstr "Paraules clau"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_product_category__som_level
+msgid "Level"
+msgstr "Nivell"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_search_view
+msgid "Level 0"
+msgstr "Nivell 0"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_search_view
+msgid "Level 1"
+msgstr "Nivell 1"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_search_view
+msgid "Level 2"
+msgstr "Nivell 2"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_search_view
+msgid "Level 3"
+msgstr "Nivell 3"
+
+#. module: odoo_callinfo
+#. odoo-python
+#: code:addons/odoo_callinfo/models/som_callinfo_endpoints.py:0
+#: code:addons/odoo_callinfo/models/som_callinfo_endpoints.py:0
+#, python-format
+msgid "List of not found categories {}"
+msgstr ""
+
+#. module: odoo_callinfo
+#: model:res.groups,name:odoo_callinfo.som_group_callinfo_manager
+msgid "Manager"
+msgstr ""
+
+#. module: odoo_callinfo
+#. odoo-python
+#: code:addons/odoo_callinfo/models/som_callinfo_endpoints.py:0
+#, python-format
+msgid "New call"
+msgstr "Nova"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_crm_case_phonecalls_filter
+msgid "No categorized"
+msgstr "Sense categoritzar"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall__som_operator
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__som_operator
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_crm_case_phonecalls_filter
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_report_crm_phonecall_filter
+msgid "Operator"
+msgstr "Operadora"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.product_category_form_view
+msgid "Parent Category"
+msgstr "Categoria pare"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall__som_pbx_call_id
+msgid "Pbx call id"
+msgstr "Id centraleta"
+
+#. module: odoo_callinfo
+#: model:ir.model,name:odoo_callinfo.model_crm_phonecall_report
+msgid "Phone calls by user"
+msgstr "Trucades per usuari/ària"
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall__som_phone
+msgid "Phone number"
+msgstr "Telèfon"
+
+#. module: odoo_callinfo
+#: model:ir.model,name:odoo_callinfo.model_crm_phonecall
+msgid "Phonecall"
+msgstr "Trucada"
+
+#. module: odoo_callinfo
+#: model:ir.model,name:odoo_callinfo.model_product_category
+msgid "Product Category"
+msgstr "Categoria del producte"
+
+#. module: odoo_callinfo
+#: model:ir.model,name:odoo_callinfo.model_som_callinfo_endpoint
+msgid "Som CallInfo Endpoint"
+msgstr ""
+
+#. module: odoo_callinfo
+#. odoo-python
+#: code:addons/odoo_callinfo/models/product_category.py:0
+#, python-format
+msgid "The full code must be unique."
+msgstr "El codi complet ha de ser únic."
+
+#. module: odoo_callinfo
+#: model:ir.model.fields,field_description:odoo_callinfo.field_crm_phonecall_report__total_calls
+msgid "Total calls"
+msgstr "Total trucades"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_crm_case_phonecalls_filter
+msgid "With ERP contract"
+msgstr "Amb contracte ERP"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_crm_case_phonecalls_filter
+msgid "With ERP file"
+msgstr "Amb fitxa ERP"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_crm_case_phonecalls_filter
+msgid "Without ERP contract"
+msgstr "Sense contracte ERP"
+
+#. module: odoo_callinfo
+#: model_terms:ir.ui.view,arch_db:odoo_callinfo.som_view_crm_case_phonecalls_filter
+msgid "Without ERP file"
+msgstr "Sense fitxa ERP"
