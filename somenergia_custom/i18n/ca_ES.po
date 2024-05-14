@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-22 05:41+0000\n"
-"PO-Revision-Date: 2024-04-22 05:41+0000\n"
+"POT-Creation-Date: 2024-05-08 14:40+0000\n"
+"PO-Revision-Date: 2024-05-08 14:40+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -244,6 +244,16 @@ msgid "Comments"
 msgstr "Comentaris"
 
 #. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_hr_contract
+msgid "Contract"
+msgstr "Contracte d'empleat"
+
+#. module: somenergia_custom
+#: model:ir.ui.menu,name:somenergia_custom.som_hr_menu_contracts
+msgid "Contracts"
+msgstr "Gestió Contractes"
+
+#. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_absence__create_uid
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__create_uid
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__create_uid
@@ -400,6 +410,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_leave__som_today_attendance_text
 msgid "Jornada teòrica"
 msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract__kanban_state
+msgid "Kanban State"
+msgstr "Estat kanban"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_absence____last_update
@@ -898,3 +913,8 @@ msgstr "[SOM-TREBALLAT] Treballat"
 #: model:ir.model,name:somenergia_custom.model_hr_attendance_absence
 msgid "hr.attendance.absence"
 msgstr ""
+
+#. module: hr_contract
+#: model:ir.ui.menu,name:hr_contract.hr_menu_contract_history
+msgid "Contracts"
+msgstr "Històric Contractes"

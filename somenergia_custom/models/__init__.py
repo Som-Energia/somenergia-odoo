@@ -12,3 +12,4 @@ from . import hr_employee
 from . import hr_attendance_overtime
 from . import ir_ui_menu
 from . import project_task
+from . import hr_contract
