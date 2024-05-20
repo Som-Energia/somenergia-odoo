@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="som_hr_contract_import_form" model="ir.ui.view">
+        <field name="model">hr.contract.import.wizard</field>
+        <field name="arch"  type="xml">
+            <form string="Imports contracts">
+                <group name="main" >
+                    <field name="som_xls" />
+                </group>
+                <footer>
+                    <button name="do_import" type="object" string="Import" class="btn-primary"/>
+                    <button special="cancel" string="Cancel" class="oe_link"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="som_hr_contract_import_action" model="ir.actions.act_window">
+        <field name="name">Import contracts</field>
+        <field name="res_model">hr.contract.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_hr_contract_import"
+              name="Import contracts"
+              parent="hr_contract.menu_human_resources_configuration_contract"
+              action="som_hr_contract_import_action"/>
+
+</odoo>

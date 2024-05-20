@@ -67,4 +67,14 @@
         </field>
     </record>
 
+    <record id="som_view_employee_form" model="ir.ui.view">
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <field name="job_id" position="after">
+                <field name="som_recruitment_date"/>
+            </field>
+        </field>
+    </record>
+
 </odoo>
