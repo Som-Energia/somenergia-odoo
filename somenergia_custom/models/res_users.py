@@ -31,3 +31,16 @@ class ResUsers(models.Model):
             "limit": 80,
             "context": {"default_employee_ref": self.employee_id.id},
         }
+
+    def contract_view(self):
+        self.ensure_one()
+        return {
+            "name": _("Contracts"),
+            "domain": [("employee_id", "=", self.employee_id.id)],
+            "res_model": "hr.contract",
+            "type": "ir.actions.act_window",
+            "view_mode": "tree,form",
+            "view_type": "form",
+            "limit": 80,
+            "context": {"default_employee_id": self.employee_id.id},
+        }

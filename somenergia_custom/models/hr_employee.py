@@ -69,6 +69,10 @@ class HrEmployeeBase(models.AbstractModel):
         search='_search_present_employee'
     )
 
+    som_recruitment_date = fields.Date(
+        string="Recruitment date",
+    )
+
 
 class HrEmployee(models.Model):
     _inherit = "hr.employee"
@@ -99,5 +103,9 @@ class HrEmployeePublic(models.Model):
     )
 
     som_current_calendar_id = fields.Many2one(
+        readonly=True,
+    )
+
+    som_recruitment_date = fields.Date(
         readonly=True,
     )

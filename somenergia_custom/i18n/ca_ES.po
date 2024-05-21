@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-22 05:41+0000\n"
-"PO-Revision-Date: 2024-04-22 05:41+0000\n"
+"POT-Creation-Date: 2024-05-21 06:29+0000\n"
+"PO-Revision-Date: 2024-05-21 06:29+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -230,6 +230,7 @@ msgstr "Bloquejat"
 
 #. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.account_invoice_download_credentials_form
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_contract_import_form
 msgid "Cancel"
 msgstr ""
 
@@ -244,7 +245,23 @@ msgid "Comments"
 msgstr "Comentaris"
 
 #. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_hr_contract
+msgid "Contract"
+msgstr "Contracte d'empleat"
+
+#. module: somenergia_custom
+#. odoo-python
+#: code:addons/somenergia_custom/models/res_users.py:0
+#: model:ir.ui.menu,name:somenergia_custom.som_hr_menu_contracts
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.res_users_view_form_preference
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_hr_contract_calendar
+#, python-format
+msgid "Contracts"
+msgstr "Contractes"
+
+#. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_absence__create_uid
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract_import_wizard__create_uid
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__create_uid
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__create_uid
 msgid "Created by"
@@ -252,6 +269,7 @@ msgstr ""
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_absence__create_date
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract_import_wizard__create_date
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__create_date
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__create_date
 msgid "Created on"
@@ -276,6 +294,16 @@ msgid "Date End"
 msgstr "Data Fi"
 
 #. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_hr_contract_search
+msgid "Date end"
+msgstr ""
+
+#. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_hr_contract_search
+msgid "Date start"
+msgstr ""
+
+#. module: somenergia_custom
 #. odoo-python
 #: code:addons/somenergia_custom/models/hr_attendance_overtime.py:0
 #: code:addons/somenergia_custom/models/hr_attendance_report.py:0
@@ -295,6 +323,7 @@ msgstr "Descripció"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_absence__display_name
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract_import_wizard__display_name
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__display_name
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__display_name
 msgid "Display Name"
@@ -319,6 +348,11 @@ msgstr "Empleat"
 #. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.account_invoice_download_credentials_form
 msgid "Envia"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract_import_wizard__som_xls
+msgid "Excel document"
 msgstr ""
 
 #. module: somenergia_custom
@@ -354,6 +388,7 @@ msgstr "Hores assignades"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_absence__id
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract_import_wizard__id
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__id
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__id
 msgid "ID"
@@ -380,6 +415,22 @@ msgid "If checked, some messages have a delivery error."
 msgstr ""
 
 #. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_contract_import_form
+msgid "Import"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.actions.act_window,name:somenergia_custom.som_hr_contract_import_action
+#: model:ir.ui.menu,name:somenergia_custom.menu_hr_contract_import
+msgid "Import contracts"
+msgstr ""
+
+#. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_contract_import_form
+msgid "Imports contracts"
+msgstr ""
+
+#. module: somenergia_custom
 #: model:hr.leave.type,name:somenergia_custom.leave_avui_no_vinc
 msgid ""
 "Indisposició (un dia, el 2n, justificant. Inclou menors i ascendents a "
@@ -402,7 +453,13 @@ msgid "Jornada teòrica"
 msgstr ""
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract__kanban_state
+msgid "Kanban State"
+msgstr "Estat kanban"
+
+#. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_absence____last_update
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract_import_wizard____last_update
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week____last_update
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week____last_update
 msgid "Last Modified on"
@@ -410,6 +467,7 @@ msgstr ""
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_absence__write_uid
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract_import_wizard__write_uid
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__write_uid
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__write_uid
 msgid "Last Updated by"
@@ -417,6 +475,7 @@ msgstr ""
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_absence__write_date
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract_import_wizard__write_date
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__write_date
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__write_date
 msgid "Last Updated on"
@@ -604,6 +663,13 @@ msgstr "Preparat"
 #: model:ir.ui.menu,name:somenergia_custom.menu_som_worked_week_attendances_recompute
 msgid "Recompute worked hours"
 msgstr "Recalcular setmanes"
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee__som_recruitment_date
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee_base__som_recruitment_date
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee_public__som_recruitment_date
+msgid "Recruitment date"
+msgstr "Data contractació"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__activity_user_id
@@ -897,4 +963,9 @@ msgstr "[SOM-TREBALLAT] Treballat"
 #. module: somenergia_custom
 #: model:ir.model,name:somenergia_custom.model_hr_attendance_absence
 msgid "hr.attendance.absence"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_hr_contract_import_wizard
+msgid "hr.contract.import.wizard"
 msgstr ""
