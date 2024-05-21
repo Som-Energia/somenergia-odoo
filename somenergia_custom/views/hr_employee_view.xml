@@ -63,6 +63,9 @@
                 <button class="oe_stat_button" name="document_view" type="object"
                         icon="fa-list-ol" string="Documents">
                 </button>
+                <button class="oe_stat_button" name="contract_view" type="object"
+                        icon="fa-book" string="Contracts">
+                </button>
             </xpath>
         </field>
     </record>
