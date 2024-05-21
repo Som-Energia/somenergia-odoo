@@ -34,12 +34,14 @@ class HrContractImportWizard(models.TransientModel):
         hr_responsible_id = self.env['res.users'].browse(258)
         hr_contract_form = Form(self.env['hr.contract'])
         hr_contract_form.employee_id = employee_id
-        hr_contract_form.name = "%s #%s" % (employee_id.name, str(contract_number))
+        hr_contract_form.name = "#%s %s" % (str(contract_number), employee_id.name)
         hr_contract_form.date_start = start_date
         hr_contract_form.date_end = end_date
         hr_contract_form.hr_responsible_id = hr_responsible_id
-        hr_contract_form.pnt_grade_id = grade_id
-        hr_contract_form.pnt_rank_id = rank_id
+        if grade_id:
+            hr_contract_form.pnt_grade_id = grade_id
+        if rank_id:
+            hr_contract_form.pnt_rank_id = rank_id
         if complement_id:
             hr_contract_form.pnt_salary_complement_id = complement_id
         hr_contract_id = hr_contract_form.save()
@@ -96,6 +98,17 @@ class HrContractImportWizard(models.TransientModel):
                 contract_start_date = dt.datetime(
                     int(year), start_date.month, start_date.day
                 )
+
+                # start date before first contract in 2020
+                if count_contracts_employee == 0 and start_date < contract_start_date:
+                    contract_id = self._create_contract(
+                        employee_id,
+                        start_date,
+                        (contract_start_date - timedelta(days=1)),
+                        False, False, False,
+                        count_contracts_employee,
+                    )
+
                 # get next change if exits
                 rank_next_year = ''
                 flag_create_contract = False
