@@ -15,13 +15,15 @@ class HrContract(models.Model):
 
     def create_approval_from_contract(self):
         for record in self:
-            description = _("%s to %s" % (
+            description = _("%s passa a %s" % (
                 record.employee_id.name,
                 record.pnt_rank_id.name if record.pnt_rank_id else "",
             ))
-            approval_type_id = self.env.ref(
-                "somenergia_custom.som_approval_type_payroll_change", raise_if_not_found=False
-            ) or False
+            # TODO: create conf approval or XML_ID for this type
+            approval_type_id = self.env['multi.approval.type'].browse(6)
+            # approval_type_id = self.env.ref(
+            #     "somenergia_custom.som_approval_type_payroll_change", raise_if_not_found=False
+            # ) or False
             dict_create = {
                 'user_id': record.hr_responsible_id.id,
                 'name': description,
