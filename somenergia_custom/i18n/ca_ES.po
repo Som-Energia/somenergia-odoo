@@ -264,7 +264,7 @@ msgstr "Contracte d'empleat"
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_hr_contract_calendar
 #, python-format
 msgid "Contracts"
-msgstr "Contractes"
+msgstr "Progressions salarials"
 
 #. module: somenergia_custom
 #: model:ir.actions.server,name:somenergia_custom.som_create_approvals
@@ -981,3 +981,34 @@ msgstr ""
 #: model:ir.model,name:somenergia_custom.model_hr_contract_import_wizard
 msgid "hr.contract.import.wizard"
 msgstr ""
+
+#. module: hr_contract
+#: model:ir.model.fields,field_description:hr_contract.field_hr_employee__contract_id
+#: model_terms:ir.ui.view,arch_db:hr_contract.hr_contract_view_form
+msgid "Current Contract"
+msgstr "Salari actual"
+
+#. module: custom_pnt
+#: model:ir.model.fields,help:custom_pnt.field_hr_employee__contract_id
+#: model:ir.model.fields,help:custom_pnt.field_hr_employee_base__contract_id
+#: model:ir.model.fields,help:custom_pnt.field_hr_employee_public__contract_id
+msgid "Current contract of the employee"
+msgstr "Salari actual de l'empleat"
+
+#. module: hr_contract
+#: model:ir.model.fields,field_description:hr_contract.field_hr_contract_history__contract_count
+msgid "# Contracts"
+msgstr "# Progessions salarials"
+
+#. module: hr_contract
+#: model:ir.actions.act_window,name:hr_contract.action_hr_contract
+#: model:ir.actions.act_window,name:hr_contract.hr_contract_history_view_form_action
+#: model:ir.model.fields,field_description:hr_contract.field_hr_contract_history__contract_ids
+#: model:ir.ui.menu,name:hr_contract.hr_menu_contract_history
+#: model:ir.ui.menu,name:hr_contract.menu_human_resources_configuration_contract
+#: model_terms:ir.ui.view,arch_db:hr_contract.hr_contract_history_view_list
+#: model_terms:ir.ui.view,arch_db:hr_contract.hr_contract_view_activity
+#: model_terms:ir.ui.view,arch_db:hr_contract.hr_contract_view_tree
+#: model_terms:ir.ui.view,arch_db:hr_contract.resource_calendar_view_form
+msgid "Contracts"
+msgstr "Progessions salarials"
