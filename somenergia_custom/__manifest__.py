@@ -36,6 +36,7 @@
     # always loaded
     'data': [
         'data/data.xml',
+        'data/mail_template_data.xml',
         'security/ir.model.access.csv',
         'security/som_worked_week_security.xml',
         'security/hr_attendance_report_security.xml',
