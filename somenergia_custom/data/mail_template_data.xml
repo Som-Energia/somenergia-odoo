@@ -80,20 +80,23 @@
             <field name="description">Enviar mail enquestes de Feedback empleada</field>
             <field name="body_html" type="html">
 <div style="margin: 0px; padding: 0px;">
-    <p style="box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;">
-        <span style="font-size: 12px;">Hola
-        </span><t t-out="object.partner_id.name or ''">Brandon Freeman</t>
-        <span style="font-size: 12px;">,</span>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        <span style="font-size: 12px;">Hola</span><span style="font-size: 12px;">,</span>
+        <t t-out="object.partner_id.name or ''">Brandon Freeman</t>
     </p>
-    <p style="box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;">
-        <span style="font-size: 12px;">Autoevaluació</span>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Cal que responguis el teu qüestionari d’auto-avaluació (enllaç), que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
     </p>
-    <div style="margin: 16px 0px 16px 0px;">
+
+    <div style="margin: 16px 0px 20px 0px;">
         <a t-att-href="(object.get_start_url())"
             style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
-            Start Survey
+            Començar questionari
         </a>
     </div>
+    <p style="margin: 0px 0px 20px 0px; font-size: 13px;">
+        Moltes gràcies!
+    </p>
 </div>
             </field>
             <field name="lang">{{ object.partner_id.lang }}</field>
@@ -111,20 +114,35 @@
             <field name="description">Enviar mail enquestes de Feedback col·laboradores</field>
             <field name="body_html" type="html">
 <div style="margin: 0px; padding: 0px;">
-    <p style="box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;">
-        <span style="font-size: 12px;">Hola
-        </span><t t-out="object.partner_id.name or ''">Brandon Freeman</t>
-        <span style="font-size: 12px;">,</span>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        <span style="font-size: 12px;">Hola</span><span style="font-size: 12px;">,</span>
+        <t t-out="object.partner_id.name or ''">Brandon Freeman</t>
     </p>
-    <p style="box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;">
-        <span style="font-size: 12px;">Avalua a una companya</span>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        <span style="font-size: 12px;">Si reps aquest missatge és perquè en/la </span>
+        <t t-out="object.appraisal_id.emp_id.name or ''">Laura</t>
+        <span style="font-size: 12px;">t’ha escollit com a avaluador/a en el seu procés de feedback anual 360º.</span>
     </p>
-    <div style="margin: 16px 0px 16px 0px;">
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Necessitem que responguis aquest qüestionari d’avaluació, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
+    </p>
+
+    <div style="margin: 16px 0px 20px 0px;">
         <a t-att-href="(object.get_start_url())"
             style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
-            Start Survey
+            Començar questionari
         </a>
     </div>
+
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        En cas que siguis escollida per participar en l’espai de feedback presencial, t’hi convocarem una vegada haguem rebut totes les respostes.
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Si tens dubtes sobre el procés de feedback, no dubtis a contactar-nos.
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Moltes gràcies!
+    </p>
 </div>
             </field>
             <field name="lang">{{ object.partner_id.lang }}</field>
