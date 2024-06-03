@@ -7,25 +7,38 @@ class HrAppraisal(models.Model):
     _inherit = "hr.appraisal"
 
     @api.depends('tot_comp_survey', 'tot_sent_survey')
-    def _compute_got_all_answers(self):
+    def _compute_received_all_answers(self):
         for record in self:
             record.som_got_all_answers = (record.tot_comp_survey == record.tot_sent_survey)
+            if record.som_got_all_answers:
+                record.som_got_all_answers_date = fields.Date.today()
 
     tot_sent_survey = fields.Integer(copy=False)
 
     som_got_all_answers = fields.Boolean(
-        string="Got all answers",
+        string="Received all answers",
         default=False,
-        compute="_compute_completed_survey",
+        compute="_compute_received_all_answers",
         copy=False,
         store=True,
     )
+
+    som_got_all_answers_date = fields.Date(
+        string="Date received all answers",
+        compute="_compute_received_all_answers",
+        copy=False,
+        store=True,
+    )
+
     som_warned_all_answers = fields.Boolean(
         string="Warned all answers",
         default=False,
         copy=False
     )
 
+    @api.model
+    def get_mail_entorn_laboral(self):
+        return self.env["ir.config_parameter"].sudo().get_param("som_mail_entorn_laboral")
 
     def action_initialize_appraisal(self):
         super().action_initialize_appraisal()

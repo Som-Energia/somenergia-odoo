@@ -10,7 +10,12 @@
         </record>
         <record id="som_mail_avui_no_vinc" model="ir.config_parameter">
             <field name="key">som_mail_avui_no_vinc</field>
-            <field name="value">avuinovinc@somenergia.coop</field>
+            <field name="value">a@a.com</field>
+        </record>
+
+        <record id="som_mail_entorn_laboral" model="ir.config_parameter">
+            <field name="key">som_mail_entorn_laboral</field>
+            <field name="value">a@a.com</field>
         </record>
 
         <!--feature massive password change-->
