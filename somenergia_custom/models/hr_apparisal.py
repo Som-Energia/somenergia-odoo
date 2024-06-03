@@ -16,6 +16,15 @@ class HrAppraisal(models.Model):
     tot_sent_survey = fields.Integer(copy=False)
     final_evaluation = fields.Html(string="Final Evaluation")
 
+    som_type = fields.Selection(
+        selection=[
+            ("annual_360", "Feedback annual 360"),
+            ("generic", "Feedback generic"),
+        ],
+        string="Type",
+        required=True,
+    )
+
     som_got_all_answers = fields.Boolean(
         string="Received all answers",
         default=False,
@@ -44,12 +53,14 @@ class HrAppraisal(models.Model):
     def action_initialize_appraisal(self):
         super().action_initialize_appraisal()
         tmpl_id = self.env.ref('somenergia_custom.som_email_template_feedback_initialize')
-        for record in self:
+        for record in self.filtered(lambda x: x.som_type == 'annual_360'):
             tmpl_id.send_mail(record.id, force_send=True)
 
     def action_start_appraisal(self):
         """This function will start the appraisal by sending emails to the corresponding employees
         specified in the appraisal"""
+        self.ensure_one()
+        tmpl_generic_id = self.env.ref('somenergia_custom.som_email_template_feedback_generic')
         tmpl_empl_id = self.env.ref('somenergia_custom.som_email_template_feedback_start_employee')
         tmpl_col_id = self.env.ref('somenergia_custom.som_email_template_feedback_start_collaborator')
 
@@ -59,9 +70,6 @@ class HrAppraisal(models.Model):
             if len(appraisal_reviewers) == 1 and appraisal_reviewers == self.emp_id:
                 continue
             for reviewers in appraisal_reviewers:
-                baseurl = (
-                    self.env["ir.config_parameter"].sudo().get_param("web.base.url")
-                )
                 response = survey_id._create_answer(
                     survey_id=survey_id.id,
                     deadline=self.appraisal_deadline,
@@ -69,10 +77,8 @@ class HrAppraisal(models.Model):
                     email=reviewers.work_email,
                     appraisal_id=self.ids[0],
                 )
-
-                template_to_send_id = tmpl_col_id
+                template_to_send_id = tmpl_col_id if self.som_type == 'annual_360' else tmpl_generic_id
                 template_to_send_id.send_mail(response.id, force_send=True)
-
                 send_count += 1
 
         if self.hr_emp and self.emp_survey_id:
@@ -88,7 +94,7 @@ class HrAppraisal(models.Model):
                 self.response_id = response.id
             else:
                 response = self.response_id
-            template_to_send_id = tmpl_empl_id
+            template_to_send_id = tmpl_empl_id if self.som_type == 'annual_360' else tmpl_generic_id
             template_to_send_id.send_mail(response.id, force_send=True)
             send_count += 1
 

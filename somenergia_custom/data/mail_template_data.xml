@@ -187,5 +187,39 @@
             <field name="auto_delete" eval="False"/>
         </record>
 
+
+        <!-- Template Feedback Generic -->
+        <record id="som_email_template_feedback_generic" model="mail.template">
+            <field name="name">Feedback: Generic</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="email_from">{{ object.appraisal_id.company_id.email }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="subject">[ACCIÓ] Emplena aquesta enquesta</field>
+            <field name="description">Enviar mail genèric per emplenar enquestes</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        <span style="font-size: 12px;">Hola</span><span style="font-size: 12px;">,</span>
+        <t t-out="object.partner_id.name or ''">Brandon Freeman</t>
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Cal que responguis aquest qüestionari referent a un procés de Feedback.
+    </p>
+
+    <div style="margin: 16px 0px 20px 0px;">
+        <a t-att-href="(object.get_start_url())"
+            style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+            Començar questionari
+        </a>
+    </div>
+    <p style="margin: 0px 0px 20px 0px; font-size: 13px;">
+        Moltes gràcies!
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+
     </data>
 </odoo>

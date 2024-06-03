@@ -17,6 +17,17 @@
                         </i>
                     </span>
                 </div>
+                <div>
+                    <t t-if="record.final_interview.raw_value and record.final_interview.raw_value &lt; (new Date())"
+                       t-set="red">oe_kanban_text_red
+                    </t>
+                    Type:
+                    <span t-attf-class="#{red}">
+                        <i>
+                            <field name="som_type"/>
+                        </i>
+                    </span>
+                </div>
             </xpath>
         </field>
     </record>
@@ -27,6 +38,7 @@
         <field name="arch" type="xml">
             <field name="emp_id" position="after">
                 <field name="state"/>
+                <field name="som_type"/>
             </field>
             <field name="final_interview" position="after">
                 <field name="tot_sent_survey"/>
@@ -34,6 +46,17 @@
                 <field name="som_got_all_answers"/>
                 <field name="som_got_all_answers_date"/>
                 <field name="som_warned_all_answers"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="som_appraisal_form_view" model="ir.ui.view">
+        <field name="model">hr.appraisal</field>
+        <field name="inherit_id" ref="oh_appraisal.hr_appraisal_form_view"/>
+        <field name="arch" type="xml">
+            <field name="appraisal_date" position="after">
+                <field name="som_type"
+                       attrs="{'readonly':[('check_initial','!=',True)]}"/>
             </field>
         </field>
     </record>
