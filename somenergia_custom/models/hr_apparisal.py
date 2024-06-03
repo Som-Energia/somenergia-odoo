@@ -97,3 +97,14 @@ class HrAppraisal(models.Model):
         self.check_sent = True
         self.check_draft = False
         self.check_initial = False
+
+    @api.model
+    def do_process_all_answers_received(self):
+        tmpl_id = self.env.ref('somenergia_custom.som_email_template_feedback_received_all_answers')
+        app_ids = self.env['hr.appraisal'].search([
+            ('som_got_all_answers', '=', True),
+            ('som_warned_all_answers', '=', False),
+        ])
+        for app_id in app_ids:
+            tmpl_id.send_mail(app_id.id, force_send=True)
+            app_id.som_warned_all_answers = True

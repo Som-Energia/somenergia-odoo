@@ -132,5 +132,23 @@
             </field>
         </record>
 
+        <record model="ir.cron" id="som_feedback_all_answers_received">
+            <field name="name">Som - Feedback all answers received</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field
+                name="nextcall"
+                eval="(DateTime.now() + timedelta(minutes=60)).strftime('%Y-%m-%d %H:05:00')"
+            />
+            <field name="doall" eval="False" />
+            <field name="active" eval="False" />
+            <field name="model_id" ref="oh_appraisal.model_hr_appraisal" />
+            <field name="state">code</field>
+            <field name="code">
+                model.do_process_all_answers_received()
+            </field>
+        </record>
+
     </data>
 </odoo>
