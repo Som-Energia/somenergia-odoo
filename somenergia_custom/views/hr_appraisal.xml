@@ -21,4 +21,21 @@
         </field>
     </record>
 
+    <record id="som_hr_appraisal_tree_view" model="ir.ui.view">
+        <field name="model">hr.appraisal</field>
+        <field name="inherit_id" ref="oh_appraisal.hr_appraisal_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="emp_id" position="after">
+                <field name="state"/>
+            </field>
+            <field name="final_interview" position="after">
+                <field name="tot_sent_survey"/>
+                <field name="tot_comp_survey"/>
+                <field name="som_got_all_answers"/>
+                <field name="som_got_all_answers_date"/>
+                <field name="som_warned_all_answers"/>
+            </field>
+        </field>
+    </record>
+
 </odoo>

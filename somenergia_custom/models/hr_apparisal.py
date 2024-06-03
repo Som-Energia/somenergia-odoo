@@ -14,6 +14,7 @@ class HrAppraisal(models.Model):
                 record.som_got_all_answers_date = fields.Date.today()
 
     tot_sent_survey = fields.Integer(copy=False)
+    final_evaluation = fields.Html(string="Final Evaluation")
 
     som_got_all_answers = fields.Boolean(
         string="Received all answers",
