@@ -52,8 +52,9 @@
         'views/project_view.xml',
         'views/project_task_view.xml',
         'views/hr_contract_view.xml',
-        'wizards/hr_contract_import_wizard.xml',
         'views/hr_appraisal.xml',
+        'wizards/hr_contract_import_wizard.xml',
+        'wizards/hr_appraisal_generate_wizard.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
