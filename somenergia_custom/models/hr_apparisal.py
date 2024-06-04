@@ -8,7 +8,7 @@ class HrAppraisal(models.Model):
 
     @api.depends('tot_comp_survey', 'tot_sent_survey')
     def _compute_received_all_answers(self):
-        for record in self:
+        for record in self.filtered(lambda x: x.tot_sent_survey):
             record.som_got_all_answers = (record.tot_comp_survey == record.tot_sent_survey)
             if record.som_got_all_answers:
                 record.som_got_all_answers_date = fields.Date.today()
