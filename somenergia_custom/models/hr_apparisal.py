@@ -1,6 +1,12 @@
 # -*- coding:utf-8 -*-
+import logging
+
 from odoo import models, fields, api, SUPERUSER_ID, _
 from odoo.exceptions import ValidationError
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+
+_logger = logging.getLogger(__name__)
 
 
 class HrAppraisal(models.Model):
@@ -129,8 +135,53 @@ class HrAppraisal(models.Model):
             tmpl_id.send_mail(app_id.id, force_send=True)
             app_id.som_warned_all_answers = True
 
-    def action_get_answers(self):
-        res = super().action_get_answers()
-        if res.get("domain", False):
-            res["domain"] = [("appraisal_id", "=", self.ids[0])]
-        return res
+    @api.model
+    def send_mail_feedback_reminder(self):
+        from_date = datetime(datetime.today().year, datetime.today().month, 1) + relativedelta(months=1)
+        to_date = from_date + relativedelta(months=1) - relativedelta(days=1)
+        app_ids = self.env['hr.appraisal'].search([
+            ('appraisal_date', '>=', fields.Date.to_string(from_date)),
+            ('appraisal_date', '<=', fields.Date.to_string(to_date)),
+        ], order="appraisal_date asc")
+
+        str_app = ''
+        for app_id in app_ids:
+            str_date = app_id.appraisal_date.strftime('%d/%m/%Y')
+            str_app += f'Feedback Id {str(app_id.id)} | {app_id.emp_id.name} | {str_date} <br/>'
+
+        somadmin_user_id = self.env.ref('base.somadmin')
+        try:
+            mail_html = _("""
+                        <div style="margin: 0px; padding: 0px;">
+                            <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                                Hola,
+                                <br/><br/>
+                                Aquest són els %s feedbacks del mes vinent:
+                                <br/><br/>
+                                %s
+                                <br/><br/>
+                                <a t-att-href="object.signup_url" style="background-color:#875A7B; padding:8px 16px 8px 16px; text-decoration:none; color:#fff; border-radius:5px" href="http://localhost:8069/web#action=507&model=hr.appraisal&view_type=kanban&cids=1&menu_id=365" target="_blank" class="btn btn-primary">Veure Feedbacks</a>
+                                <br/><br/>
+                                Salut!
+                            </p>
+                        </div>
+                    """) % (
+                len(app_ids), str_app,
+            )
+
+            mail_values = {
+                'author_id': somadmin_user_id.partner_id.id,
+                'body_html': mail_html,
+                'subject': _('Odoo Som - Recordatori Feedbacks mes vinent %s') % datetime.now().strftime('%d/%m/%Y'),
+                'email_from':
+                    somadmin_user_id.email_formatted or somadmin_user_id.company_id.catchall or
+                    somadmin_user_id.company_id.email,
+                'email_to': self.get_mail_entorn_laboral(),
+                'auto_delete': False,
+            }
+
+            mail = self.env['mail.mail'].sudo().create(mail_values)
+            mail.send()
+
+        except Exception as e:
+            _logger.exception("Worked weeks reminder - Unable to send email.")
