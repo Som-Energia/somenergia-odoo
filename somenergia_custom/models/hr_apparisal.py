@@ -6,10 +6,11 @@ from odoo.exceptions import ValidationError
 class HrAppraisal(models.Model):
     _inherit = "hr.appraisal"
 
-    @api.depends('tot_comp_survey', 'tot_sent_survey')
+    @api.depends('som_answer_ids', 'som_answer_ids.state')
     def _compute_received_all_answers(self):
         for record in self.filtered(lambda x: x.tot_sent_survey):
-            record.som_got_all_answers = (record.tot_comp_survey == record.tot_sent_survey)
+            count_completed = len(record.som_answer_ids.filtered(lambda x: x.state == 'done'))
+            record.som_got_all_answers = (count_completed == record.tot_sent_survey)
             if record.som_got_all_answers:
                 record.som_got_all_answers_date = fields.Date.today()
 
@@ -23,6 +24,12 @@ class HrAppraisal(models.Model):
         ],
         string="Type",
         required=True,
+    )
+
+    som_answer_ids = fields.One2many(
+        string="Answers",
+        comodel_name="survey.user_input",
+        inverse_name="appraisal_id",
     )
 
     som_got_all_answers = fields.Boolean(
@@ -115,3 +122,9 @@ class HrAppraisal(models.Model):
         for app_id in app_ids:
             tmpl_id.send_mail(app_id.id, force_send=True)
             app_id.som_warned_all_answers = True
+
+    def action_get_answers(self):
+        res = super().action_get_answers()
+        if res.get("domain", False):
+            res["domain"] = [("appraisal_id", "=", self.ids[0])]
+        return res
