@@ -85,11 +85,12 @@
         <t t-out="object.partner_id.name or ''">Brandon Freeman</t>
     </p>
     <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
-        Cal que responguis el teu qüestionari d’auto-avaluació (enllaç), que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
+        Cal que responguis el teu qüestionari d’auto-avaluació, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
     </p>
 
     <div style="margin: 16px 0px 20px 0px;">
         <a t-att-href="(object.get_start_url())"
+           t-out="object.survey_id.title or ''"
             style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
             Començar questionari
         </a>
@@ -118,25 +119,31 @@
         <span style="font-size: 12px;">Hola</span><span style="font-size: 12px;">,</span>
         <t t-out="object.partner_id.name or ''">Brandon Freeman</t>
     </p>
-    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
-        <span style="font-size: 12px;">Si reps aquest missatge és perquè en/la </span>
-        <t t-out="object.appraisal_id.emp_id.name or ''">Laura</t>
-        <span style="font-size: 12px;">t’ha escollit com a avaluador/a en el seu procés de feedback anual 360º.</span>
-    </p>
-    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
-        Necessitem que responguis aquest qüestionari d’avaluació, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
-    </p>
-
+    <t t-if="object.appraisal_id.emp_id.user_id.partner_id != object.partner_id">
+        <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+            <span style="font-size: 12px;">Si reps aquest missatge és perquè en/la </span>
+            <t t-out="object.appraisal_id.emp_id.name or ''">Laura</t>
+            <span style="font-size: 12px;">t’ha escollit com a avaluador/a en el seu procés de feedback anual 360º.</span>
+        </p>
+        <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+            Necessitem que responguis aquest qüestionari d’avaluació, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
+        </p>
+        <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+            En cas que siguis escollida per participar en l’espai de feedback presencial, t’hi convocarem una vegada haguem rebut totes les respostes.
+        </p>
+    </t>
+    <t t-else="">
+        <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+            Necessitem que responguis aquest qüestionari d’auto-avaluació, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
+        </p>
+    </t>
     <div style="margin: 16px 0px 20px 0px;">
         <a t-att-href="(object.get_start_url())"
+           t-out="object.survey_id.title or ''"
             style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
             Començar questionari
         </a>
     </div>
-
-    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
-        En cas que siguis escollida per participar en l’espai de feedback presencial, t’hi convocarem una vegada haguem rebut totes les respostes.
-    </p>
     <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
         Si tens dubtes sobre el procés de feedback, no dubtis a contactar-nos.
     </p>
@@ -208,6 +215,7 @@
 
     <div style="margin: 16px 0px 20px 0px;">
         <a t-att-href="(object.get_start_url())"
+           t-out="object.survey_id.title or ''"
             style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
             Començar questionari
         </a>
