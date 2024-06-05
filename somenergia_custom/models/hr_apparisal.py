@@ -112,6 +112,12 @@ class HrAppraisal(models.Model):
         self.check_draft = False
         self.check_initial = False
 
+    def action_get_answers(self):
+        res = super().action_get_answers()
+        if res.get("domain", False):
+            res["domain"] = [("appraisal_id", "=", self.ids[0])]
+        return res
+
     @api.model
     def do_process_all_answers_received(self):
         tmpl_id = self.env.ref('somenergia_custom.som_email_template_feedback_received_all_answers')
