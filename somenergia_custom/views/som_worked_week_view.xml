@@ -87,6 +87,7 @@
                                nolabel="1"
                                context="{'default_som_week_id': som_week_id, 'default_som_project_area_domain_ids': som_project_area_domain_ids, 'default_som_additional_project_domain_ids': som_additional_project_domain_ids}">
                             <tree editable="bottom"
+                                  limit="300"
                                   decoration-info="som_is_cumulative==True"
                                   default_order="id">
                                 <field name="som_is_cumulative" invisible="1"/>
