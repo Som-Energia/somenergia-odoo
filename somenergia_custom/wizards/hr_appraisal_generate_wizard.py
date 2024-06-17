@@ -37,13 +37,19 @@ class HrAppraisalGenerateWizard(models.TransientModel):
         ]).mapped('emp_id')
 
         employee_ids = self.env['hr.employee'].search([
+            '|',
             ('som_recruitment_date', '!=', False),
+            ('som_appraisal_ref_date', '!=', False),
             ('id', 'not in', employee_with_feedback_ids.ids),
         ])
 
         for employee_id in employee_ids:
+            date_ref = (
+                employee_id.som_appraisal_ref_date
+                if employee_id.som_appraisal_ref_date else employee_id.som_recruitment_date
+            )
             appraisal_date = datetime.datetime(
-                self.som_year, employee_id.som_recruitment_date.month, employee_id.som_recruitment_date.day
+                self.som_year, date_ref.month, date_ref.day
             )
             dict_create = {
                 'emp_id': employee_id.id,
