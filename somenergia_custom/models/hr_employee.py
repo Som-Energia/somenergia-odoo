@@ -73,6 +73,10 @@ class HrEmployeeBase(models.AbstractModel):
         string="Recruitment date",
     )
 
+    som_appraisal_ref_date = fields.Date(
+        string="Feedback ref date",
+    )
+
 
 class HrEmployee(models.Model):
     _inherit = "hr.employee"

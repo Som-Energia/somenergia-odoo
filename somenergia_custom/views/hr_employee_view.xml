@@ -76,6 +76,7 @@
         <field name="arch" type="xml">
             <field name="job_id" position="after">
                 <field name="som_recruitment_date"/>
+                <field name="som_appraisal_ref_date"/>
             </field>
         </field>
     </record>
