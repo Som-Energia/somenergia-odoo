@@ -61,6 +61,20 @@
         </field>
     </record>
 
+    <record id="som_hr_appraisal_search_view" model="ir.ui.view">
+        <field name="model">hr.appraisal</field>
+        <field name="inherit_id" ref="oh_appraisal.hr_appraisal_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='final_interview']" position="after">
+                <group expand="1" string="Group By">
+                    <filter string="Appraisal Date" name="groupby_app_date" domain="[]" context="{'group_by': 'appraisal_date'}"/>
+                    <filter string="Appraisal Deadline" name="groupby_app_deadline" domain="[]" context="{'group_by': 'appraisal_deadline'}"/>
+                    <filter string="Final Interview" name="groupby_app_final_interview" domain="[]" context="{'group_by': 'final_interview'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
     <record id="som_initialize_feedback" model="ir.actions.server">
         <field name="name">Initialize feedback</field>
         <field name="type">ir.actions.server</field>
