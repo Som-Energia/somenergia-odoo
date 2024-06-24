@@ -13,3 +13,5 @@ from . import hr_attendance_overtime
 from . import ir_ui_menu
 from . import project_task
 from . import hr_contract
+from . import hr_apparisal
+from . import survey_user

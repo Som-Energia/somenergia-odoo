@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="som_hr_appraisal_kanban" model="ir.ui.view">
+        <field name="model">hr.appraisal</field>
+        <field name="inherit_id" ref="oh_appraisal.hr_appraisal_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_clear')]" position="before">
+                <div>
+                    <t t-if="record.final_interview.raw_value and record.final_interview.raw_value &lt; (new Date())"
+                       t-set="red">oe_kanban_text_red
+                    </t>
+                    Received all answers:
+                    <span t-attf-class="#{red}">
+                        <i>
+                            <field name="som_got_all_answers_date"/>
+                        </i>
+                    </span>
+                </div>
+                <div>
+                    <t t-if="record.final_interview.raw_value and record.final_interview.raw_value &lt; (new Date())"
+                       t-set="red">oe_kanban_text_red
+                    </t>
+                    Type:
+                    <span t-attf-class="#{red}">
+                        <i>
+                            <field name="som_type"/>
+                        </i>
+                    </span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="som_hr_appraisal_tree_view" model="ir.ui.view">
+        <field name="model">hr.appraisal</field>
+        <field name="inherit_id" ref="oh_appraisal.hr_appraisal_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="emp_id" position="after">
+                <field name="state"/>
+                <field name="som_type"/>
+            </field>
+            <field name="final_interview" position="after">
+                <field name="tot_sent_survey"/>
+                <field name="tot_comp_survey"/>
+                <field name="som_got_all_answers"/>
+                <field name="som_got_all_answers_date"/>
+                <field name="som_warned_all_answers"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="som_appraisal_form_view" model="ir.ui.view">
+        <field name="model">hr.appraisal</field>
+        <field name="inherit_id" ref="oh_appraisal.hr_appraisal_form_view"/>
+        <field name="arch" type="xml">
+            <field name="appraisal_date" position="after">
+                <field name="som_type"
+                       attrs="{'readonly':[('check_initial','!=',True)]}"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="som_initialize_feedback" model="ir.actions.server">
+        <field name="name">Initialize feedback</field>
+        <field name="type">ir.actions.server</field>
+        <field name="model_id" ref="oh_appraisal.model_hr_appraisal"/>
+        <field name="binding_model_id" ref="oh_appraisal.model_hr_appraisal"/>
+        <field name="sequence">0</field>
+        <field name="state">code</field>
+        <field name="code">records.action_initialize_appraisal()</field>
+        <field name="groups_id" eval="[(4, ref('oh_appraisal.group_appraisal_manager'))]"/>
+    </record>
+
+</odoo>

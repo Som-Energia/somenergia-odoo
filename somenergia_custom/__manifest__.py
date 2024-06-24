@@ -36,6 +36,7 @@
     # always loaded
     'data': [
         'data/data.xml',
+        'data/mail_template_data.xml',
         'security/ir.model.access.csv',
         'security/som_worked_week_security.xml',
         'security/hr_attendance_report_security.xml',
@@ -51,7 +52,9 @@
         'views/project_view.xml',
         'views/project_task_view.xml',
         'views/hr_contract_view.xml',
+        'views/hr_appraisal.xml',
         'wizards/hr_contract_import_wizard.xml',
+        'wizards/hr_appraisal_generate_wizard.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
