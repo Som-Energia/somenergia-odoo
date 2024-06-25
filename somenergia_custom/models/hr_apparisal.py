@@ -156,11 +156,11 @@ class HrAppraisal(models.Model):
                             <p style="margin: 0px; padding: 0px; font-size: 13px;">
                                 Hola,
                                 <br/><br/>
-                                Aquest són els %s feedbacks del mes vinent:
+                                Aquests són els %s feedbacks del mes vinent:
                                 <br/><br/>
                                 %s
                                 <br/><br/>
-                                <a t-att-href="object.signup_url" style="background-color:#875A7B; padding:8px 16px 8px 16px; text-decoration:none; color:#fff; border-radius:5px" href="http://localhost:8069/web#action=507&model=hr.appraisal&view_type=kanban&cids=1&menu_id=365" target="_blank" class="btn btn-primary">Veure Feedbacks</a>
+                                <a t-att-href="object.signup_url" style="background-color:#875A7B; padding:8px 16px 8px 16px; text-decoration:none; color:#fff; border-radius:5px" href="https://odoo.somenergia.coop/web#action=509&model=hr.appraisal&view_type=list&menu_id=366" target="_blank" class="btn btn-primary">Veure Feedbacks</a>
                                 <br/><br/>
                                 Salut!
                             </p>
