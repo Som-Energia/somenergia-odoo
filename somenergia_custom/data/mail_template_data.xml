@@ -91,7 +91,7 @@
             <field name="model_id" ref="survey.model_survey_user_input"/>
             <field name="email_from">{{ object.appraisal_id.company_id.email }}</field>
             <field name="partner_to">{{ object.partner_id.id }}</field>
-            <field name="subject">[ACCIÓ] Col·laboració en feedback anual 360º!</field>
+            <field name="subject">[ACCIÓ] El teu formulari de feedback anual 360º!</field>
             <field name="description">Enviar mail enquestes de Feedback empleada</field>
             <field name="body_html" type="html">
 <div style="margin: 0px; padding: 0px;">
@@ -100,8 +100,25 @@
         <t t-out="object.partner_id.name or ''">Brandon Freeman</t>
     </p>
     <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
-        Cal que responguis el teu qüestionari d’auto-avaluació, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
+        Ara sí, comencem!
     </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        En aquest enllaç trobaràs el teu <span style="font-size: 12px;;font-weight:bold;">qüestionari d’auto-avaluació</span>, que ens servirà per a poder elaborar el teu 'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Si treballes a l’equip d’IT rebràs un segon correu amb un enllaç per poder omplir la teva rúbrica professional també.
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Una vegada haguem rebut totes les respostes, et contactarem per tal que puguis agendar el teu espai de feedback presencial. Aquest espai té una durada de 60 minuts i es composa de dues parts:
+    </p>
+    <ol type="a" style="padding:0 0 0 24px;margin:0px 0 12px 0;box-sizing:border-box;">
+        <li style="margin-bottom: 5px;">
+            <span style="font-size: 12px;"><span style="font-size: 12px;;font-weight:bold;">Part comuna:</span> persona avaluada, 2 avaluadores i 1 persona de l'equip d'entorn laboral. Es comenten els resultats del qüestionari (aquests són enviats a la persona avaluada uns dies abans de la sessió, via mail). Espai oral de feedback.</span>
+        </li>
+        <li style="margin-bottom: 5px;">
+            <span style="font-size: 12px;"><span style="font-size: 12px;;font-weight:bold;">Part individual:</span> persona avaluada i laboral. Cadascú es planteja objectius anuals de cares als propers 12 mesos per a poder desenvolupar-se professionalment dins la cooperativa.</span>
+        </li>
+    </ol>
 
     <div style="margin: 16px 0px 20px 0px;">
         <a t-att-href="(object.get_start_url())"
@@ -111,7 +128,7 @@
         </a>
     </div>
     <p style="margin: 0px 0px 20px 0px; font-size: 13px;">
-        Moltes gràcies!
+        Moltes gràcies per la teva participació i desitgem que sigui un procés del tot profitós!
     </p>
 </div>
             </field>
