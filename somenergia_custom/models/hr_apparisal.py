@@ -12,6 +12,11 @@ _logger = logging.getLogger(__name__)
 class HrAppraisal(models.Model):
     _inherit = "hr.appraisal"
 
+    @api.depends('som_answer_ids')
+    def _compute_sent_answers(self):
+        for record in self:
+            record.tot_sent_survey = len(record.som_answer_ids)
+
     @api.depends('som_answer_ids', 'som_answer_ids.state')
     def _compute_received_all_answers(self):
         for record in self.filtered(lambda x: x.tot_sent_survey):
@@ -20,7 +25,12 @@ class HrAppraisal(models.Model):
             if record.som_got_all_answers:
                 record.som_got_all_answers_date = fields.Date.today()
 
-    tot_sent_survey = fields.Integer(copy=False)
+    tot_sent_survey = fields.Integer(
+        compute="_compute_sent_answers",
+        copy=False,
+        store=True,
+    )
+
     final_evaluation = fields.Html(string="Final Evaluation")
 
     som_type = fields.Selection(
@@ -111,7 +121,7 @@ class HrAppraisal(models.Model):
             template_to_send_id.send_mail(response.id, force_send=True)
             send_count += 1
 
-        self.write({"tot_sent_survey": send_count})
+        # self.write({"tot_sent_survey": send_count})
         rec = self.env["hr.appraisal.stages"].search([("sequence", "=", 2)])
         self.state = rec.id
         self.check_sent = True
