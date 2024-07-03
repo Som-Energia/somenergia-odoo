@@ -96,7 +96,7 @@
         Ara sí, comencem!
     </p>
     <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
-        En aquest enllaç trobaràs el teu <a style="font-weight:bold;color:#800080" t-att-href="(object.get_start_url())">qüestionari d’auto-avaluació</a>, que ens servirà per a poder elaborar el teu 'informe competencial transversal'. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
+        En aquest enllaç trobaràs el teu qüestionari d’auto-avaluació <a style="font-weight:bold;color:#800080" t-out="object.survey_id.title or ''" t-att-href="(object.get_start_url())"></a>, que ens servirà per a poder elaborar el teu 'informe competencial transversal'. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
     </p>
     <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
         Si treballes a l’equip d’IT rebràs un segon correu amb un enllaç per poder omplir la teva rúbrica professional també.
@@ -143,7 +143,7 @@
             <span style="font-size: 13px;">t’ha escollit com a avaluador/a en el seu procés de feedback anual 360º.</span>
         </p>
         <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
-            Necessitem que responguis aquest qüestionari d’avaluació, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
+            Necessitem que responguis aquest qüestionari d’avaluació <a style="font-weight:bold;color:#800080" t-att-href="(object.get_start_url())" t-out="object.survey_id.title or ''"></a>, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
         </p>
         <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
             En cas que siguis escollida per participar en l’espai de feedback presencial, t’hi convocarem una vegada haguem rebut totes les respostes.
@@ -151,16 +151,9 @@
     </t>
     <t t-else="">
         <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
-            Necessitem que responguis aquest qüestionari d’auto-avaluació, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
+            Necessitem que responguis aquest qüestionari d’auto-avaluació <a style="font-weight:bold;color:#800080" t-att-href="(object.get_start_url())" t-out="object.survey_id.title or ''"></a>, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
         </p>
     </t>
-    <div style="margin: 16px 0px 20px 0px;">
-        <a t-att-href="(object.get_start_url())"
-           t-out="object.survey_id.title or ''"
-            style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
-            Començar questionari
-        </a>
-    </div>
     <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
         Si tens dubtes sobre el procés de feedback, no dubtis a contactar-nos.
     </p>
@@ -195,7 +188,7 @@
     <li class="oe-nested" style="box-sizing:border-box;display:block;margin:0px 0 25px 0">
         <ul style="padding:0 0 0 24px;margin:0px 0 0px 0;box-sizing:border-box;">
             <li><span style="font-size: 13px;">Has de convocar una sessió de feedback presencial convidant-hi a es companyes d’entorn laboral i a les 2 o 3 persones avaluadores amb qui vulguis posar en comú el feedback en viu.</span></li>
-            <li><span style="font-size: 13px;">Pots consultar els calendaris i posar data a partir de 7 dies de rebre aquest misstages (o) entre  [DATA] i abans de [DATA].</span></li>
+            <li><span style="font-size: 13px;">Pots consultar els calendaris i posar data a partir de 7 dies i no més tard de 4 setmanes de rebre aquest missatge.</span></li>
             <li><span style="font-size: 13px;">Rebràs el teu informe competencial abans de la sessió perquè el puguis consultar i identificar les àrees en què t’agradaria aprofundir.</span></li>
         </ul>
     </li>
