@@ -31,6 +31,7 @@
         'hr_employee_multidepartment',
         'hr_employee_calendar_planning',
         'custom_pnt',
+        'sh_survey_export_xls',
     ],
 
     # always loaded
@@ -55,6 +56,7 @@
         'views/hr_appraisal.xml',
         'wizards/hr_contract_import_wizard.xml',
         'wizards/hr_appraisal_generate_wizard.xml',
+        'wizards/sh_survey_export_xls_wizard_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
