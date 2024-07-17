@@ -66,6 +66,8 @@
         <field name="inherit_id" ref="oh_appraisal.hr_appraisal_search_view"/>
         <field name="arch" type="xml">
             <xpath expr="//filter[@name='final_interview']" position="after">
+                <filter name="som_got_all_answers" string="Received all answers" domain="[('som_got_all_answers', '=', True)]"/>
+                <filter name="som_answers_pending" string="With answers pending" domain="[('tot_sent_survey', '!=', 0), ('som_got_all_answers', '=', False)]"/>
                 <group expand="1" string="Group By">
                     <filter string="Appraisal Date" name="groupby_app_date" domain="[]" context="{'group_by': 'appraisal_date'}"/>
                     <filter string="Appraisal Deadline" name="groupby_app_deadline" domain="[]" context="{'group_by': 'appraisal_deadline'}"/>
