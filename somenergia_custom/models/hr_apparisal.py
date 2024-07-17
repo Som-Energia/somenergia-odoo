@@ -69,6 +69,13 @@ class HrAppraisal(models.Model):
         copy=False
     )
 
+    def name_get(self):
+        res = []
+        for app_id in self:
+            name = "[%s] %s" % (str(app_id.appraisal_date), app_id.emp_id.name)
+            res += [(app_id.id, name)]
+        return res
+
     @api.model
     def get_mail_entorn_laboral(self):
         return self.env["ir.config_parameter"].sudo().get_param("som_mail_entorn_laboral")
