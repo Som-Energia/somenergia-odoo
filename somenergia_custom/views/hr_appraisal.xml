@@ -7,11 +7,11 @@
         <field name="arch" type="xml">
             <xpath expr="//div[hasclass('oe_clear')]" position="before">
                 <div>
-                    <t t-if="record.final_interview.raw_value and record.final_interview.raw_value &lt; (new Date())"
-                       t-set="red">oe_kanban_text_red
+                    <t t-if="record.som_got_all_answers_date"
+                       t-set="aux_red">oe_kanban_text_red
                     </t>
                     Received all answers:
-                    <span t-attf-class="#{red}">
+                    <span t-attf-class="#{aux_red}">
                         <i>
                             <field name="som_got_all_answers_date"/>
                         </i>
