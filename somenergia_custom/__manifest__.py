@@ -57,6 +57,7 @@
         'wizards/hr_contract_import_wizard.xml',
         'wizards/hr_appraisal_generate_wizard.xml',
         'wizards/sh_survey_export_xls_wizard_views.xml',
+        'reports/hr_attendance_overlapping_report.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
