@@ -47,6 +47,8 @@ class HrAttendanceOverlappingReport(models.Model):
                 ((hl.date_from < ha.check_in) and (ha.check_in < hl.date_to))
                   or
                 ((hl.date_from < ha.check_out) and (ha.check_out < hl.date_to))
+                  or
+                ((ha.check_in < hl.date_from) and (hl.date_to < ha.check_out))
                 )
         """
         return from_str
@@ -55,7 +57,7 @@ class HrAttendanceOverlappingReport(models.Model):
     def _where(self):
         return '''
                 where
-                hl.state = 'validate' and hl.active = true
+                hl.state in ('confirm', 'validate') and hl.active = true
             '''
 
     def init(self):

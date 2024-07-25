@@ -112,3 +112,35 @@ class HrAttendance(models.Model):
                 mail.send()
             except Exception:
                 _logger.exception("Attendance autoclose - Unable to send email.")
+
+    @api.constrains('check_in', 'check_out', 'employee_id')
+    def _check_validity_leaves(self):
+        feature_flag_date_from = datetime.today()
+        try:
+            str_date = self.env["ir.config_parameter"].sudo().get_param("som_ff_date_from_overlapping_attendance")
+            feature_flag_date_from = datetime.strptime(str_date, '%Y-%m-%d')
+        except Exception:
+            pass
+        for att_id in self.filtered(lambda x: x.check_in > feature_flag_date_from):
+            domain_aux = [
+                ("employee_id", "=", att_id.employee_id.id),
+                ("state", "in", ["confirm", "validate"]),
+            ]
+            emp_leave_ids = self.env["hr.leave"].search(domain_aux).filtered(
+                lambda x: ((att_id.check_in and x.date_from <= att_id.check_in <= x.date_to)
+                           or
+                           (att_id.check_out and x.date_from <= att_id.check_out <= x.date_to)
+                           or
+                           (att_id.check_in and att_id.check_out
+                            and att_id.check_in < x.date_from
+                            and x.date_to < att_id.check_out)
+                           )
+            )
+            if emp_leave_ids:
+                raise exceptions.ValidationError(
+                    _("Cannot create new attendance record for %(empl_name)s, "
+                      "the employee has absences in this period of time:\n%(abs_name)s" % {
+                        'empl_name': att_id.employee_id.name,
+                        'abs_name': emp_leave_ids[0].name_get(),
+                      })
+                )
