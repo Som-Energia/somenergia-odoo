@@ -127,20 +127,42 @@ class HrAttendance(models.Model):
                 ("state", "in", ["confirm", "validate"]),
             ]
             emp_leave_ids = self.env["hr.leave"].search(domain_aux).filtered(
-                lambda x: ((att_id.check_in and x.date_from <= att_id.check_in <= x.date_to)
-                           or
-                           (att_id.check_out and x.date_from <= att_id.check_out <= x.date_to)
-                           or
-                           (att_id.check_in and att_id.check_out
-                            and att_id.check_in < x.date_from
-                            and x.date_to < att_id.check_out)
-                           )
+                lambda x: (
+                        (
+                                (x.request_unit_half or x.request_unit_hours)
+                                and
+                                (
+                                        (att_id.check_in and x.date_from <= att_id.check_in <= x.date_to)
+                                        or
+                                        (att_id.check_out and x.date_from <= att_id.check_out <= x.date_to)
+                                        or
+                                        (att_id.check_in and att_id.check_out and att_id.check_in < x.date_from
+                                         and x.date_to < att_id.check_out)
+                                )
+                        )
+                        or
+                        (
+                                (not x.request_unit_half and not x.request_unit_hours)
+                                and
+                                (
+                                        (att_id.check_in
+                                         and x.request_date_from <= att_id.check_in.date() <= x.request_date_to)
+                                        or
+                                        (att_id.check_out
+                                         and x.request_date_from <= att_id.check_out.date() <= x.request_date_to)
+                                        or
+                                        (att_id.check_in and att_id.check_out
+                                         and att_id.check_in.date() <= x.request_date_from
+                                         and x.request_date_to < att_id.check_out.date())
+                                )
+                        )
+                )
             )
             if emp_leave_ids:
                 raise exceptions.ValidationError(
                     _("Cannot create new attendance record for %(empl_name)s, "
                       "the employee has absences in this period of time:\n%(abs_name)s" % {
-                        'empl_name': att_id.employee_id.name,
-                        'abs_name': emp_leave_ids[0].name_get(),
+                          'empl_name': att_id.employee_id.name,
+                          'abs_name': emp_leave_ids[0].name_get(),
                       })
                 )
