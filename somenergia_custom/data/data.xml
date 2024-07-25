@@ -18,6 +18,12 @@
             <field name="value">a@a.com</field>
         </record>
 
+        <!--feature flag overlapping attendance with absences-->
+        <record id="som_ff_date_from_overlapping_attendance" model="ir.config_parameter">
+            <field name="key">som_ff_date_from_overlapping_attendance</field>
+            <field name="value">2024-07-25</field>
+        </record>
+
         <!--feature massive password change-->
         <record id="som_default_password" model="ir.config_parameter">
             <field name="key">som_default_password</field>

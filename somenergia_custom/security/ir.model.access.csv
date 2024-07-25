@@ -8,3 +8,4 @@ access_hr_attendance_overtime_user,hr.attendance.overtime.user,model_hr_attendan
 access_project_tags_users,project.project_tags_user,model_project_tags,project.group_project_user,1,1,1,1
 access_hr_contract_import_wizard_user,hr.contract.import.wizard_user,model_hr_contract_import_wizard,hr_contract.group_hr_contract_manager,1,1,1,1
 access_hr_appraisal_generate_wizard_user,hr.appraisal.generate.wizard_user,model_hr_appraisal_generate_wizard,oh_appraisal.group_appraisal_manager,1,1,1,1
+access_hr_attendance_overlapping_report_user,hr.attendance.overlapping.report_user,model_hr_attendance_overlapping_report,hr_attendance.group_hr_attendance,1,1,1,1

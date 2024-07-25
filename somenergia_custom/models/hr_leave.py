@@ -126,3 +126,12 @@ class HolidaysRequest(models.Model):
 
     def write(self, vals):
         return super(HolidaysRequest, self.with_context(leave_skip_date_check=True)).write(vals)
+
+    @api.constrains('date_from', 'date_to', 'employee_ids')
+    def _check_validity_attendances(self):
+        for absence_id in self:
+            domain_aux = [
+                ("employee_id", "in", absence_id.employee_ids.ids),
+            ]
+            att_ids = self.env["hr.attendance"].search(domain_aux)
+            att_ids._check_validity_leaves()
