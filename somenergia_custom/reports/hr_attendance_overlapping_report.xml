@@ -60,5 +60,5 @@
         sequence="120"
         parent="hr_attendance.menu_hr_attendance_report"
         action="hr_attendance_overlapping_report_action"
-        groups="hr_attendance.group_hr_attendance"/>
+        groups="hr_attendance.group_hr_attendance_user"/>
 </odoo>

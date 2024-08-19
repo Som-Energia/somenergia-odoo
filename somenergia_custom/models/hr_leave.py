@@ -129,7 +129,7 @@ class HolidaysRequest(models.Model):
 
     @api.constrains('date_from', 'date_to', 'employee_ids')
     def _check_validity_attendances(self):
-        for absence_id in self:
+        for absence_id in self.sudo():
             domain_aux = [
                 ("employee_id", "in", absence_id.employee_ids.ids),
             ]
