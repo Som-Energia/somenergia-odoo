@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-24 17:02+0000\n"
-"PO-Revision-Date: 2024-06-24 17:02+0000\n"
+"POT-Creation-Date: 2024-08-19 09:37+0000\n"
+"PO-Revision-Date: 2024-08-19 09:37+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -25,11 +25,11 @@ msgid ""
 "                            <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
 "                                Hola,\n"
 "                                <br/><br/>\n"
-"                                Aquest són els %s feedbacks del mes vinent:\n"
+"                                Aquests són els %s feedbacks del mes vinent:\n"
 "                                <br/><br/>\n"
 "                                %s\n"
 "                                <br/><br/>\n"
-"                                <a t-att-href=\"object.signup_url\" style=\"background-color:#875A7B; padding:8px 16px 8px 16px; text-decoration:none; color:#fff; border-radius:5px\" href=\"http://localhost:8069/web#action=507&model=hr.appraisal&view_type=kanban&cids=1&menu_id=365\" target=\"_blank\" class=\"btn btn-primary\">Veure Feedbacks</a>\n"
+"                                <a t-att-href=\"object.signup_url\" style=\"background-color:#875A7B; padding:8px 16px 8px 16px; text-decoration:none; color:#fff; border-radius:5px\" href=\"https://odoo.somenergia.coop/web#action=509&model=hr.appraisal&view_type=list&menu_id=366\" target=\"_blank\" class=\"btn btn-primary\">Veure Feedbacks</a>\n"
 "                                <br/><br/>\n"
 "                                Salut!\n"
 "                            </p>\n"
@@ -126,86 +126,65 @@ msgstr ""
 msgid ""
 "<div style=\"margin: 0px; padding: 0px;\">\n"
 "    <p style=\"box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;\">\n"
-"        <span style=\"font-size: 12px;\">Hola\n"
+"        <span style=\"font-size: 13px;\">Hola\n"
 "        </span><t t-out=\"object.emp_id.name or ''\">Brandon Freeman</t>\n"
-"        <span style=\"font-size: 12px;\">,</span>\n"
-"        <br><br>\n"
-"        <span style=\"font-size: 12px;\">\n"
-"        S’inicia el període de la teva avaluació i seguiment anual de 360º.</span>\n"
+"        <span style=\"font-size: 13px;\">,</span>\n"
+"        <br/><br/>\n"
+"        <span style=\"font-size: 13px;\">\n"
+"        Aviat s’inicia el període de la teva avaluació i seguiment anual de 360º.</span>\n"
 "    </p>\n"
-"        <p style=\"box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;\"><br></p>\n"
+"        <p style=\"box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;\"><br/></p>\n"
 "        <p style=\"box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;\">\n"
-"            <span style=\"font-size: 12px;\">Com funciona?</span>\n"
+"            <span style=\"font-size: 13px;font-weight:bold;\">Per poder engegar el procés, reenvia aquest correu a gestio.laboral@somenergia.coop identificant les persones que esculls per ser les avaluadores del teu procés de feedback:</span>\n"
 "        </p>\n"
-"        <p style=\"box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;\"><br></p>\n"
-"        <ol style=\"padding:0 0 0 24px;margin:0px 0 12px 0;box-sizing:border-box;\">\n"
-"            <li>\n"
-"                <span style=\"font-size: 12px;\">Cal que responguis aquest correu identificant les persones que esculls per ser les avaluadores del teu procés de feedback:</span>\n"
-"            </li>\n"
-"            <li class=\"oe-nested\" style=\"box-sizing:border-box;display:block;\">\n"
-"                <ul style=\"padding:0 0 0 24px;margin:0px 0 0px 0;box-sizing:border-box;\">\n"
-"                    <li><span style=\"font-size: 12px;\">2-3 que formin part del teu equip directe i</span></li>\n"
-"                    <li><span style=\"font-size: 12px;\">2-3 amb les que treballis habitualment, que formin part d'altres equips de la cooperativa) que pensis que et poden aportar feedback crític i útil per al teu desenvolupament.</span>\n"
-"                        <br><br>\n"
-"                        <span style=\"font-size: 12px;\">Enviarem el mateix qüestionari a les persones que escullis i elaborarem l’informe competencial transversal amb totes les respostes gregades.</span>\n"
-"                        <br><br>\n"
-"                        <strong style=\"box-sizing:border-box;font-weight:500;\"><span style=\"font-size: 12px;\">RECOMANACIÓ</span></strong><span style=\"font-size: 12px;\">: Normalment tendim a escollir avaluadores amb les que ens sentim dins la zona de confort. No obstant, escollir d'altres persones que ens suposen un repte, sovint, té resultats inesperats en sentit positiu! T’animem que li donis una volta!</span>\n"
-"                        <br>\n"
-"                        <p><strong style=\"box-sizing:border-box;font-weight:500;\"><span style=\"font-size: 12px;\">IMPORTANT! </span></strong><span style=\"font-size: 12px;\">Cal que hagueu treballat amb les persones avaluadores com a mínim durant 6 mesos. Si teniu dubtes, parlem-ne!</span></p>\n"
-"                        <span style=\"font-size: 12px;\">Si, arribat el moment, penseu que no és el vostre moment per participar en un espai com aquest, també ens ho podeu comunicar i ho reenfoquem (la idea és rebre feedback per a poder desenvolupar-nos a la cooperativa, però que sigui un espai constructiu i amable!).</span>\n"
-"                        <br><br>\n"
-"                    </li>\n"
-"                </ul>\n"
-"            </li>\n"
-"            <li>\n"
-"                <span style=\"font-size: 12px;\">Una vegada haguem rebut totes les respostes, us contactarem per tal que pugueu agendar un espai de feedback presencial. Aquest espai té una durada de 60 minuts i es composa de dues parts:</span>\n"
-"            </li>\n"
-"            <li class=\"oe-nested\" style=\"box-sizing:border-box;display:block;\">\n"
-"                <ol style=\"padding:0 0 0 24px;margin:0px 0 0px 0;box-sizing:border-box;\">\n"
-"                    <li><strong style=\"box-sizing:border-box;font-weight:500;\"><span style=\"font-size: 12px;\">Part comuna</span></strong><span style=\"font-size: 12px;\">: persona avaluada, 2 avaluadores i 1 persona de l'equip d'entorn laboral. Es comenten els resultats del qüestionari (aquests són enviats a la persona avaluada uns dies abans de la sessió, via mail). Espai oral de feedback.</span></li>\n"
-"                    <li><strong style=\"box-sizing:border-box;font-weight:500;\"><span style=\"font-size: 12px;\">Part individual</span></strong><span style=\"font-size: 12px;\">: persona avaluada i laboral. Cadascú es planteja objectius anuals de cares als propers 12 mesos per a poder desenvolupar-se professionalment dins la cooperativa.</span><br><br>\n"
-"                    </li>\n"
-"                </ol>\n"
+"        <p style=\"box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;\"><br/></p>\n"
+"        <ol type=\"a\" style=\"padding:0 0 0 24px;margin:0px 0 12px 0;box-sizing:border-box;\">\n"
+"            <li style=\"margin-bottom: 5px;\"><span style=\"font-size: 13px;\">2-3 que formin part del teu equip directe i</span><br/></li>\n"
+"            <li style=\"margin-bottom: 5px;\"><span style=\"font-size: 13px;\">2-3 amb les que treballis habitualment, que formin part d'altres equips de la cooperativa) que pensis que et poden aportar feedback crític i útil per al teu desenvolupament.</span>\n"
+"                <br/><br/>\n"
+"                <span style=\"font-size: 13px;\">Enviarem el mateix qüestionari a les persones que escullis i elaborarem l’informe competencial transversal amb totes les respostes gregades.</span>\n"
+"                <br/><br/>\n"
+"                <span style=\"font-size: 13px;;font-weight:bold;\">RECOMANACIÓ</span>\n"
+"                <span style=\"font-size: 13px;\">: Normalment tendim a escollir avaluadores amb les que ens sentim dins la zona de confort. No obstant, escollir d'altres persones que ens suposen un repte, sovint, té resultats inesperats en sentit positiu! T’animem que li donis una volta!</span>\n"
+"                <br/><br/>\n"
+"                <span style=\"box-sizing:border-box;font-weight:bold;\">IMPORTANT! </span>\n"
+"                <span style=\"font-size: 13px;\">Cal que hagueu treballat amb les persones avaluadores com a mínim durant 6 mesos. Si teniu dubtes, parlem-ne!</span>\n"
+"                <br/>\n"
 "            </li>\n"
 "        </ol>\n"
 "        <p style=\"box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;\">\n"
-"            <span style=\"font-size: 12px;\">Moltes gràcies a totes per la vostra participació i desitgem que sigui un procés del tot profitós!</span>\n"
+"            <span style=\"font-size: 13px;\">Si penses que no és el teu moment per participar en un espai com aquest, també ens ho pots comunicar i ho reenfoquem (la idea és rebre feedback per a poder desenvolupar-nos a la cooperativa, però que sigui un espai constructiu i amable!).</span>\n"
 "        </p>\n"
-"        <p style=\"box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;\"><br></p>\n"
+"        <br/>\n"
+"        <p style=\"box-sizing:border-box;margin-bottom: 12px;; padding: 0px; font-size: 13px;\">\n"
+"            <span style=\"font-size: 13px;font-weight:bold;\">Com funciona el procés de feedback?</span>\n"
+"        </p>\n"
+"        <ol type=\"1\" style=\"padding:0 0 0 24px;margin:0px 0 12px 0;box-sizing:border-box;\">\n"
+"            <li style=\"margin-bottom: 5px;\">\n"
+"                <span style=\"font-size: 13px;\">Aviat rebràs un <span style=\"font-size: 13px;;font-weight:bold;\">qüestionari d’auto-avaluació</span> que ens servirà per a poder elaborar el teu 'informe competencial transversal. El mateix formulari s’enviarà a les persones que hagis escollit per participar en el teu feedback.</span>\n"
+"                <br/>\n"
+"                <span style=\"font-size: 13px;\">Si treballes a l’equip d’IT rebràs un segon correu amb un enllaç per poder omplir la teva rúbrica professional també.</span>\n"
+"            </li>\n"
+"            <li style=\"margin-bottom: 5px;\">\n"
+"                <span style=\"font-size: 13px;\">Una vegada haguem rebut totes les respostes, t’enviarem el teu informe d’avaluació 360º  i</span>\n"
+"            </li>\n"
+"            <li style=\"margin-bottom: 5px;\">\n"
+"                <span style=\"font-size: 13px;\">et contactarem per tal que puguis agendar el teu espai de feedback presencial. Aquest espai té una durada de 60 minuts i es composa de dues parts:</span>\n"
+"            </li>\n"
+"            <ol type=\"a\" style=\"padding:0 0 0 24px;margin:0px 0 12px 0;box-sizing:border-box;\">\n"
+"                <li style=\"margin-bottom: 5px;\">\n"
+"                    <span style=\"font-size: 13px;\"><span style=\"font-size: 13px;;font-weight:bold;\">Part comuna:</span> persona avaluada, 2 avaluadores i 1 persona de l'equip d'entorn laboral. Es comenten els resultats del qüestionari (aquests són enviats a la persona avaluada uns dies abans de la sessió, via mail). Espai oral de feedback.</span>\n"
+"                </li>\n"
+"                <li style=\"margin-bottom: 5px;\">\n"
+"                    <span style=\"font-size: 13px;\"><span style=\"font-size: 13px;;font-weight:bold;\">Part individual:</span> persona avaluada i laboral. Cadascú es planteja objectius anuals de cares als propers 12 mesos per a poder desenvolupar-se professionalment dins la cooperativa.</span>\n"
+"                </li>\n"
+"            </ol>\n"
+"        </ol>\n"
 "        <p style=\"box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;\">\n"
-"            <span style=\"font-size: 12px;\">Per qualsevol dubte o qüestió, no dubteu en contactar-nos.</span>\n"
+"            <span style=\"font-size: 13px;\">Per qualsevol dubte o qüestió, no dubtis en contactar-nos.</span>\n"
 "        </p>\n"
-"        <p style=\"box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;\"><br></p>\n"
-"</div>\n"
-"            "
-msgstr ""
-
-#. module: somenergia_custom
-#: model:mail.template,body_html:somenergia_custom.som_email_template_feedback_received_all_answers
-msgid ""
-"<div style=\"margin: 0px; padding: 0px;\">\n"
-"    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
-"        <span style=\"font-size: 12px;\">Hola</span><span style=\"font-size: 12px;\">,</span>\n"
-"        <t t-out=\"object.emp_id.name or ''\">Brandon Freeman</t>\n"
-"    </p>\n"
-"    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
-"        Ja hem rebut totes les respostes del teu procés de feedback. Les properes passes són:\n"
-"    </p>\n"
-"    <li class=\"oe-nested\" style=\"box-sizing:border-box;display:block;margin:0px 0 25px 0\">\n"
-"        <ul style=\"padding:0 0 0 24px;margin:0px 0 0px 0;box-sizing:border-box;\">\n"
-"            <li><span style=\"font-size: 12px;\">Has de convocar una sessió de feedback presencial convidant-hi a es companyes d’entorn laboral i a les 2 o 3 persones avaluadores amb qui vulguis posar en comú el feedback en viu.</span></li>\n"
-"            <li><span style=\"font-size: 12px;\">Pots consultar els calendaris i posar data a partir de 7 dies de rebre aquest misstages (o) entre  [DATA] i abans de [DATA].</span></li>\n"
-"            <li><span style=\"font-size: 12px;\">Rebràs el teu informe competencial abans de la sessió perquè el puguis consultar i identificar les àrees en què t’agradaria aprofundir.</span></li>\n"
-"        </ul>\n"
-"    </li>\n"
-"    <p style=\"margin: 0px 0px 25px 0px; font-size: 13px;\">\n"
-"        Com sempre, som aquí si tens qualsevol dubte.\n"
-"    </p>\n"
-"    <p style=\"margin: 0px 0px 25px 0px; font-size: 13px;\">\n"
-"        Gràcies!\n"
-"    </p>\n"
-"</div>\n"
-"            "
+"        <p style=\"box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;\"><br/></p>\n"
+"</div>"
 msgstr ""
 
 #. module: somenergia_custom
@@ -233,45 +212,133 @@ msgid ""
 msgstr ""
 
 #. module: somenergia_custom
+#: model:mail.template,body_html:somenergia_custom.som_email_template_feedback_received_all_answers
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        <span style=\"font-size: 13px;\">Hola</span><span style=\"font-size: 13px;\">,</span>\n"
+"        <t t-out=\"object.emp_id.name or ''\">Brandon Freeman</t>\n"
+"    </p>\n"
+"    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Ja hem rebut totes les respostes del teu procés de feedback. Les properes passes són:\n"
+"    </p>\n"
+"    <li class=\"oe-nested\" style=\"box-sizing:border-box;display:block;margin:0px 0 25px 0\">\n"
+"        <ul style=\"padding:0 0 0 24px;margin:0px 0 0px 0;box-sizing:border-box;\">\n"
+"            <li><span style=\"font-size: 13px;\">Has de convocar una sessió de feedback presencial convidant-hi a es companyes d’entorn laboral i a les 2 o 3 persones avaluadores amb qui vulguis posar en comú el feedback en viu.</span></li>\n"
+"            <li><span style=\"font-size: 13px;\">Pots consultar els calendaris i posar data a partir de 7 dies i no més tard de 4 setmanes de rebre aquest missatge.</span></li>\n"
+"            <li><span style=\"font-size: 13px;\">Rebràs el teu informe competencial abans de la sessió perquè el puguis consultar i identificar les àrees en què t’agradaria aprofundir.</span></li>\n"
+"        </ul>\n"
+"    </li>\n"
+"    <p style=\"margin: 0px 0px 25px 0px; font-size: 13px;\">\n"
+"        Com sempre, som aquí si tens qualsevol dubte.\n"
+"    </p>\n"
+"    <p style=\"margin: 0px 0px 25px 0px; font-size: 13px;\">\n"
+"        Gràcies!\n"
+"    </p>\n"
+"</div>"
+msgstr ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        <span style=\"font-size: 13px;\">Hola,</span>\n"
+"        <t t-out=\"object.emp_id.name or ''\">Brandon Freeman</t>\n"
+"    </p>\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Ja hem rebut totes les respostes del teu procés de feedback. Les properes passes són:\n"
+"    </p>\n"
+"    <p style=\"margin:0px 0 12px 0;box-sizing:border-box;\">\n"
+"        </p><ul style=\"padding:0 0 0 24px;margin:0px 0 0px 0;box-sizing:border-box;\">\n"
+"            <li><span style=\"font-size: 13px;\">Has de convocar una sessió de feedback presencial convidant-hi a es companyes d’entorn laboral i a les 2 o 3 persones avaluadores amb qui vulguis posar en comú el feedback en viu.</span></li>\n"
+"            <li><span style=\"font-size: 13px;\">Pots consultar els calendaris i posar data a partir de 7 dies i no més tard de 4 setmanes de rebre aquest missatge.</span></li>\n"
+"            <li><span style=\"font-size: 13px;\">Rebràs el teu informe competencial abans de la sessió perquè el puguis consultar i identificar les àrees en què t’agradaria aprofundir.</span></li>\n"
+"        </ul>\n"
+"    <p style=\"margin:0px 0 12px 0;box-sizing:border-box;\"></p>\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 25px 0px; font-size: 13px;\">\n"
+"        Com sempre, som aquí si tens qualsevol dubte.\n"
+"    </p>\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 25px 0px; font-size: 13px;\">\n"
+"        Gràcies!\n"
+"    </p>\n"
+"</div>"
+
+#. module: somenergia_custom
 #: model:mail.template,body_html:somenergia_custom.som_email_template_feedback_start_employee
 msgid ""
 "<div style=\"margin: 0px; padding: 0px;\">\n"
 "    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
-"        <span style=\"font-size: 12px;\">Hola</span><span style=\"font-size: 12px;\">,</span>\n"
+"        <span style=\"font-size: 13px;\">Hola</span><span style=\"font-size: 13px;\">,</span>\n"
 "        <t t-out=\"object.partner_id.name or ''\">Brandon Freeman</t>\n"
 "    </p>\n"
 "    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
-"        Cal que responguis el teu qüestionari d’auto-avaluació, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).\n"
+"        Ara sí, comencem!\n"
 "    </p>\n"
-"\n"
-"    <div style=\"margin: 16px 0px 20px 0px;\">\n"
-"        <a t-att-href=\"(object.get_start_url())\" t-out=\"object.survey_id.title or ''\" style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\">\n"
-"            Començar questionari\n"
-"        </a>\n"
-"    </div>\n"
+"    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        En aquest enllaç trobaràs el teu qüestionari d’auto-avaluació <a style=\"font-weight:bold;color:#800080\" t-out=\"object.survey_id.title or ''\" t-att-href=\"(object.get_start_url())\"></a>, que ens servirà per a poder elaborar el teu 'informe competencial transversal'. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).\n"
+"    </p>\n"
+"    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Si treballes a l’equip d’IT rebràs un segon correu amb un enllaç per poder omplir la teva rúbrica professional també.\n"
+"    </p>\n"
+"    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Una vegada haguem rebut totes les respostes, et contactarem per tal que puguis agendar el teu espai de feedback presencial. Aquest espai té una durada de 60 minuts i es composa de dues parts:\n"
+"    </p>\n"
+"    <ol type=\"a\" style=\"padding:0 0 0 24px;margin:0px 0 12px 0;box-sizing:border-box;\">\n"
+"        <li style=\"margin-bottom: 5px;\">\n"
+"            <span style=\"font-size: 13px;\"><span style=\"font-size: 13px;;font-weight:bold;\">Part comuna:</span> persona avaluada, 2 avaluadores i 1 persona de l'equip d'entorn laboral. Es comenten els resultats del qüestionari (aquests són enviats a la persona avaluada uns dies abans de la sessió, via mail). Espai oral de feedback.</span>\n"
+"        </li>\n"
+"        <li style=\"margin-bottom: 5px;\">\n"
+"            <span style=\"font-size: 13px;\"><span style=\"font-size: 13px;;font-weight:bold;\">Part individual:</span> persona avaluada i laboral. Cadascú es planteja objectius anuals de cares als propers 12 mesos per a poder desenvolupar-se professionalment dins la cooperativa.</span>\n"
+"        </li>\n"
+"    </ol>\n"
 "    <p style=\"margin: 0px 0px 20px 0px; font-size: 13px;\">\n"
-"        Moltes gràcies!\n"
+"        Moltes gràcies per la teva participació i desitgem que sigui un procés del tot profitós!\n"
 "    </p>\n"
-"</div>\n"
-"            "
+"</div>"
 msgstr ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        <span style=\"font-size: 13px;\">Hola,</span>\n"
+"        <t t-out=\"object.partner_id.name or ''\">Brandon Freeman</t>\n"
+"    </p>\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Ara sí, comencem!\n"
+"    </p>\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        En aquest enllaç trobaràs el teu qüestionari d’auto-avaluació <a style=\"text-decoration:none;box-sizing:border-box;font-weight:bold;color:#800080\" t-out=\"object.survey_id.title or ''\" t-att-href=\"(object.get_start_url())\"></a>, que ens servirà per a poder elaborar el teu 'informe competencial transversal'. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).\n"
+"    </p>\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Si treballes a l’equip d’IT rebràs un segon correu amb un enllaç per poder omplir la teva rúbrica professional també.\n"
+"    </p>\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Una vegada haguem rebut totes les respostes, et contactarem per tal que puguis agendar el teu espai de feedback presencial. Aquest espai té una durada de 60 minuts i es composa de dues parts:\n"
+"    </p>\n"
+"    <ol type=\"a\" style=\"padding:0 0 0 24px;margin:0px 0 12px 0;box-sizing:border-box;\">\n"
+"        <li style=\"margin-bottom: 5px;\">\n"
+"            <span style=\"font-size: 13px;\"><span style=\"font-size: 13px;;font-weight:bold;\">Part comuna:</span> persona avaluada, 2 avaluadores i 1 persona de l'equip d'entorn laboral. Es comenten els resultats del qüestionari (aquests són enviats a la persona avaluada uns dies abans de la sessió, via mail). Espai oral de feedback.</span>\n"
+"        </li>\n"
+"        <li style=\"margin-bottom: 5px;\">\n"
+"            <span style=\"font-size: 13px;\"><span style=\"font-size: 13px;;font-weight:bold;\">Part individual:</span> persona avaluada i laboral. Cadascú es planteja objectius anuals de cares als propers 12 mesos per a poder desenvolupar-se professionalment dins la cooperativa.</span>\n"
+"        </li>\n"
+"    </ol>\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 20px 0px; font-size: 13px;\">\n"
+"        Moltes gràcies per la teva participació i desitgem que sigui un procés del tot profitós!\n"
+"    </p>\n"
+"</div>"
 
 #. module: somenergia_custom
 #: model:mail.template,body_html:somenergia_custom.som_email_template_feedback_start_collaborator
 msgid ""
 "<div style=\"margin: 0px; padding: 0px;\">\n"
 "    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
-"        <span style=\"font-size: 12px;\">Hola</span><span style=\"font-size: 12px;\">,</span>\n"
+"        <span style=\"font-size: 13px;\">Hola</span><span style=\"font-size: 13px;\">,</span>\n"
 "        <t t-out=\"object.partner_id.name or ''\">Brandon Freeman</t>\n"
 "    </p>\n"
 "    <t t-if=\"object.appraisal_id.emp_id.user_id.partner_id != object.partner_id\">\n"
 "        <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
-"            <span style=\"font-size: 12px;\">Si reps aquest missatge és perquè en/la </span>\n"
+"            <span style=\"font-size: 13px;\">Si reps aquest missatge és perquè en/la </span>\n"
 "            <t t-out=\"object.appraisal_id.emp_id.name or ''\">Laura</t>\n"
-"            <span style=\"font-size: 12px;\">t’ha escollit com a avaluador/a en el seu procés de feedback anual 360º.</span>\n"
+"            <span style=\"font-size: 13px;\">t’ha escollit com a avaluador/a en el seu procés de feedback anual 360º.</span>\n"
 "        </p>\n"
 "        <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
-"            Necessitem que responguis aquest qüestionari d’avaluació, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).\n"
+"            Necessitem que responguis aquest qüestionari d’avaluació <a style=\"font-weight:bold;color:#800080\" t-att-href=\"(object.get_start_url())\" t-out=\"object.survey_id.title or ''\"></a>, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).\n"
 "        </p>\n"
 "        <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
 "            En cas que siguis escollida per participar en l’espai de feedback presencial, t’hi convocarem una vegada haguem rebut totes les respostes.\n"
@@ -279,23 +346,47 @@ msgid ""
 "    </t>\n"
 "    <t t-else=\"\">\n"
 "        <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
-"            Necessitem que responguis aquest qüestionari d’auto-avaluació, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).\n"
+"            Necessitem que responguis aquest qüestionari d’auto-avaluació <a style=\"font-weight:bold;color:#800080\" t-att-href=\"(object.get_start_url())\" t-out=\"object.survey_id.title or ''\"></a>, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).\n"
 "        </p>\n"
 "    </t>\n"
-"    <div style=\"margin: 16px 0px 20px 0px;\">\n"
-"        <a t-att-href=\"(object.get_start_url())\" t-out=\"object.survey_id.title or ''\" style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\">\n"
-"            Començar questionari\n"
-"        </a>\n"
-"    </div>\n"
 "    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
 "        Si tens dubtes sobre el procés de feedback, no dubtis a contactar-nos.\n"
 "    </p>\n"
 "    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
 "        Moltes gràcies!\n"
 "    </p>\n"
-"</div>\n"
-"            "
+"</div>"
 msgstr ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        <span style=\"font-size: 13px;\">Hola,</span>\n"
+"        <t t-out=\"object.partner_id.name or ''\">Brandon Freeman</t>\n"
+"    </p>\n"
+"    <t t-if=\"object.appraisal_id.emp_id.user_id.partner_id != object.partner_id\">\n"
+"        <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"            <span style=\"font-size: 13px;\">Si reps aquest missatge és perquè en/la </span>\n"
+"            <t t-out=\"object.appraisal_id.emp_id.name or ''\">Laura</t>\n"
+"            <span style=\"font-size: 13px;\">t’ha escollit com a avaluador/a en el seu procés de feedback anual 360º.</span>\n"
+"        </p>\n"
+"        <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"            Necessitem que responguis aquest qüestionari d’avaluació <a style=\"text-decoration:none;box-sizing:border-box;font-weight:bold;color:#800080\" t-att-href=\"(object.get_start_url())\" t-out=\"object.survey_id.title or ''\"></a>, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).\n"
+"        </p>\n"
+"        <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"            En cas que siguis escollida per participar en l’espai de feedback presencial, t’hi convocarem una vegada haguem rebut totes les respostes.\n"
+"        </p>\n"
+"    </t>\n"
+"    <t t-else=\"\">\n"
+"        <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"            Necessitem que responguis aquest qüestionari d’auto-avaluació <a style=\"text-decoration:none;box-sizing:border-box;font-weight:bold;color:#800080\" t-att-href=\"(object.get_start_url())\" t-out=\"object.survey_id.title or ''\"></a>, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).\n"
+"        </p>\n"
+"    </t>\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Si tens dubtes sobre el procés de feedback, no dubtis a contactar-nos.\n"
+"    </p>\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Moltes gràcies!\n"
+"    </p>\n"
+"</div>"
 
 #. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_task_kanban
@@ -306,6 +397,49 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_task_kanban
 msgid "<span>]&amp;nbsp;</span>"
 msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report__absence_id
+msgid "Absence"
+msgstr "Absència"
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report__absence_from
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_hr_attendance_overlapping_report_search
+msgid "Absence From"
+msgstr "Absència de"
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report__absence_full_day
+msgid "Absence Full Day"
+msgstr "Absència dia complet"
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report__absence_state
+msgid "Absence State"
+msgstr "Absència Estat"
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report__absence_to
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_hr_attendance_overlapping_report_search
+msgid "Absence To"
+msgstr "Absència fins"
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report__absence_type
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_hr_attendance_overlapping_report_search
+msgid "Absence Type"
+msgstr "Absència Tipus"
+
+#. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_hr_attendance_overlapping_report_search
+msgid "Absence full day"
+msgstr "Absència dia complet"
+
+#. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_hr_attendance_overlapping_report_search
+msgid "Absence partial day"
+msgstr "Absència dia parcial"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_employee__som_is_absent_regardless_state
@@ -424,8 +558,14 @@ msgstr ""
 
 #. module: somenergia_custom
 #: model:ir.model,name:somenergia_custom.model_hr_attendance
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report__attendance_id
 msgid "Attendance"
 msgstr "Assistència"
+
+#. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_hr_attendance_overlapping_report
+msgid "Attendance Overlapping Report"
+msgstr ""
 
 #. module: somenergia_custom
 #: model:ir.model,name:somenergia_custom.model_hr_attendance_overtime
@@ -464,6 +604,40 @@ msgstr "Bloquejat"
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_contract_import_form
 msgid "Cancel"
 msgstr ""
+
+#. module: somenergia_custom
+#. odoo-python
+#: code:addons/somenergia_custom/models/hr_attendance.py:0
+#, python-format
+msgid ""
+"Cannot create new absence record for %(empl_name)s, the employee has attendances in this period of time:\n"
+"%(att_name)sempl_name"
+msgstr ""
+"No es pot registrar l'absència per a %(empl_name)s, l'empledada té assitècies en aquest període:\n"
+"%(att_name)sempl_name"
+
+#. module: somenergia_custom
+#. odoo-python
+#: code:addons/somenergia_custom/models/hr_attendance.py:0
+#, python-format
+msgid ""
+"Cannot create new attendance record for %(empl_name)s, the employee has absences in this period of time:\n"
+"%(abs_name)sempl_name"
+msgstr ""
+"No es pot registrar l'assitència per a %(empl_name)s, l'empledada té absències en aquest període:\n"
+"%(abs_name)sempl_name"
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report__check_in
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_hr_attendance_overlapping_report_search
+msgid "Check In"
+msgstr "Entrada"
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report__check_out
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_hr_attendance_overlapping_report_search
+msgid "Check Out"
+msgstr "Sortida"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__som_cw_code
@@ -582,6 +756,7 @@ msgstr "Descripció"
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_appraisal_generate_wizard__display_name
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_absence__display_name
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report__display_name
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract_import_wizard__display_name
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__display_name
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__display_name
@@ -598,8 +773,10 @@ msgstr ""
 
 #. module: somenergia_custom
 #: model:ir.model,name:somenergia_custom.model_hr_employee
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report__employee_id
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__som_employee_id
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_attendance_overtime_search
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_hr_attendance_overlapping_report_search
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_worked_week_search
 msgid "Employee"
 msgstr "Empleat"
@@ -632,6 +809,11 @@ msgstr ""
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract_import_wizard__som_xls
 msgid "Excel document"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_sh_survey_export_wizard__som_hr_appraisal_id
+msgid "Feedback"
 msgstr ""
 
 #. module: somenergia_custom
@@ -721,6 +903,7 @@ msgstr ""
 #. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_appraisal_search_view
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_attendance_overtime_search
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_hr_attendance_overlapping_report_search
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_worked_week_search
 msgid "Group By"
 msgstr ""
@@ -738,6 +921,7 @@ msgstr "Hores assignades"
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_appraisal_generate_wizard__id
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_absence__id
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report__id
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract_import_wizard__id
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week__id
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__id
@@ -815,6 +999,7 @@ msgstr "Estat kanban"
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_appraisal_generate_wizard____last_update
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_absence____last_update
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report____last_update
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract_import_wizard____last_update
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_calendar_week____last_update
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week____last_update
@@ -960,6 +1145,12 @@ msgid "Operation not supported"
 msgstr ""
 
 #. module: somenergia_custom
+#: model:ir.actions.act_window,name:somenergia_custom.hr_attendance_overlapping_report_action
+#: model:ir.ui.menu,name:somenergia_custom.som_hr_attendance_overlapping_report_action
+msgid "Overlapping absences"
+msgstr "Absències solapades"
+
+#. module: somenergia_custom
 #: model:ir.actions.act_window,name:somenergia_custom.som_hr_attendance_report_action
 #: model:ir.ui.menu,name:somenergia_custom.som_menu_hr_attendance_overtime
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.view_som_hr_attendance_report_tree
@@ -1025,6 +1216,7 @@ msgstr "Preparat"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_appraisal__som_got_all_answers
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_appraisal_search_view
 msgid "Received all answers"
 msgstr ""
 
@@ -1141,6 +1333,11 @@ msgid ""
 "Overdue: Due date is already passed\n"
 "Today: Activity date is today\n"
 "Planned: Future activities."
+msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_sh_survey_export_wizard
+msgid "Survey Export Wizard"
 msgstr ""
 
 #. module: somenergia_custom
@@ -1313,6 +1510,11 @@ msgid "Week year"
 msgstr "Setmana any"
 
 #. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_appraisal_search_view
+msgid "With answers pending"
+msgstr ""
+
+#. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_attendance_overtime_search
 msgid "With overtime allowed"
 msgstr "Hores extres permeses"
@@ -1366,8 +1568,8 @@ msgstr "Any"
 
 #. module: somenergia_custom
 #: model:mail.template,subject:somenergia_custom.som_email_template_feedback_start_collaborator
-#: model:mail.template,subject:somenergia_custom.som_email_template_feedback_start_employee
-msgid "[ACCIÓ] Col·laboració en feedback anual 360º!"
+msgid ""
+"[ACCIÓ] Col·laboració en feedback anual 360º! - {{ object.survey_id.title }}"
 msgstr ""
 
 #. module: somenergia_custom
@@ -1378,6 +1580,13 @@ msgstr ""
 #. module: somenergia_custom
 #: model:mail.template,subject:somenergia_custom.som_email_template_feedback_received_all_answers
 msgid "[ACCIÓ] El teu feedback anual 360º: respostes rebudes!"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:mail.template,subject:somenergia_custom.som_email_template_feedback_start_employee
+msgid ""
+"[ACCIÓ] El teu formulari de feedback anual 360º! - {{ object.survey_id.title"
+" }}"
 msgstr ""
 
 #. module: somenergia_custom
