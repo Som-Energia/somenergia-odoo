@@ -5,16 +5,46 @@
         <field name="model">hr.attendance.overlapping.report</field>
         <field name="arch" type="xml">
             <tree sample="1">
-                <field name="absence_id"/>
-                <field name="employee_id"/>
+                <field name="employee_id" widget="many2one"/>
+                <field name="absence_id" widget="many2one"/>
                 <field name="absence_type"/>
                 <field name="absence_full_day"/>
                 <field name="absence_state"/>
                 <field name="absence_from"/>
                 <field name="absence_to"/>
+                <field name="attendance_id" widget="many2one"/>
                 <field name="check_in"/>
                 <field name="check_out"/>
             </tree>
+        </field>
+    </record>
+
+    <record id="som_view_hr_attendance_overlapping_report_search" model="ir.ui.view">
+        <field name="name">hr.attendance.overlapping.report.search</field>
+        <field name="model">hr.attendance.overlapping.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <filter name="absence_full_day"
+                        string="Absence full day"
+                        domain="[('absence_full_day', '=', 1)]"/>
+                <filter name="absence_partial_day"
+                        string="Absence partial day"
+                        domain="[('absence_full_day', '=', 0)]"/>
+                <separator/>
+                <filter name="absence_from" string="Absence From" date="absence_from"/>
+                <filter name="absence_to" string="Absence To" date="absence_from"/>
+                <filter name="check_in" string="Check In" date="check_in"/>
+                <filter name="check_out" string="Check Out" date="check_out"/>
+                <group expand="1" string="Group By">
+                    <filter string="Employee" name="groupby_employee" domain="[]" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Absence Type" name="groupby_absence_type" domain="[]" context="{'group_by': 'absence_type'}"/>
+                    <filter string="Absence From" name="groupby_absence_from" domain="[]" context="{'group_by': 'absence_from'}"/>
+                    <filter string="Absence To" name="groupby_absence_to" domain="[]" context="{'group_by': 'absence_to'}"/>
+                    <filter string="Check In" name="groupby_check_in" domain="[]" context="{'group_by': 'check_in'}"/>
+                    <filter string="Check Out" name="groupby_check_out" domain="[]" context="{'group_by': 'check_out'}"/>
+                </group>
+            </search>
         </field>
     </record>
 

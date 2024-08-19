@@ -18,6 +18,7 @@ class HrAttendanceOverlappingReport(models.Model):
     absence_state = fields.Char(string="Absence State", readonly=True)
     absence_from = fields.Datetime(readonly=True, index=True)
     absence_to = fields.Datetime(readonly=True, index=True)
+    attendance_id = fields.Many2one(comodel_name="hr.attendance", string="Attendance", readonly=True)
     check_in = fields.Datetime(readonly=True, index=True)
     check_out = fields.Datetime(readonly=True, index=True)
 
@@ -33,6 +34,7 @@ class HrAttendanceOverlappingReport(models.Model):
             hl.state as absence_state,
             hl.date_from as absence_from,
             hl.date_to as absence_to,
+            ha.id as attendance_id,
             ha.check_in as check_in,
             ha.check_out as check_out
            """
@@ -45,8 +47,6 @@ class HrAttendanceOverlappingReport(models.Model):
             inner join hr_employee he on he.id = hl.employee_id
             inner join hr_leave_type hlt on hlt.id = hl.holiday_status_id
             inner join hr_attendance ha on
-                hl.employee_id = ha.employee_id
-                and
                 hl.employee_id = ha.employee_id
                 and
                 (
