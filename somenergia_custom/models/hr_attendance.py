@@ -121,11 +121,14 @@ class HrAttendance(models.Model):
             feature_flag_date_from = datetime.strptime(str_date, '%Y-%m-%d')
         except Exception:
             pass
+        leave_from_id = self._context.get('leave_from_id', False)
         for att_id in self.filtered(lambda x: x.check_in > feature_flag_date_from):
             domain_aux = [
                 ("employee_id", "=", att_id.employee_id.id),
                 ("state", "in", ["confirm", "validate"]),
             ]
+            if leave_from_id:
+                domain_aux.append(('id', '=', leave_from_id.id))
             emp_leave_ids = self.env["hr.leave"].search(domain_aux).filtered(
                 lambda x: (
                         (
@@ -159,10 +162,19 @@ class HrAttendance(models.Model):
                 )
             )
             if emp_leave_ids:
-                raise exceptions.ValidationError(
-                    _("Cannot create new attendance record for %(empl_name)s, "
-                      "the employee has absences in this period of time:\n%(abs_name)s" % {
-                          'empl_name': att_id.employee_id.name,
-                          'abs_name': emp_leave_ids[0].name_get(),
-                      })
-                )
+                if leave_from_id:
+                    raise exceptions.ValidationError(
+                        _("Cannot create new absence record for %(empl_name)s, "
+                          "the employee has attendances in this period of time:\n%(att_name)s" % {
+                              'empl_name': att_id.employee_id.name,
+                              'att_name': att_id.name_get(),
+                          })
+                    )
+                else:
+                    raise exceptions.ValidationError(
+                        _("Cannot create new attendance record for %(empl_name)s, "
+                          "the employee has absences in this period of time:\n%(abs_name)s" % {
+                              'empl_name': att_id.employee_id.name,
+                              'abs_name': emp_leave_ids[0].name_get(),
+                          })
+                    )

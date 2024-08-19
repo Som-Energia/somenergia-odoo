@@ -134,4 +134,4 @@ class HolidaysRequest(models.Model):
                 ("employee_id", "in", absence_id.employee_ids.ids),
             ]
             att_ids = self.env["hr.attendance"].search(domain_aux)
-            att_ids._check_validity_leaves()
+            att_ids.with_context(leave_from_id=absence_id)._check_validity_leaves()
