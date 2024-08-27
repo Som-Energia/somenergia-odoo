@@ -183,9 +183,12 @@ class SomWorkedWeek(models.Model):
                 obj_wr = WorkRegister.model_validate(data)
             except ValidationError as e:
                 return self._exception(e)
-            ww_id = self.env['som.worked.week'].search([('id', '=', obj_wr.worked_week_id)])
+            ww_id = self.env['som.worked.week'].search([
+                ('id', '=', obj_wr.worked_week_id),
+                ('som_employee_id.user_id', '=', obj_wr.user_id),
+            ])
             if not ww_id:
-                return self._exception('The worked week does not exist')
+                return self._exception('The worked week does not exist for this employee')
             area_project_id = self.env['project.project'].search([('id', '=', obj_wr.area_project_id)])
             if not area_project_id:
                 return self._exception('The area project does not exist')

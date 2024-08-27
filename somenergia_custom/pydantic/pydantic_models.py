@@ -8,6 +8,7 @@ import stdnum.eu.vat
 class WorkRegister(
     pydantic.BaseModel,
 ):
+    user_id: int
     worked_week_id: int
     area_project_id: int
     additional_project_id: Optional[int] = None
