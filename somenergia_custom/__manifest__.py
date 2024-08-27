@@ -43,6 +43,7 @@
         'security/hr_attendance_report_security.xml',
         'security/hr_attendance_overtime_security.xml',
         'security/project_security.xml',
+        'security/hr_attendance_overlapping_report_security.xml',
         'views/hr_attendance_view.xml',
         'views/hr_leave_view.xml',
         'views/som_calendar_week_view.xml',
