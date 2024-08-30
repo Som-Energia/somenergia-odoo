@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-19 09:37+0000\n"
-"PO-Revision-Date: 2024-08-19 09:37+0000\n"
+"POT-Creation-Date: 2024-08-30 06:09+0000\n"
+"PO-Revision-Date: 2024-08-30 06:09+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -210,6 +210,25 @@ msgid ""
 "</div>\n"
 "            "
 msgstr ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        <span style=\"font-size: 12px;\">Hola,</span>\n"
+"        <t t-out=\"object.partner_id.name or ''\">Brandon Freeman</t>\n"
+"    </p>\n"
+"    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Cal que responguis aquest qüestionari referent a un procés de Feedback.\n"
+"    </p>\n"
+"\n"
+"    <div style=\"margin: 16px 0px 20px 0px;\">\n"
+"        <a t-att-href=\"(object.get_start_url())\" t-out=\"object.survey_id.title or ''\" style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\">\n"
+"            Començar questionari\n"
+"        </a>\n"
+"    </div>\n"
+"    <p style=\"margin: 0px 0px 20px 0px; font-size: 13px;\">\n"
+"        Moltes gràcies!\n"
+"    </p>\n"
+"</div>\n"
+"            "
 
 #. module: somenergia_custom
 #: model:mail.template,body_html:somenergia_custom.som_email_template_feedback_received_all_answers
@@ -604,28 +623,6 @@ msgstr "Bloquejat"
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_contract_import_form
 msgid "Cancel"
 msgstr ""
-
-#. module: somenergia_custom
-#. odoo-python
-#: code:addons/somenergia_custom/models/hr_attendance.py:0
-#, python-format
-msgid ""
-"Cannot create new absence record for %(empl_name)s, the employee has attendances in this period of time:\n"
-"%(att_name)sempl_name"
-msgstr ""
-"No es pot registrar l'absència per a %(empl_name)s, l'empledada té assitècies en aquest període:\n"
-"%(att_name)sempl_name"
-
-#. module: somenergia_custom
-#. odoo-python
-#: code:addons/somenergia_custom/models/hr_attendance.py:0
-#, python-format
-msgid ""
-"Cannot create new attendance record for %(empl_name)s, the employee has absences in this period of time:\n"
-"%(abs_name)sempl_name"
-msgstr ""
-"No es pot registrar l'assitència per a %(empl_name)s, l'empledada té absències en aquest període:\n"
-"%(abs_name)sempl_name"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_attendance_overlapping_report__check_in
@@ -1088,6 +1085,24 @@ msgstr ""
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_som_worked_week__activity_type_id
 msgid "Next Activity Type"
+msgstr ""
+
+#. module: somenergia_custom
+#. odoo-python
+#: code:addons/somenergia_custom/models/hr_attendance.py:0
+#, python-format
+msgid ""
+"No es pot registrar l'absència per a %(empl_name)s, l'empledada té assitències en aquest període de temps:\n"
+"%(att_name)sempl_name"
+msgstr ""
+
+#. module: somenergia_custom
+#. odoo-python
+#: code:addons/somenergia_custom/models/hr_attendance.py:0
+#, python-format
+msgid ""
+"No es pot registrar l'assitència per a %(empl_name)s, l'empledada té absències en aquest període de temps:\n"
+"%(abs_name)sempl_name"
 msgstr ""
 
 #. module: somenergia_custom

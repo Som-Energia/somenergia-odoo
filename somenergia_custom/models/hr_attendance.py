@@ -164,16 +164,16 @@ class HrAttendance(models.Model):
             if emp_leave_ids:
                 if leave_from_id:
                     raise exceptions.ValidationError(
-                        _("Cannot create new absence record for %(empl_name)s, "
-                          "the employee has attendances in this period of time:\n%(att_name)s" % {
+                        _("No es pot registrar l'absència per a %(empl_name)s, "
+                          "l'empledada té assitències en aquest període de temps:\n%(att_name)s" % {
                               'empl_name': att_id.employee_id.name,
                               'att_name': att_id.name_get(),
                           })
                     )
                 else:
                     raise exceptions.ValidationError(
-                        _("Cannot create new attendance record for %(empl_name)s, "
-                          "the employee has absences in this period of time:\n%(abs_name)s" % {
+                        _("No es pot registrar l'assitència per a %(empl_name)s, "
+                          "l'empledada té absències en aquest període de temps:\n%(abs_name)s" % {
                               'empl_name': att_id.employee_id.name,
                               'abs_name': emp_leave_ids[0].name_get(),
                           })
