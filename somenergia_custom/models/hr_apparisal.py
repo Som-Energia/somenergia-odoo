@@ -81,10 +81,15 @@ class HrAppraisal(models.Model):
         return self.env["ir.config_parameter"].sudo().get_param("som_mail_entorn_laboral")
 
     def action_initialize_appraisal(self):
-        super().action_initialize_appraisal()
+        stage_initial_id = self.env["hr.appraisal.stages"].search([("sequence", "=", 0)])
+        stage_to_start_id = self.env["hr.appraisal.stages"].search([("sequence", "=", 1)])
         tmpl_id = self.env.ref('somenergia_custom.som_email_template_feedback_initialize')
-        for record in self.filtered(lambda x: x.som_type == 'annual_360'):
-            tmpl_id.send_mail(record.id, force_send=True)
+        for record in self.filtered(lambda x: x.state.id == stage_initial_id.id):
+            record.state = stage_to_start_id.id
+            record.check_initial = False
+            record.check_draft = True
+            if record.som_type == 'annual_360':
+                tmpl_id.send_mail(record.id, force_send=True)
 
     def _existing_answer(self, survey_id, employee_id):
         self.ensure_one()
@@ -120,7 +125,7 @@ class HrAppraisal(models.Model):
 
         if self.hr_emp and self.emp_survey_id and not self._existing_answer(self.emp_survey_id, self.emp_id):
             self.ensure_one()
-            if not self.response_id :
+            if not self.response_id:
                 response = self.emp_survey_id._create_answer(
                     survey_id=self.emp_survey_id.id,
                     deadline=self.appraisal_deadline,
