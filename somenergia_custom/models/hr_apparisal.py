@@ -86,6 +86,11 @@ class HrAppraisal(models.Model):
         for record in self.filtered(lambda x: x.som_type == 'annual_360'):
             tmpl_id.send_mail(record.id, force_send=True)
 
+    def _existing_answer(self, survey_id, employee_id):
+        self.ensure_one()
+        return len(self.som_answer_ids.filtered(
+            lambda x: x.survey_id == survey_id and x.partner_id == employee_id.user_id.partner_id)) > 0
+
     def action_start_appraisal(self):
         """This function will start the appraisal by sending emails to the corresponding employees
         specified in the appraisal"""
@@ -99,21 +104,23 @@ class HrAppraisal(models.Model):
         for appraisal_reviewers, survey_id in appraisal_reviewers_list:
             if len(appraisal_reviewers) == 1 and appraisal_reviewers == self.emp_id:
                 continue
-            for reviewers in appraisal_reviewers:
+            for employee_id in appraisal_reviewers:
+                if self._existing_answer(survey_id, employee_id):
+                    continue
                 response = survey_id._create_answer(
                     survey_id=survey_id.id,
                     deadline=self.appraisal_deadline,
-                    partner=reviewers.user_id.partner_id,
-                    email=reviewers.work_email,
+                    partner=employee_id.user_id.partner_id,
+                    email=employee_id.work_email,
                     appraisal_id=self.ids[0],
                 )
                 template_to_send_id = tmpl_col_id if self.som_type == 'annual_360' else tmpl_generic_id
                 template_to_send_id.send_mail(response.id, force_send=True)
                 send_count += 1
 
-        if self.hr_emp and self.emp_survey_id:
+        if self.hr_emp and self.emp_survey_id and not self._existing_answer(self.emp_survey_id, self.emp_id):
             self.ensure_one()
-            if not self.response_id:
+            if not self.response_id :
                 response = self.emp_survey_id._create_answer(
                     survey_id=self.emp_survey_id.id,
                     deadline=self.appraisal_deadline,
@@ -128,7 +135,6 @@ class HrAppraisal(models.Model):
             template_to_send_id.send_mail(response.id, force_send=True)
             send_count += 1
 
-        # self.write({"tot_sent_survey": send_count})
         rec = self.env["hr.appraisal.stages"].search([("sequence", "=", 2)])
         self.state = rec.id
         self.check_sent = True
