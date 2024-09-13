@@ -167,6 +167,46 @@
         </record>
 
 
+        <!-- Template Reminder Feedback - Collaborators -->
+        <record id="som_email_template_feedback_remind_collaborator" model="mail.template">
+            <field name="name">Feedback: Reminder Collaborator</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="email_from">{{ object.appraisal_id.company_id.email }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="subject">[ACCIÓ] Recordatori col·laboració en feedback anual 360º! - {{ object.survey_id.title }}</field>
+            <field name="description">Enviar recordatori mail enquestes de Feedback col·laboradores</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        <span style="font-size: 13px;">Hola</span><span style="font-size: 13px;">,</span>
+        <t t-out="object.partner_id.name or ''">Brandon Freeman</t>
+    </p>
+    <t t-if="object.appraisal_id.emp_id.user_id.partner_id != object.partner_id">
+        <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+            <span style="font-size: 13px;">Et recordem que tens pendent respondre aquest qüestionari <a style="font-weight:bold;color:#800080" t-att-href="(object.get_start_url())" t-out="object.survey_id.title or ''"></a> com a avaluador/a en el procés de feedback anual 360º de </span>
+            <t t-out="object.appraisal_id.emp_id.name or ''">Laura</t>
+            <span style="font-size: 13px;">.</span>
+        </p>
+    </t>
+    <t t-else="">
+        <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+            Et recordem que tens pendent respondre aquest qüestionari d’auto-avaluació <a style="font-weight:bold;color:#800080" t-att-href="(object.get_start_url())" t-out="object.survey_id.title or ''"></a>, que ens servirà per a poder fer l'informe competencial transversal.
+        </p>
+    </t>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Si tens dubtes sobre el procés de feedback, no dubtis a contactar-nos.
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Moltes gràcies!
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+
+
+
         <!-- Template Received all answers Feedback -->
         <record id="som_email_template_feedback_received_all_answers" model="mail.template">
             <field name="name">Feedback: Received all answers</field>
