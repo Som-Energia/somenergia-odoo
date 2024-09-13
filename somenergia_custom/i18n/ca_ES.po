@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-30 06:09+0000\n"
-"PO-Revision-Date: 2024-08-30 06:09+0000\n"
+"POT-Creation-Date: 2024-09-13 10:23+0000\n"
+"PO-Revision-Date: 2024-09-13 10:23+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -341,6 +341,61 @@ msgstr ""
 "        Moltes gràcies per la teva participació i desitgem que sigui un procés del tot profitós!\n"
 "    </p>\n"
 "</div>"
+
+#. module: somenergia_custom
+#: model:mail.template,body_html:somenergia_custom.som_email_template_feedback_remind_collaborator
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        <span style=\"font-size: 13px;\">Hola</span><span style=\"font-size: 13px;\">,</span>\n"
+"        <t t-out=\"object.partner_id.name or ''\">Brandon Freeman</t>\n"
+"    </p>\n"
+"    <t t-if=\"object.appraisal_id.emp_id.user_id.partner_id != object.partner_id\">\n"
+"        <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"            <span style=\"font-size: 13px;\">Et recordem que tens pendent respondre aquest qüestionari <a style=\"font-weight:bold;color:#800080\" t-att-href=\"(object.get_start_url())\" t-out=\"object.survey_id.title or ''\"></a> com a avaluador/a en el procés de feedback anual 360º de </span>\n"
+"            <t t-out=\"object.appraisal_id.emp_id.name or ''\">Laura</t>\n"
+"            <span style=\"font-size: 13px;\">.</span>\n"
+"        </p>\n"
+"    </t>\n"
+"    <t t-else=\"\">\n"
+"        <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"            Et recordem que tens pendent respondre aquest qüestionari d’auto-avaluació <a style=\"font-weight:bold;color:#800080\" t-att-href=\"(object.get_start_url())\" t-out=\"object.survey_id.title or ''\"></a>, que ens servirà per a poder fer l'informe competencial transversal.\n"
+"        </p>\n"
+"    </t>\n"
+"    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Si tens dubtes sobre el procés de feedback, no dubtis a contactar-nos.\n"
+"    </p>\n"
+"    <p style=\"margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Moltes gràcies!\n"
+"    </p>\n"
+"</div>\n"
+"            "
+msgstr ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        <span style=\"font-size: 13px;\">Hola,</span>\n"
+"        <t t-out=\"object.partner_id.name or ''\">Brandon Freeman</t>\n"
+"    </p>\n"
+"    <t t-if=\"object.appraisal_id.emp_id.user_id.partner_id != object.partner_id\">\n"
+"        <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"            <span style=\"font-size: 13px;\">Et recordem que tens pendent respondre aquest qüestionari <a style=\"text-decoration:none;box-sizing:border-box;font-weight:bold;color:#800080\" t-att-href=\"(object.get_start_url())\" t-out=\"object.survey_id.title or ''\"></a> com a avaluador/a en el procés de feedback anual 360º de </span>\n"
+"            <t t-out=\"object.appraisal_id.emp_id.name or ''\">Laura</t>\n"
+"            <span style=\"font-size: 13px;\">.</span>\n"
+"        </p>\n"
+"    </t>\n"
+"    <t t-else=\"\">\n"
+"        <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"            Et recordem que tens pendent respondre aquest qüestionari d’auto-avaluació <a style=\"text-decoration:none;box-sizing:border-box;font-weight:bold;color:#800080\" t-att-href=\"(object.get_start_url())\" t-out=\"object.survey_id.title or ''\"></a>, que ens servirà per a poder fer l'informe competencial transversal.\n"
+"        </p>\n"
+"    </t>\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Si tens dubtes sobre el procés de feedback, no dubtis a contactar-nos.\n"
+"    </p>\n"
+"    <p style=\"box-sizing:border-box;margin: 0px 0px 10px 0px; font-size: 13px;\">\n"
+"        Moltes gràcies!\n"
+"    </p>\n"
+"</div>\n"
+"            "
 
 #. module: somenergia_custom
 #: model:mail.template,body_html:somenergia_custom.som_email_template_feedback_start_collaborator
@@ -804,6 +859,11 @@ msgid "Enviar mail genèric per emplenar enquestes"
 msgstr ""
 
 #. module: somenergia_custom
+#: model:mail.template,description:somenergia_custom.som_email_template_feedback_remind_collaborator
+msgid "Enviar recordatori mail enquestes de Feedback col·laboradores"
+msgstr ""
+
+#. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_contract_import_wizard__som_xls
 msgid "Excel document"
 msgstr ""
@@ -844,6 +904,11 @@ msgstr ""
 #. module: somenergia_custom
 #: model:mail.template,name:somenergia_custom.som_email_template_feedback_received_all_answers
 msgid "Feedback: Received all answers"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:mail.template,name:somenergia_custom.som_email_template_feedback_remind_collaborator
+msgid "Feedback: Reminder Collaborator"
 msgstr ""
 
 #. module: somenergia_custom
@@ -1264,6 +1329,11 @@ msgid "Scope"
 msgstr "Àmbit"
 
 #. module: somenergia_custom
+#: model:ir.actions.server,name:somenergia_custom.som_send_reminder_collaboration
+msgid "Send collaboration reminder"
+msgstr "Enviar mail recordatori a la col·laboradora"
+
+#. module: somenergia_custom
 #: model:ir.actions.server,name:somenergia_custom.som_test_changes_cron_ir_actions_server
 #: model:ir.cron,cron_name:somenergia_custom.som_test_changes_cron
 msgid "Som - Changes to test database"
@@ -1607,6 +1677,13 @@ msgstr ""
 #. module: somenergia_custom
 #: model:mail.template,subject:somenergia_custom.som_email_template_feedback_generic
 msgid "[ACCIÓ] Emplena aquesta enquesta"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:mail.template,subject:somenergia_custom.som_email_template_feedback_remind_collaborator
+msgid ""
+"[ACCIÓ] Recordatori col·laboració en feedback anual 360º! - {{ "
+"object.survey_id.title }}"
 msgstr ""
 
 #. module: somenergia_custom
