@@ -15,3 +15,4 @@ from . import project_task
 from . import hr_contract
 from . import hr_apparisal
 from . import survey_user
+from . import hr_appraisal_survey
