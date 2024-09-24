@@ -12,7 +12,6 @@ class HRAttendanceOvertime(models.Model):
     _inherit = "hr.attendance.overtime"
 
     def action_view_attendances(self):
-        # action_id = self.env.ref('hr_attendance.hr_attendance_action')
         tree_view_id = self.env.ref('hr_attendance.view_attendance_tree')
         date_to = fields.Date.add(self.date, days=1)
         domain = [
@@ -35,9 +34,7 @@ class HRAttendanceOvertime(models.Model):
         return action_open_attendances
 
     def _get_weekdays_of_year_until_today(self):
-        # Get today's date
-        # TODO: change for real today when deploy to prod
-        today = datetime.date(2024, 9, 17) # datetime.date.today()
+        today = datetime.date.today()
 
         # Start on January 1st of the current year
         start_date = datetime.date(today.year, 1, 1)
@@ -55,47 +52,55 @@ class HRAttendanceOvertime(models.Model):
         return weekdays
 
     def _create_overtime_fixing_attendance(self, employee_id, str_day):
-        att_reason_id = self.env.ref("hr_attendance_reason.hr_act_reason_1")
-        comment = "Ajust dia no treballat"
-        att_id = self.env['hr.attendance'].create({
-            'employee_id': employee_id.id,
-            'check_in': str_day,
-            'check_out': str_day,
-            'attendance_reason_ids': [(4, att_reason_id.id)],
-            'som_comments': comment,
-        })
-        return att_id
+        try:
+            att_reason_id = self.env.ref("hr_attendance_reason.hr_act_reason_1")
+            comment = "Assistència incidència HE"
+            att_id = self.env['hr.attendance'].create({
+                'employee_id': employee_id.id,
+                'check_in': str_day,
+                'check_out': str_day,
+                'attendance_reason_ids': [(4, att_reason_id.id)],
+                'som_comments': comment,
+            })
+            return att_id
+        except Exception as e:
+            _logger.info('Exception : %s ' % e)
+            return False
 
+    def _write_file_result_fix_compute_overtime(self, str_result):
+        path_odoo_module = Path(os.path.dirname(os.path.abspath(__file__))).parent
+        file = "files/overtime_check_%s.txt" % (datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+        path_file_export = os.path.join(path_odoo_module, file)
+        with open(path_file_export, 'w') as file:
+            file.write(str_result)
 
     def _do_fix_compute_overtime(self):
-        _logger.info("_do_fix_compute_overtime: start")
+        _logger.info("_do_fix_compute_overtime: START")
         days_of_year_until_today = self._get_weekdays_of_year_until_today()
         str_result = ''
-        for emp_id in self.env['hr.employee'].search([('id', 'not in', [275,156])], limit=2):
+        for emp_id in self.env['hr.employee'].search([('id', 'not in', [171,275,156])], limit=1000):
             _logger.info("_do_fix_compute_overtime: checking employee '%s':" % emp_id.name)
+
             att_ids = self.env['hr.attendance'].search([('employee_id', '=', emp_id.id)])
             attendance_days_iso = [day.date().isoformat() for day in att_ids.mapped('check_in')]
 
             overtime_ids = self.env['hr.attendance.overtime'].search([('employee_id', '=', emp_id.id)])
             overtime_days_iso = [day.isoformat() for day in overtime_ids.mapped('date')]
 
-            list_days_to_check = attendance_days_iso + overtime_days_iso
+            list_days_to_check = list(set(attendance_days_iso + overtime_days_iso))
 
             days_to_check = [
                 day for day in days_of_year_until_today if day not in list_days_to_check
             ]
             for day in days_to_check:
-                # compute theoretical hours
+                # compute theoretical hours of the day
                 th = self.env['hr.attendance.theoretical.time.report']._theoretical_hours(
                     emp_id.sudo(), fields.Date.from_string(day)
                 )
                 if th > 0:
-                    str_result += "employee: %s | day: %s | th: %s \n" % (emp_id.name, day, str(th))
                     fixing_att_id = self._create_overtime_fixing_attendance(emp_id, day)
+                    str_result += "employee: %s | day: %s | th: %s \n" % (emp_id.name, day, str(th))
 
-        path_odoo_module = Path(os.path.dirname(os.path.abspath(__file__))).parent
-        file = "files/overtime_check_%s.txt" % (datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
-        path_file_export = os.path.join(path_odoo_module, file)
-        with open(path_file_export, 'w') as file:
-            file.write(str_result)
-        _logger.info("_do_fix_compute_overtime: finish")
+        # just for debug use
+        # self._write_file_result_fix_compute_overtime(str_result)
+        _logger.info("_do_fix_compute_overtime: END")
