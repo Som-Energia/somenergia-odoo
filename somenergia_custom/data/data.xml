@@ -188,7 +188,7 @@
             <field name="model_id" ref="somenergia_custom.model_hr_attendance_overtime" />
             <field name="state">code</field>
             <field name="code">
-                model._do_fix_compute_overtime()
+                model._do_fix_compute_overtime(datetime.date.today())
             </field>
         </record>
 
