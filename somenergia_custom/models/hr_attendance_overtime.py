@@ -75,13 +75,15 @@ class HRAttendanceOvertime(models.Model):
         _logger.info("_do_fix_compute_overtime: START")
         days_of_year_until_date = self._get_weekdays_of_year_until_date(date_to)
         str_result = ''
-        for emp_id in self.env['hr.employee'].search([('id', 'not in', [171,275,156])], limit=1000):
+        for emp_id in self.env['hr.employee'].search([
+            ('id', 'not in', [171,275,156]),
+        ], limit=1000):
             _logger.info("_do_fix_compute_overtime: checking employee '%s':" % emp_id.name)
 
             att_ids = self.env['hr.attendance'].search([
                 ('employee_id', '=', emp_id.id),
                 ('check_out', '!=', False),
-                ('check_out', '<', fields.Date.to_string(date_to)),
+                ('check_out', '<=', fields.Date.to_string(date_to)),
             ])
             attendance_days_iso = [day.date().isoformat() for day in att_ids.mapped('check_in')]
 
