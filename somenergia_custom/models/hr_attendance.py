@@ -49,13 +49,17 @@ class HrAttendance(models.Model):
         return checkout_time
 
     def autoclose_attendance(self, reason):
-        self.ensure_one()
-        checkout_time = self.get_checkout_time()
-        vals = {"check_out": checkout_time}
-        if reason:
-            vals["attendance_reason_ids"] = [(4, reason.id)]
-        self.write(vals)
-        self.send_mail_autoclose()
+        try:
+            self.ensure_one()
+            checkout_time = self.get_checkout_time()
+            vals = {"check_out": self.check_in}
+            if reason:
+                vals["attendance_reason_ids"] = [(4, reason.id)]
+            self.write(vals)
+            self.send_mail_autoclose()
+        except Exception as e:
+            _logger.info("Exception 'autoclose_attendance': %s " % e)
+            return False
 
     @api.model
     def som_check_attendance_reason(self):
