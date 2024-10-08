@@ -68,7 +68,7 @@ class HrAttendance(models.Model):
             ("attendance_reason_ids", "ilike", att_reason_id.name)
         ])
         att_remove_reason_ids = att_ids.filtered(
-            lambda x: x.check_in != x.check_out
+            lambda x: x.check_in != x.check_out and x.check_out != x.get_checkout_time()
         )
         att_remove_reason_ids.write({
             'attendance_reason_ids': [(3, att_reason_id.id)]
