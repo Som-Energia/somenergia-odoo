@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<odoo>
+
+    <record id="som_hr_leave_stress_day_view_list" model="ir.ui.view">
+        <field name="model">hr.leave.stress.day</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_stress_day_view_list"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="som_type"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
