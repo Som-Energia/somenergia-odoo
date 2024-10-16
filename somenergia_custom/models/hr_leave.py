@@ -135,3 +135,8 @@ class HolidaysRequest(models.Model):
             ]
             att_ids = self.env["hr.attendance"].search(domain_aux)
             att_ids.with_context(leave_from_id=absence_id)._check_validity_leaves()
+
+    @api.constrains('date_from', 'date_to')
+    def _check_stress_day(self):
+        if self.env.company.som_restrictive_stress_days:
+            return super()._check_stress_day()
