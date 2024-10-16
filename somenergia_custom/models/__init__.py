@@ -16,3 +16,5 @@ from . import hr_contract
 from . import hr_apparisal
 from . import survey_user
 from . import hr_appraisal_survey
+from . import res_company
+from . import res_config_settings

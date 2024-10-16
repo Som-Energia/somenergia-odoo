@@ -56,6 +56,7 @@
         'views/hr_contract_view.xml',
         'views/hr_appraisal.xml',
         'views/hr_appraisal_survey.xml',
+        'views/res_config_settings_views.xml',
         'wizards/hr_contract_import_wizard.xml',
         'wizards/hr_appraisal_generate_wizard.xml',
         'wizards/sh_survey_export_xls_wizard_views.xml',
