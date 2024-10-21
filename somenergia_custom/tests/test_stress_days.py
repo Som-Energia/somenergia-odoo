@@ -237,7 +237,7 @@ class TestSomHrLeaveStressDays(TransactionCase):
 
         dict_leave_emp_sd = {
             'worker': self.employee_emp.user_id.email,
-            'start_time': datetime(2024, 11, 5,7, 0, 0),
+            'start_time': datetime(2024, 11, 5, 7, 0, 0),
             'end_time': datetime(2024, 11, 5, 14, 0, 0),
         }
         dict_leave_manager_sd = {

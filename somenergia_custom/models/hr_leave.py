@@ -106,7 +106,7 @@ class HolidaysRequest(models.Model):
         # we got a list of mail lists by department
         list_aux = [dep_id.member_ids.mapped("user_id.email") for dep_id in department_ids]
         # we get a unique list with all mails
-        list_result = set(list([mail for sublist in list_aux for mail in sublist]))
+        list_result = list(set([mail for sublist in list_aux for mail in sublist]))
         return list_result
 
     @api.model
