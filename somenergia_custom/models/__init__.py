@@ -19,3 +19,4 @@ from . import hr_appraisal_survey
 from . import res_company
 from . import res_config_settings
 from . import hr_leave_stress_day
+from . import hr_holidays_public
