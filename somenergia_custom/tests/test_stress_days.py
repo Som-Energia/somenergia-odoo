@@ -226,7 +226,7 @@ class TestSomHrLeaveStressDays(TransactionCase):
         self.assertEqual(len(leaves_post), len(leaves_prev) + 1)
 
     @freeze_time('2024-10-15')
-    def test_get_leaves_stress_no_service_day_with_departments_same_dep(self):
+    def test_get_leaves_stress_day_no_service_with_departments_same_dep(self):
         self.company.som_restrictive_stress_days = False
         self.employee_user.write({
             'resource_calendar_id': self.default_calendar.id,
@@ -277,7 +277,7 @@ class TestSomHrLeaveStressDays(TransactionCase):
         self.assertIn(dict_leave_manager_sd, leaves_post)
 
     @freeze_time('2024-10-15')
-    def test_get_leaves_stress_no_service_day_with_departments_different_dep(self):
+    def test_get_leaves_stress_day_no_service_with_departments_different_dep(self):
         self.company.som_restrictive_stress_days = False
         self.employee_user.write({
             'resource_calendar_id': self.default_calendar.id,
@@ -326,6 +326,68 @@ class TestSomHrLeaveStressDays(TransactionCase):
         self.assertEqual(len(leaves_post), len(leaves_prev) + 2)
         self.assertNotIn(dict_leave_emp_sd, leaves_post)
         self.assertIn(dict_leave_manager_sd, leaves_post)
+
+    @freeze_time('2024-10-15')
+    def test_get_leaves_stress_day_others_with_departments_same_dep(self):
+        self.company.som_restrictive_stress_days = False
+        self.employee_user.write({
+            'resource_calendar_id': self.default_calendar.id,
+        })
+        self.employee_emp.write({
+            'department_id': self.dept_rd.id,
+        })
+        self.manager_emp.write({
+            'department_id': self.dept_rd.id,
+        })
+
+        leaves_prev = self.env['hr.leave'].get_leaves('2024-11-01', '2024-11-15')
+
+        self.env['hr.leave.stress.day'].create({
+            'name': 'Super Event No Type',
+            'company_id': self.company.id,
+            'start_date': datetime(2024, 11, 5),
+            'end_date': datetime(2024, 11, 5),
+            'color': 1,
+            'resource_calendar_id': self.default_calendar.id,
+            'department_ids': [(6, 0, [self.dept_rd.id])],
+            'som_type': False,
+        })
+
+        self.env['hr.leave.stress.day'].create({
+            'name': 'Super Event Others',
+            'company_id': self.company.id,
+            'start_date': datetime(2024, 11, 6),
+            'end_date': datetime(2024, 11, 6),
+            'color': 1,
+            'resource_calendar_id': self.default_calendar.id,
+            'department_ids': [(6, 0, [self.dept_rd.id])],
+            'som_type': 'others',
+        })
+
+        self.env['hr.leave'].with_user(self.employee_user.id).create({
+            'name': 'coucou',
+            'holiday_status_id': self.leave_type.id,
+            'employee_id': self.employee_emp.id,
+            'date_from': datetime(2024, 11, 3),
+            'date_to': datetime(2024, 11, 3),
+            'number_of_days': 1,
+        })
+
+        dict_leave_emp_sd = {
+            'worker': self.employee_emp.user_id.email,
+            'start_time': datetime(2024, 11, 5, 7, 0, 0),
+            'end_time': datetime(2024, 11, 5, 14, 0, 0),
+        }
+        dict_leave_manager_sd = {
+            'worker': self.manager_emp.user_id.email,
+            'start_time': datetime(2024, 11, 5, 7, 0, 0),
+            'end_time': datetime(2024, 11, 5, 14, 0, 0),
+        }
+
+        leaves_post = self.env['hr.leave'].get_leaves('2024-11-01', '2024-11-15')
+        self.assertEqual(len(leaves_post), len(leaves_prev) + 1)
+        self.assertNotIn(dict_leave_emp_sd, leaves_post)
+        self.assertNotIn(dict_leave_manager_sd, leaves_post)
 
     # Public Holidays
 
@@ -405,3 +467,56 @@ class TestSomHrLeaveStressDays(TransactionCase):
         self.assertEqual(len(festivities_post), len(festivities_prev))
         self.assertNotIn(dict_fest1_sd, festivities_post)
         self.assertNotIn(dict_fest2_sd, festivities_post)
+
+    @freeze_time('2024-10-15')
+    def test_get_festivities_stress_day_others_without_departments(self):
+        self.company.som_restrictive_stress_days = False
+        self.employee_user.write({
+            'resource_calendar_id': self.default_calendar.id,
+        })
+
+        festivities_prev = self.env['hr.holidays.public.line'].get_festivities(
+            '2024-11-01', '2024-11-15'
+        )
+
+        self.env['hr.leave.stress.day'].create({
+            'name': 'Super New Event No Type',
+            'company_id': self.company.id,
+            'start_date': datetime(2024, 11, 5),
+            'end_date': datetime(2024, 11, 6),
+            'color': 1,
+            'resource_calendar_id': self.default_calendar.id,
+            'som_type': False,
+        })
+
+        self.env['hr.leave.stress.day'].create({
+            'name': 'Super New Event Others',
+            'company_id': self.company.id,
+            'start_date': datetime(2024, 11, 7),
+            'end_date': datetime(2024, 11, 7),
+            'color': 1,
+            'resource_calendar_id': self.default_calendar.id,
+            'som_type': 'others',
+        })
+
+        festivities_post = self.env['hr.holidays.public.line'].get_festivities(
+            '2024-11-01', '2024-11-15'
+        )
+
+        dict_fest1_sd = {
+            'date': datetime(2024, 11, 5).date(),
+            'name': 'Super New Event No Type',
+        }
+        dict_fest2_sd = {
+            'date': datetime(2024, 11, 6).date(),
+            'name': 'Super New Event No Type',
+        }
+        dict_fest3_sd = {
+            'date': datetime(2024, 11, 7).date(),
+            'name': 'Super New Event Others',
+        }
+
+        self.assertEqual(len(festivities_post), len(festivities_prev))
+        self.assertNotIn(dict_fest1_sd, festivities_post)
+        self.assertNotIn(dict_fest2_sd, festivities_post)
+        self.assertNotIn(dict_fest3_sd, festivities_post)
