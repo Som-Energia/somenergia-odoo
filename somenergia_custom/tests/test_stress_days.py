@@ -262,8 +262,8 @@ class TestSomHrLeaveStressDays(TransactionCase):
             'name': 'coucou',
             'holiday_status_id': self.leave_type.id,
             'employee_id': self.employee_emp.id,
-            'date_from': datetime(2024, 11, 3),
-            'date_to': datetime(2024, 11, 3),
+            'date_from': datetime(2024, 11, 3, 7),
+            'date_to': datetime(2024, 11, 3, 14),
             'number_of_days': 1,
         })
 
@@ -277,11 +277,17 @@ class TestSomHrLeaveStressDays(TransactionCase):
             'start_time': datetime(2024, 11, 5, 7, 0, 0),
             'end_time': datetime(2024, 11, 5, 14, 0, 0),
         }
+        dict_leave_emp = {
+            'worker': self.employee_emp.user_id.email,
+            'start_time': datetime(2024, 11, 3, 7, 0, 0),
+            'end_time': datetime(2024, 11, 3, 14, 0, 0),
+        }
 
         leaves_post = self.env['hr.leave'].get_leaves('2024-11-01', '2024-11-15')
         self.assertEqual(len(leaves_post), len(leaves_prev) + 3)
         self.assertIn(dict_leave_emp_sd, leaves_post)
         self.assertIn(dict_leave_manager_sd, leaves_post)
+        self.assertIn(dict_leave_emp, leaves_post)
 
     @freeze_time('2024-10-15')
     def test_get_leaves_stress_day_no_service_with_departments_different_dep(self):
