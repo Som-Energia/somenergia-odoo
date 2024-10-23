@@ -58,9 +58,9 @@ class TestHrLeaveType(TestHrHolidaysCommon):
 
         cls.env['hr.leave.type'].search([]).write({'som_eoa_notification_mail': False})
 
-    @freeze_time('2024-11-20')  # useful to be able to cancel the validated time off
+    @freeze_time('2024-11-20')
     def test_get_days_type(self):
-        # {2: [11], 5: [9, 7]}
+        # {2: [11], 5: [7, 9]}
 
         # with no leave types with notification
         result = self.env['hr.leave.type'].get_days_type()
@@ -80,7 +80,7 @@ class TestHrLeaveType(TestHrHolidaysCommon):
             'som_eoa_notification_days': 2,
         })
         result = self.env['hr.leave.type'].get_days_type()
-        self.assertEqual(result, {2: [self.hr_leave_type_1.id, self.hr_leave_type_2.id]})
+        self.assertEqual(result, {2: sorted([self.hr_leave_type_1.id, self.hr_leave_type_2.id])})
 
         # with 2 leave types with notification - different days
         self.hr_leave_type_2.write({
