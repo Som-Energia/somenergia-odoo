@@ -81,14 +81,56 @@ class HRLeaveType(models.Model):
             days_to_end = item[0]
             list_ids_lt = item[1]
             str_date = (datetime.datetime.today().date() + datetime.timedelta(days=days_to_end)).strftime("%d/%m/%Y")
-            str_msg += '\n' if str_msg else ''
-            str_msg += f'Absències que finalitzen en {days_to_end} dies [{str_date}]:'
+            str_msg += '<br/>' if str_msg else ''
+            str_msg += f'<strong>Absències que finalitzen en {days_to_end} dies [{str_date}]:</strong>'
             for id_lt in list_ids_lt:
                 lt_id = self.browse(id_lt)
                 absence_ids = lt_id.get_absences_end_in_days(days_to_end)
-                str_msg += f'\n\n\t{lt_id.name} [{len(absence_ids)}]\n\t'
+                str_msg += f'<br/><br/>{lt_id.name} [{len(absence_ids)}]<br/>'
                 if len(absence_ids) == 0:
                     continue
                 total_no_notify += len(absence_ids)
-                str_msg += ('\n\t'.join([absence_id[0].name_get()[0][1] for absence_id in absence_ids]))
+                str_msg += ('<br/>'.join([absence_id[0].name_get()[0][1] for absence_id in absence_ids]))
         return total_no_notify, str_msg
+
+    @api.model
+    def send_mail_end_of_absences_reminder(self):
+        total_no_notify, str_mail_body = self.get_end_of_absences_mail_text()
+        if total_no_notify == 0:
+            return
+        somadmin_user_id = self.env.ref('base.somadmin')
+        try:
+            mail_html = _("""
+                            <div style="margin: 0px; padding: 0px;">
+                                <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                                    Hola,
+                                    <br/><br/>
+                                    Aquest és el llistat d'absències que finalitzen aviat:
+                                    <br/><br/>
+                                    %s
+                                    <br/><br/>
+                                    <a t-att-href="object.signup_url" style="background-color:#875A7B; padding:8px 16px 8px 16px; text-decoration:none; color:#fff; border-radius:5px" href="https://odoo.somenergia.coop/web#action=321&model=hr.leave&view_type=list&cids=1&menu_id=214" target="_blank" class="btn btn-primary">Veure Absències</a>
+                                    <br/><br/>
+                                    Salut!
+                                </p>
+                            </div>
+                        """) % (
+                    str_mail_body,
+            )
+
+            mail_values = {
+                'author_id': somadmin_user_id.partner_id.id,
+                'body_html': mail_html,
+                'subject': _('Odoo Som - Absències que finalitzen aviat'),
+                'email_from':
+                    somadmin_user_id.email_formatted or somadmin_user_id.company_id.catchall or
+                    somadmin_user_id.company_id.email,
+                'email_to': self.env["ir.config_parameter"].sudo().get_param("som_mail_entorn_laboral"),
+                'auto_delete': False,
+            }
+
+            mail = self.env['mail.mail'].sudo().create(mail_values)
+            mail.send()
+
+        except Exception as e:
+            _logger.exception("End of absences reminder - Unable to send email.")
