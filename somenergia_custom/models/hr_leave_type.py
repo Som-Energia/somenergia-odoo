@@ -38,7 +38,7 @@ class HRLeaveType(models.Model):
             lt_days_ids = lt_ids.filtered(
                 lambda x: x.som_eoa_notification_days == days_notify
             )
-            dict_result.update({days_notify: lt_days_ids.ids})
+            dict_result.update({days_notify: sorted(lt_days_ids.ids)})
 
         return dict_result
 
