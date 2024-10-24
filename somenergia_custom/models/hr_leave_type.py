@@ -52,10 +52,6 @@ class HRLeaveType(models.Model):
         ]
         return self.env['hr.leave'].search(domain)
 
-    def get_msg_absences_end_in_days(self, days_to_end):
-        absence_ids = self.get_absences_end_in_days(days_to_end)
-
-
     @api.model
     def get_end_of_absences_mail_text(self):
         """

@@ -41,6 +41,8 @@ class TestHrLeaveType(TestHrHolidaysCommon):
             'holiday_status_id': cls.hr_leave_type_1.id,
             'date_from': leave_start_datetime,
             'date_to': leave_end_datetime,
+            'request_date_from': leave_start_datetime.date(),
+            'request_date_to': leave_end_datetime.date(),
             'number_of_days': (leave_end_datetime - leave_start_datetime).days,
         })
         cls.holiday_1.with_user(cls.user_hrmanager).action_validate()
@@ -53,6 +55,8 @@ class TestHrLeaveType(TestHrHolidaysCommon):
             'holiday_status_id': cls.hr_leave_type_2.id,
             'date_from': leave_start_datetime_2,
             'date_to': leave_end_datetime_2,
+            'request_date_from': leave_start_datetime_2.date(),
+            'request_date_to': leave_end_datetime_2.date(),
             'number_of_days': (leave_end_datetime_2 - leave_start_datetime_2).days,
         })
 
@@ -119,3 +123,21 @@ class TestHrLeaveType(TestHrHolidaysCommon):
             result, {2: [self.hr_leave_type_1.id],
                      3: sorted([self.hr_leave_type_2.id, self.hr_leave_type_3.id])}
         )
+
+    @freeze_time('2024-11-20')
+    def test_get_absences_end_in_days__10_days_to_end(self):
+        absence_ids = self.hr_leave_type_1.get_absences_end_in_days(10)
+        self.assertIn(self.holiday_1.id, absence_ids.ids)
+
+    @freeze_time('2024-11-20')
+    def test_get_absences_end_in_days__3_days_to_end(self):
+        absence_ids = self.hr_leave_type_2.get_absences_end_in_days(3)
+        self.assertIn(self.holiday_2.id, absence_ids.ids)
+
+    @freeze_time('2024-11-20')
+    def test_get_absences_end_in_days__5_days_to_end(self):
+        absence_ids = self.hr_leave_type_1.get_absences_end_in_days(5)
+        self.assertNotIn(self.holiday_1.id, absence_ids.ids)
+
+        absence_ids = self.hr_leave_type_2.get_absences_end_in_days(5)
+        self.assertNotIn(self.holiday_2.id, absence_ids.ids)
