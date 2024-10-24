@@ -6,14 +6,36 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-13 10:23+0000\n"
-"PO-Revision-Date: 2024-09-13 10:23+0000\n"
+"POT-Creation-Date: 2024-10-23 09:38+0000\n"
+"PO-Revision-Date: 2024-10-23 09:38+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: somenergia_custom
+#. odoo-python
+#: code:addons/somenergia_custom/models/hr_leave_type.py:0
+#, python-format
+msgid ""
+"\n"
+"                            <div style=\"margin: 0px; padding: 0px;\">\n"
+"                                <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                                    Hola,\n"
+"                                    <br/><br/>\n"
+"                                    Aquest és el llistat d'absències que finalitzen aviat:\n"
+"                                    <br/><br/>\n"
+"                                    %s\n"
+"                                    <br/><br/>\n"
+"                                    <a t-att-href=\"object.signup_url\" style=\"background-color:#875A7B; padding:8px 16px 8px 16px; text-decoration:none; color:#fff; border-radius:5px\" href=\"https://odoo.somenergia.coop/web#action=321&model=hr.leave&view_type=list&cids=1&menu_id=214\" target=\"_blank\" class=\"btn btn-primary\">Veure Absències</a>\n"
+"                                    <br/><br/>\n"
+"                                    Salut!\n"
+"                                </p>\n"
+"                            </div>\n"
+"                        "
+msgstr ""
 
 #. module: somenergia_custom
 #. odoo-python
@@ -463,6 +485,13 @@ msgstr ""
 "</div>"
 
 #. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.res_config_settings_view_form
+msgid ""
+"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
+"specific.\" groups=\"base.group_multi_company\"/>"
+msgstr ""
+
+#. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_view_task_kanban
 msgid "<span>[#</span>"
 msgstr ""
@@ -702,6 +731,16 @@ msgid "Comments"
 msgstr "Comentaris"
 
 #. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_res_company
+msgid "Companies"
+msgstr "Empreses"
+
+#. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustos de configuració"
+
+#. module: somenergia_custom
 #: model:ir.model,name:somenergia_custom.model_hr_contract
 msgid "Contract"
 msgstr "Contracte d'empleat"
@@ -791,6 +830,11 @@ msgid "Day attendances %s"
 msgstr "Assistències dia %s"
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_leave_type__som_eoa_notification_days
+msgid "Days notification before"
+msgstr "Dies preavís final absència"
+
+#. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_survey_user_input__deadline
 msgid "Deadline"
 msgstr ""
@@ -832,6 +876,16 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_worked_week_search
 msgid "Employee"
 msgstr "Empleat"
+
+#. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.som_hr_leave_type_view_form
+msgid "End of absence notification"
+msgstr "Notificació absència"
+
+#. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_leave_type__som_eoa_notification_mail
+msgid "End of absence notifications mail"
+msgstr "Notificació final absència per mail"
 
 #. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.account_invoice_download_credentials_form
@@ -1171,6 +1225,14 @@ msgid ""
 msgstr ""
 
 #. module: somenergia_custom
+#. odoo-python
+#: code:addons/somenergia_custom/models/hr_leave_stress_day.py:0
+#: model:ir.model.fields.selection,name:somenergia_custom.selection__hr_leave_stress_day__som_type__no_service
+#, python-format
+msgid "No service"
+msgstr ""
+
+#. module: somenergia_custom
 #: model_terms:ir.actions.act_window,help:somenergia_custom.som_project_tags_action
 msgid "No tags found. Let's create one!"
 msgstr ""
@@ -1193,6 +1255,13 @@ msgstr ""
 #. module: somenergia_custom
 #: model:ir.model.fields,help:somenergia_custom.field_som_worked_week__message_has_error_counter
 msgid "Number of messages with delivery error"
+msgstr ""
+
+#. module: somenergia_custom
+#. odoo-python
+#: code:addons/somenergia_custom/models/hr_leave_type.py:0
+#, python-format
+msgid "Odoo Som - Absències que finalitzen aviat"
 msgstr ""
 
 #. module: somenergia_custom
@@ -1222,6 +1291,14 @@ msgstr "[ACCIÓ] Assignacions pendents a l’Odoo - %s"
 #: code:addons/somenergia_custom/models/hr_employee.py:0
 #, python-format
 msgid "Operation not supported"
+msgstr ""
+
+#. module: somenergia_custom
+#. odoo-python
+#: code:addons/somenergia_custom/models/hr_leave_stress_day.py:0
+#: model:ir.model.fields.selection,name:somenergia_custom.selection__hr_leave_stress_day__som_type__others
+#, python-format
+msgid "Others"
 msgstr ""
 
 #. module: somenergia_custom
@@ -1290,6 +1367,11 @@ msgid "Public Employee"
 msgstr "Empleat Públic"
 
 #. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_hr_holidays_public_line
+msgid "Public Holidays Lines"
+msgstr ""
+
+#. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.som_project_view_task_form2
 msgid "Ready"
 msgstr "Preparat"
@@ -1324,6 +1406,12 @@ msgid "Responsible User"
 msgstr ""
 
 #. module: somenergia_custom
+#: model:ir.model.fields,field_description:somenergia_custom.field_res_company__som_restrictive_stress_days
+#: model:ir.model.fields,field_description:somenergia_custom.field_res_config_settings__som_restrictive_stress_days
+msgid "Restrictive stress days"
+msgstr ""
+
+#. module: somenergia_custom
 #: model_terms:ir.ui.view,arch_db:somenergia_custom.view_som_worked_week_form
 msgid "Scope"
 msgstr "Àmbit"
@@ -1334,10 +1422,21 @@ msgid "Send collaboration reminder"
 msgstr "Enviar mail recordatori a la col·laboradora"
 
 #. module: somenergia_custom
+#: model_terms:ir.ui.view,arch_db:somenergia_custom.res_config_settings_view_form
+msgid "Set up restrictive stress days"
+msgstr ""
+
+#. module: somenergia_custom
 #: model:ir.actions.server,name:somenergia_custom.som_test_changes_cron_ir_actions_server
 #: model:ir.cron,cron_name:somenergia_custom.som_test_changes_cron
 msgid "Som - Changes to test database"
 msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.actions.server,name:somenergia_custom.som_end_of_absences_reminder_ir_actions_server
+#: model:ir.cron,cron_name:somenergia_custom.som_end_of_absences_reminder
+msgid "Som - Ens of absences reminder"
+msgstr "Som - End of absences reminder"
 
 #. module: somenergia_custom
 #: model:ir.actions.server,name:somenergia_custom.som_feedback_all_answers_received_ir_actions_server
@@ -1349,6 +1448,12 @@ msgstr ""
 #: model:ir.actions.server,name:somenergia_custom.som_feedback_reminder_ir_actions_server
 #: model:ir.cron,cron_name:somenergia_custom.som_feedback_reminder
 msgid "Som - Feedback next month reminder"
+msgstr ""
+
+#. module: somenergia_custom
+#: model:ir.actions.server,name:somenergia_custom.som_fix_compute_overtime_ir_actions_server
+#: model:ir.cron,cron_name:somenergia_custom.som_fix_compute_overtime
+msgid "Som - Fix compute overtime"
 msgstr ""
 
 #. module: somenergia_custom
@@ -1421,6 +1526,11 @@ msgid ""
 msgstr ""
 
 #. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_hr_leave_stress_day
+msgid "Stress Day"
+msgstr "Dia de l'Estress"
+
+#. module: somenergia_custom
 #: model:ir.model,name:somenergia_custom.model_sh_survey_export_wizard
 msgid "Survey Export Wizard"
 msgstr ""
@@ -1450,6 +1560,11 @@ msgstr ""
 #: model:ir.model,name:somenergia_custom.model_hr_leave
 msgid "Time Off"
 msgstr "Absències"
+
+#. module: somenergia_custom
+#: model:ir.model,name:somenergia_custom.model_hr_leave_type
+msgid "Time Off Type"
+msgstr "Tipus d'absència"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_account_analytic_line__som_timesheet_uuid_hook
@@ -1497,8 +1612,9 @@ msgstr ""
 #. module: somenergia_custom
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_appraisal__som_type
 #: model:ir.model.fields,field_description:somenergia_custom.field_hr_appraisal_generate_wizard__som_feedback_type
+#: model:ir.model.fields,field_description:somenergia_custom.field_hr_leave_stress_day__som_type
 msgid "Type"
-msgstr ""
+msgstr "Tipus"
 
 #. module: somenergia_custom
 #: model:ir.model.fields,help:somenergia_custom.field_som_worked_week__activity_exception_decoration
