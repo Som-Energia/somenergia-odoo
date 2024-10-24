@@ -69,7 +69,7 @@ class HRLeaveType(models.Model):
             NOM 2 en Baixa Mèdica: 20.00 dies (03/10/2024 / 30/10/2024)
             NOM 3 en Baixa Mèdica: 42.00 dies (02/09/2024 / 30/10/2024)
         """
-        total_no_notify = 0
+        total_to_notify = 0
         dict_days_type = self.get_days_notify_types()
         # {2: [11], 5: [7, 9]}
         str_msg = ""
@@ -85,9 +85,9 @@ class HRLeaveType(models.Model):
                 str_msg += f'<br/><br/>{lt_id.name} [{len(absence_ids)}]<br/>'
                 if len(absence_ids) == 0:
                     continue
-                total_no_notify += len(absence_ids)
+                total_to_notify += len(absence_ids)
                 str_msg += ('<br/>'.join([absence_id[0].name_get()[0][1] for absence_id in absence_ids]))
-        return total_no_notify, str_msg
+        return total_to_notify, str_msg
 
     @api.model
     def send_mail_end_of_absences_reminder(self):
