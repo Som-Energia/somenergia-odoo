@@ -59,44 +59,62 @@ class TestHrLeaveType(TestHrHolidaysCommon):
         cls.env['hr.leave.type'].search([]).write({'som_eoa_notification_mail': False})
 
     @freeze_time('2024-11-20')
-    def test_get_days_type(self):
-        # {2: [11], 5: [7, 9]}
-
-        # with no leave types with notification
-        result = self.env['hr.leave.type'].get_days_type()
+    def test_get_days_notify_types__no_leave_types_with_notification(self):
+        result = self.env['hr.leave.type'].get_days_notify_types()
         self.assertEqual(result, {})
 
-        # with 1 leave types with notification
+    @freeze_time('2024-11-20')
+    def test_get_days_notify_types__1_leave_type_with_notification(self):
         self.hr_leave_type_1.write({
             'som_eoa_notification_mail': True,
             'som_eoa_notification_days': 2,
         })
-        result = self.env['hr.leave.type'].get_days_type()
+        result = self.env['hr.leave.type'].get_days_notify_types()
         self.assertEqual(result, {2: [self.hr_leave_type_1.id]})
 
-        # with 2 leave types with notification - same days
+    @freeze_time('2024-11-20')
+    def test_get_days_notify_types__2_leave_type_with_notification_same_days(self):
+        self.hr_leave_type_1.write({
+            'som_eoa_notification_mail': True,
+            'som_eoa_notification_days': 2,
+        })
         self.hr_leave_type_2.write({
             'som_eoa_notification_mail': True,
             'som_eoa_notification_days': 2,
         })
-        result = self.env['hr.leave.type'].get_days_type()
+        result = self.env['hr.leave.type'].get_days_notify_types()
         self.assertEqual(result, {2: sorted([self.hr_leave_type_1.id, self.hr_leave_type_2.id])})
 
-        # with 2 leave types with notification - different days
+    @freeze_time('2024-11-20')
+    def test_get_days_notify_types__2_leave_type_with_notification_different_days(self):
+        self.hr_leave_type_1.write({
+            'som_eoa_notification_mail': True,
+            'som_eoa_notification_days': 2,
+        })
         self.hr_leave_type_2.write({
+            'som_eoa_notification_mail': True,
             'som_eoa_notification_days': 3,
         })
-        result = self.env['hr.leave.type'].get_days_type()
+        result = self.env['hr.leave.type'].get_days_notify_types()
         self.assertEqual(
             result, {2: [self.hr_leave_type_1.id], 3: [self.hr_leave_type_2.id]}
         )
 
-        # with 3 leave types with notification - 1 different 2 same days
+    @freeze_time('2024-11-20')
+    def test_get_days_notify_types__3_leave_type_with_notification_1_different_2_same_days(self):
+        self.hr_leave_type_1.write({
+            'som_eoa_notification_mail': True,
+            'som_eoa_notification_days': 2,
+        })
+        self.hr_leave_type_2.write({
+            'som_eoa_notification_mail': True,
+            'som_eoa_notification_days': 3,
+        })
         self.hr_leave_type_3.write({
             'som_eoa_notification_mail': True,
             'som_eoa_notification_days': 3,
         })
-        result = self.env['hr.leave.type'].get_days_type()
+        result = self.env['hr.leave.type'].get_days_notify_types()
         self.assertEqual(
             result, {2: [self.hr_leave_type_1.id],
                      3: sorted([self.hr_leave_type_2.id, self.hr_leave_type_3.id])}

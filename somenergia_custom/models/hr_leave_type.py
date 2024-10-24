@@ -21,12 +21,12 @@ class HRLeaveType(models.Model):
     )
 
     @api.model
-    def get_days_type(self):
+    def get_days_notify_types(self):
         """
         This function returns a dict with items:
         key: number of days before notify
         value: id list of leave types
-        format result: {2: [11], 5: [9, 7]}
+        format result: {2: [11], 5: [7, 9]}
         """
         lt_ids = self.env['hr.leave.type'].search([
             ('som_eoa_notification_mail', '=', True),
@@ -74,8 +74,8 @@ class HRLeaveType(models.Model):
             NOM 3 en Baixa Mèdica: 42.00 dies (02/09/2024 / 30/10/2024)
         """
         total_no_notify = 0
-        dict_days_type = self.get_days_type()
-        # {2: [11], 5: [9, 7]}
+        dict_days_type = self.get_days_notify_types()
+        # {2: [11], 5: [7, 9]}
         str_msg = ""
         for item in dict_days_type.items():
             days_to_end = item[0]
