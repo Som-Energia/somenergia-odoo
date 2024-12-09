@@ -1,0 +1,283 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Template Initialize Feedback -->
+        <record id="som_email_template_feedback_initialize" model="mail.template">
+            <field name="name">Feedback: Initialize</field>
+            <field name="model_id" ref="oh_appraisal.model_hr_appraisal"/>
+            <field name="email_from">{{ object.company_id.email }}</field>
+            <field name="partner_to">{{ object.emp_id.user_id.partner_id.id }}</field>
+            <field name="subject">[ACCIÓ] El teu feedback anual 360º: comencem!</field>
+            <field name="description">Enviar mail d'inici de Feedback</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;">
+        <span style="font-size: 13px;">Hola
+        </span><t t-out="object.emp_id.name or ''">Brandon Freeman</t>
+        <span style="font-size: 13px;">,</span>
+        <br/><br/>
+        <span style="font-size: 13px;">
+        Aviat s’inicia el període de la teva avaluació i seguiment anual de 360º.</span>
+    </p>
+        <p style="box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;"><br/></p>
+        <p style="box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;">
+            <span style="font-size: 13px;font-weight:bold;">Per poder engegar el procés, reenvia aquest correu a gestio.laboral@somenergia.coop identificant les persones que esculls per ser les avaluadores del teu procés de feedback:</span>
+        </p>
+        <p style="box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;"><br/></p>
+        <ol type="a" style="padding:0 0 0 24px;margin:0px 0 12px 0;box-sizing:border-box;">
+            <li style="margin-bottom: 5px;"><span style="font-size: 13px;">2-3 que formin part del teu equip directe i</span><br/></li>
+            <li style="margin-bottom: 5px;"><span style="font-size: 13px;">2-3 amb les que treballis habitualment, que formin part d'altres equips de la cooperativa) que pensis que et poden aportar feedback crític i útil per al teu desenvolupament.</span>
+                <br/><br/>
+                <span style="font-size: 13px;">Enviarem el mateix qüestionari a les persones que escullis i elaborarem l’informe competencial transversal amb totes les respostes gregades.</span>
+                <br/><br/>
+                <span style="font-size: 13px;;font-weight:bold;">RECOMANACIÓ</span>
+                <span style="font-size: 13px;">: Normalment tendim a escollir avaluadores amb les que ens sentim dins la zona de confort. No obstant, escollir d'altres persones que ens suposen un repte, sovint, té resultats inesperats en sentit positiu! T’animem que li donis una volta!</span>
+                <br/><br/>
+                <span style="box-sizing:border-box;font-weight:bold;">IMPORTANT! </span>
+                <span style="font-size: 13px;">Cal que hagueu treballat amb les persones avaluadores com a mínim durant 6 mesos. Si teniu dubtes, parlem-ne!</span>
+                <br/>
+            </li>
+        </ol>
+        <p style="box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;">
+            <span style="font-size: 13px;">Si penses que no és el teu moment per participar en un espai com aquest, també ens ho pots comunicar i ho reenfoquem (la idea és rebre feedback per a poder desenvolupar-nos a la cooperativa, però que sigui un espai constructiu i amable!).</span>
+        </p>
+        <br/>
+        <p style="box-sizing:border-box;margin-bottom: 12px;; padding: 0px; font-size: 13px;">
+            <span style="font-size: 13px;font-weight:bold;">Com funciona el procés de feedback?</span>
+        </p>
+        <ol type="1" style="padding:0 0 0 24px;margin:0px 0 12px 0;box-sizing:border-box;">
+            <li style="margin-bottom: 5px;">
+                <span style="font-size: 13px;">Aviat rebràs un <span style="font-size: 13px;;font-weight:bold;">qüestionari d’auto-avaluació</span> que ens servirà per a poder elaborar el teu 'informe competencial transversal. El mateix formulari s’enviarà a les persones que hagis escollit per participar en el teu feedback.</span>
+                <br/>
+                <span style="font-size: 13px;">Si treballes a l’equip d’IT rebràs un segon correu amb un enllaç per poder omplir la teva rúbrica professional també.</span>
+            </li>
+            <li style="margin-bottom: 5px;">
+                <span style="font-size: 13px;">Una vegada haguem rebut totes les respostes, t’enviarem el teu informe d’avaluació 360º  i</span>
+            </li>
+            <li style="margin-bottom: 5px;">
+                <span style="font-size: 13px;">et contactarem per tal que puguis agendar el teu espai de feedback presencial. Aquest espai té una durada de 60 minuts i es composa de dues parts:</span>
+            </li>
+            <ol type="a" style="padding:0 0 0 24px;margin:0px 0 12px 0;box-sizing:border-box;">
+                <li style="margin-bottom: 5px;">
+                    <span style="font-size: 13px;"><span style="font-size: 13px;;font-weight:bold;">Part comuna:</span> persona avaluada, 2 avaluadores i 1 persona de l'equip d'entorn laboral. Es comenten els resultats del qüestionari (aquests són enviats a la persona avaluada uns dies abans de la sessió, via mail). Espai oral de feedback.</span>
+                </li>
+                <li style="margin-bottom: 5px;">
+                    <span style="font-size: 13px;"><span style="font-size: 13px;;font-weight:bold;">Part individual:</span> persona avaluada i laboral. Cadascú es planteja objectius anuals de cares als propers 12 mesos per a poder desenvolupar-se professionalment dins la cooperativa.</span>
+                </li>
+            </ol>
+        </ol>
+        <p style="box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;">
+            <span style="font-size: 13px;">Per qualsevol dubte o qüestió, no dubtis en contactar-nos.</span>
+        </p>
+        <p style="box-sizing:border-box;margin: 0px; padding: 0px; font-size: 13px;"><br/></p>
+</div>
+            </field>
+            <field name="lang">{{ object.emp_id.user_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+
+
+        <!-- Template Start Feedback - Employee -->
+        <record id="som_email_template_feedback_start_employee" model="mail.template">
+            <field name="name">Feedback: Start Employee</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="email_from">{{ object.appraisal_id.company_id.email }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="subject">[ACCIÓ] El teu formulari de feedback anual 360º! - {{ object.survey_id.title }}</field>
+            <field name="description">Enviar mail enquestes de Feedback empleada</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        <span style="font-size: 13px;">Hola</span><span style="font-size: 13px;">,</span>
+        <t t-out="object.partner_id.name or ''">Brandon Freeman</t>
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Ara sí, comencem!
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        En aquest enllaç trobaràs el teu qüestionari d’auto-avaluació <a style="font-weight:bold;color:#800080" t-out="object.survey_id.title or ''" t-att-href="(object.get_start_url())"></a>, que ens servirà per a poder elaborar el teu 'informe competencial transversal'. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Si treballes a l’equip d’IT rebràs un segon correu amb un enllaç per poder omplir la teva rúbrica professional també.
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Una vegada haguem rebut totes les respostes, et contactarem per tal que puguis agendar el teu espai de feedback presencial. Aquest espai té una durada de 60 minuts i es composa de dues parts:
+    </p>
+    <ol type="a" style="padding:0 0 0 24px;margin:0px 0 12px 0;box-sizing:border-box;">
+        <li style="margin-bottom: 5px;">
+            <span style="font-size: 13px;"><span style="font-size: 13px;;font-weight:bold;">Part comuna:</span> persona avaluada, 2 avaluadores i 1 persona de l'equip d'entorn laboral. Es comenten els resultats del qüestionari (aquests són enviats a la persona avaluada uns dies abans de la sessió, via mail). Espai oral de feedback.</span>
+        </li>
+        <li style="margin-bottom: 5px;">
+            <span style="font-size: 13px;"><span style="font-size: 13px;;font-weight:bold;">Part individual:</span> persona avaluada i laboral. Cadascú es planteja objectius anuals de cares als propers 12 mesos per a poder desenvolupar-se professionalment dins la cooperativa.</span>
+        </li>
+    </ol>
+    <p style="margin: 0px 0px 20px 0px; font-size: 13px;">
+        Moltes gràcies per la teva participació i desitgem que sigui un procés del tot profitós!
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+
+
+        <!-- Template Start Feedback - Collaborators -->
+        <record id="som_email_template_feedback_start_collaborator" model="mail.template">
+            <field name="name">Feedback: Start Collaborator</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="email_from">{{ object.appraisal_id.company_id.email }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="subject">[ACCIÓ] Col·laboració en feedback anual 360º! - {{ object.survey_id.title }}</field>
+            <field name="description">Enviar mail enquestes de Feedback col·laboradores</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        <span style="font-size: 13px;">Hola</span><span style="font-size: 13px;">,</span>
+        <t t-out="object.partner_id.name or ''">Brandon Freeman</t>
+    </p>
+    <t t-if="object.appraisal_id.emp_id.user_id.partner_id != object.partner_id">
+        <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+            <span style="font-size: 13px;">Si reps aquest missatge és perquè en/la </span>
+            <t t-out="object.appraisal_id.emp_id.name or ''">Laura</t>
+            <span style="font-size: 13px;">t’ha escollit com a avaluador/a en el seu procés de feedback anual 360º.</span>
+        </p>
+        <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+            Necessitem que responguis aquest qüestionari d’avaluació <a style="font-weight:bold;color:#800080" t-att-href="(object.get_start_url())" t-out="object.survey_id.title or ''"></a>, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
+        </p>
+        <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+            En cas que siguis escollida per participar en l’espai de feedback presencial, t’hi convocarem una vegada haguem rebut totes les respostes.
+        </p>
+    </t>
+    <t t-else="">
+        <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+            Necessitem que responguis aquest qüestionari d’auto-avaluació <a style="font-weight:bold;color:#800080" t-att-href="(object.get_start_url())" t-out="object.survey_id.title or ''"></a>, que ens servirà per a poder fer l'informe competencial transversal. Respondre el qüestionari no et durà més de 15-20 minuts (màxim!).
+        </p>
+    </t>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Si tens dubtes sobre el procés de feedback, no dubtis a contactar-nos.
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Moltes gràcies!
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+
+
+        <!-- Template Reminder Feedback - Collaborators -->
+        <record id="som_email_template_feedback_remind_collaborator" model="mail.template">
+            <field name="name">Feedback: Reminder Collaborator</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="email_from">{{ object.appraisal_id.company_id.email }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="subject">[ACCIÓ] Recordatori col·laboració en feedback anual 360º! - {{ object.survey_id.title }}</field>
+            <field name="description">Enviar recordatori mail enquestes de Feedback col·laboradores</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        <span style="font-size: 13px;">Hola</span><span style="font-size: 13px;">,</span>
+        <t t-out="object.partner_id.name or ''">Brandon Freeman</t>
+    </p>
+    <t t-if="object.appraisal_id.emp_id.user_id.partner_id != object.partner_id">
+        <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+            <span style="font-size: 13px;">Et recordem que tens pendent respondre aquest qüestionari <a style="font-weight:bold;color:#800080" t-att-href="(object.get_start_url())" t-out="object.survey_id.title or ''"></a> com a avaluador/a en el procés de feedback anual 360º de </span>
+            <t t-out="object.appraisal_id.emp_id.name or ''">Laura</t>
+            <span style="font-size: 13px;">.</span>
+        </p>
+    </t>
+    <t t-else="">
+        <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+            Et recordem que tens pendent respondre aquest qüestionari d’auto-avaluació <a style="font-weight:bold;color:#800080" t-att-href="(object.get_start_url())" t-out="object.survey_id.title or ''"></a>, que ens servirà per a poder fer l'informe competencial transversal.
+        </p>
+    </t>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Si tens dubtes sobre el procés de feedback, no dubtis a contactar-nos.
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Moltes gràcies!
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+
+
+
+        <!-- Template Received all answers Feedback -->
+        <record id="som_email_template_feedback_received_all_answers" model="mail.template">
+            <field name="name">Feedback: Received all answers</field>
+            <field name="model_id" ref="oh_appraisal.model_hr_appraisal"/>
+            <field name="email_from">{{ object.company_id.email }}</field>
+            <field name="partner_to">{{ object.emp_id.user_id.partner_id.id }}</field>
+            <field name="email_to">{{ object.get_mail_entorn_laboral() }}</field>
+            <field name="subject">[ACCIÓ] El teu feedback anual 360º: respostes rebudes!</field>
+            <field name="description">Avís totes respostes rebudes Feedback</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        <span style="font-size: 13px;">Hola</span><span style="font-size: 13px;">,</span>
+        <t t-out="object.emp_id.name or ''">Brandon Freeman</t>
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Ja hem rebut totes les respostes del teu procés de feedback. Les properes passes són:
+    </p>
+    <li class="oe-nested" style="box-sizing:border-box;display:block;margin:0px 0 25px 0">
+        <ul style="padding:0 0 0 24px;margin:0px 0 0px 0;box-sizing:border-box;">
+            <li><span style="font-size: 13px;">Has de convocar una sessió de feedback presencial convidant-hi a es companyes d’entorn laboral i a les 2 o 3 persones avaluadores amb qui vulguis posar en comú el feedback en viu.</span></li>
+            <li><span style="font-size: 13px;">Pots consultar els calendaris i posar data a partir de 7 dies i no més tard de 4 setmanes de rebre aquest missatge.</span></li>
+            <li><span style="font-size: 13px;">Rebràs el teu informe competencial abans de la sessió perquè el puguis consultar i identificar les àrees en què t’agradaria aprofundir.</span></li>
+        </ul>
+    </li>
+    <p style="margin: 0px 0px 25px 0px; font-size: 13px;">
+        Com sempre, som aquí si tens qualsevol dubte.
+    </p>
+    <p style="margin: 0px 0px 25px 0px; font-size: 13px;">
+        Gràcies!
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object.emp_id.user_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+
+
+        <!-- Template Feedback Generic -->
+        <record id="som_email_template_feedback_generic" model="mail.template">
+            <field name="name">Feedback: Generic</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="email_from">{{ object.appraisal_id.company_id.email }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="subject">[ACCIÓ] Emplena aquesta enquesta</field>
+            <field name="description">Enviar mail genèric per emplenar enquestes</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        <span style="font-size: 13px;">Hola</span><span style="font-size: 13px;">,</span>
+        <t t-out="object.partner_id.name or ''">Brandon Freeman</t>
+    </p>
+    <p style="margin: 0px 0px 10px 0px; font-size: 13px;">
+        Cal que responguis aquest qüestionari referent a un procés de Feedback.
+    </p>
+
+    <div style="margin: 16px 0px 20px 0px;">
+        <a t-att-href="(object.get_start_url())"
+           t-out="object.survey_id.title or ''"
+            style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+            Començar questionari
+        </a>
+    </div>
+    <p style="margin: 0px 0px 20px 0px; font-size: 13px;">
+        Moltes gràcies!
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

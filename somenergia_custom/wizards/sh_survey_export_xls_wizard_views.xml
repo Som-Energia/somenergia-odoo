@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<odoo>
+	<record id="sh_survey_export_wizard_form_view" model="ir.ui.view">
+		<field name="model">sh.survey.export.wizard</field>
+		<field name="inherit_id" ref="sh_survey_export_xls.sh_survey_export_wizard_form_view"/>
+		<field name="arch" type="xml">
+			<field name="sh_group_by_partner" position="after">
+				<field name="som_hr_appraisal_id" />
+			</field>
+		</field>
+	</record>
+
+</odoo>

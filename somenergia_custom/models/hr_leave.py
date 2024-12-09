@@ -3,8 +3,8 @@
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.addons.resource.models.resource import float_to_time, HOURS_PER_DAY
-from odoo.addons.hr_holidays.models.hr_leave import DummyAttendance
 from datetime import datetime
+from odoo.addons.hr_holidays.models.hr_leave import DummyAttendance
 from pytz import timezone, UTC
 
 
@@ -102,6 +102,14 @@ class HolidaysRequest(models.Model):
                 }
 
     @api.model
+    def get_mail_employees_from_departments(self, department_ids):
+        # we got a list of mail lists by department
+        list_aux = [dep_id.member_ids.mapped("user_id.email") for dep_id in department_ids]
+        # we get a unique list with all mails
+        list_result = list(set([mail for sublist in list_aux for mail in sublist]))
+        return list_result
+
+    @api.model
     def get_leaves(self, start_date, end_date):
         """
         This function returns leaves from start_date to end_date in the following
@@ -122,7 +130,45 @@ class HolidaysRequest(models.Model):
                 'end_time': leave_id.date_to
             })
 
+        # get from stress_days with departments
+        sd_leave_ids = self.env['hr.leave.stress.day'].search([
+            ('start_date', '>=', start_date),
+            ('end_date', '<=', end_date),
+            ('som_type', '=', 'no_service'),
+            ('department_ids', '!=', False),
+        ])
+
+        # overlapping stress_day dates with leaves does not matter
+        for sd_leave_id in sd_leave_ids:
+            list_mails_employees = self.get_mail_employees_from_departments(sd_leave_id.department_ids)
+            start_datetime = datetime(
+                sd_leave_id.start_date.year, sd_leave_id.start_date.month, sd_leave_id.start_date.day,7, 0, 0
+            )
+            end_datetime = datetime(
+                sd_leave_id.end_date.year, sd_leave_id.end_date.month, sd_leave_id.end_date.day,14, 0, 0
+            )
+            for mail in list_mails_employees:
+                res.append({
+                    'worker': mail,
+                    'start_time': start_datetime,
+                    'end_time': end_datetime,
+                })
+
         return res
 
     def write(self, vals):
         return super(HolidaysRequest, self.with_context(leave_skip_date_check=True)).write(vals)
+
+    @api.constrains('date_from', 'date_to', 'employee_ids')
+    def _check_validity_attendances(self):
+        for absence_id in self.sudo():
+            domain_aux = [
+                ("employee_id", "in", absence_id.employee_ids.ids),
+            ]
+            att_ids = self.env["hr.attendance"].search(domain_aux)
+            att_ids.with_context(leave_from_id=absence_id)._check_validity_leaves()
+
+    @api.constrains('date_from', 'date_to')
+    def _check_stress_day(self):
+        if self.env.company.som_restrictive_stress_days:
+            return super()._check_stress_day()

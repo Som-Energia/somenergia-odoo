@@ -13,3 +13,11 @@ from . import hr_attendance_overtime
 from . import ir_ui_menu
 from . import project_task
 from . import hr_contract
+from . import hr_apparisal
+from . import survey_user
+from . import hr_appraisal_survey
+from . import res_company
+from . import res_config_settings
+from . import hr_leave_stress_day
+from . import hr_holidays_public
+from . import hr_leave_type

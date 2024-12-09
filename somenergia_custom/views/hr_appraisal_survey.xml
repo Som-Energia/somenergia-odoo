@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="som_send_reminder_collaboration" model="ir.actions.server">
+        <field name="name">Send collaboration reminder</field>
+        <field name="type">ir.actions.server</field>
+        <field name="model_id" ref="survey.model_survey_user_input"/>
+        <field name="binding_model_id" ref="survey.model_survey_user_input"/>
+        <field name="sequence">0</field>
+        <field name="state">code</field>
+        <field name="code">records.som_action_send_collaboration_reminder()</field>
+        <field name="groups_id" eval="[(4, ref('oh_appraisal.group_appraisal_manager'))]"/>
+    </record>
+</odoo>

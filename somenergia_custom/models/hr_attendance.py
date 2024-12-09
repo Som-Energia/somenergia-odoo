@@ -49,13 +49,17 @@ class HrAttendance(models.Model):
         return checkout_time
 
     def autoclose_attendance(self, reason):
-        self.ensure_one()
-        checkout_time = self.get_checkout_time()
-        vals = {"check_out": checkout_time}
-        if reason:
-            vals["attendance_reason_ids"] = [(4, reason.id)]
-        self.write(vals)
-        self.send_mail_autoclose()
+        try:
+            self.ensure_one()
+            checkout_time = self.get_checkout_time()
+            vals = {"check_out": self.check_in}
+            if reason:
+                vals["attendance_reason_ids"] = [(4, reason.id)]
+            self.write(vals)
+            self.send_mail_autoclose()
+        except Exception as e:
+            _logger.info("Exception 'autoclose_attendance': %s " % e)
+            return False
 
     @api.model
     def som_check_attendance_reason(self):
@@ -64,7 +68,7 @@ class HrAttendance(models.Model):
             ("attendance_reason_ids", "ilike", att_reason_id.name)
         ])
         att_remove_reason_ids = att_ids.filtered(
-            lambda x: x.check_out < x.get_checkout_time()
+            lambda x: x.check_in != x.check_out and x.check_out != x.get_checkout_time()
         )
         att_remove_reason_ids.write({
             'attendance_reason_ids': [(3, att_reason_id.id)]
@@ -112,3 +116,69 @@ class HrAttendance(models.Model):
                 mail.send()
             except Exception:
                 _logger.exception("Attendance autoclose - Unable to send email.")
+
+    @api.constrains('check_in', 'check_out', 'employee_id')
+    def _check_validity_leaves(self):
+        feature_flag_date_from = datetime.today()
+        try:
+            str_date = self.env["ir.config_parameter"].sudo().get_param("som_ff_date_from_overlapping_attendance")
+            feature_flag_date_from = datetime.strptime(str_date, '%Y-%m-%d')
+        except Exception:
+            pass
+        leave_from_id = self._context.get('leave_from_id', False)
+        for att_id in self.filtered(lambda x: x.check_in > feature_flag_date_from):
+            domain_aux = [
+                ("employee_id", "=", att_id.employee_id.id),
+                ("state", "in", ["confirm", "validate"]),
+            ]
+            if leave_from_id:
+                domain_aux.append(('id', '=', leave_from_id.id))
+            emp_leave_ids = self.env["hr.leave"].search(domain_aux).filtered(
+                lambda x: (
+                        (
+                                (x.request_unit_half or x.request_unit_hours)
+                                and
+                                (
+                                        (att_id.check_in and x.date_from <= att_id.check_in <= x.date_to)
+                                        or
+                                        (att_id.check_out and x.date_from <= att_id.check_out <= x.date_to)
+                                        or
+                                        (att_id.check_in and att_id.check_out and att_id.check_in < x.date_from
+                                         and x.date_to < att_id.check_out)
+                                )
+                        )
+                        or
+                        (
+                                (not x.request_unit_half and not x.request_unit_hours)
+                                and
+                                (
+                                        (att_id.check_in
+                                         and x.request_date_from <= att_id.check_in.date() <= x.request_date_to)
+                                        or
+                                        (att_id.check_out
+                                         and x.request_date_from <= att_id.check_out.date() <= x.request_date_to)
+                                        or
+                                        (att_id.check_in and att_id.check_out
+                                         and att_id.check_in.date() <= x.request_date_from
+                                         and x.request_date_to < att_id.check_out.date())
+                                )
+                        )
+                )
+            )
+            if emp_leave_ids:
+                if leave_from_id:
+                    raise exceptions.ValidationError(
+                        _("No es pot registrar l'absència per a %(empl_name)s, "
+                          "l'empledada té assitències en aquest període de temps:\n%(att_name)s" % {
+                              'empl_name': att_id.employee_id.name,
+                              'att_name': att_id.name_get(),
+                          })
+                    )
+                else:
+                    raise exceptions.ValidationError(
+                        _("No es pot registrar l'assitència per a %(empl_name)s, "
+                          "l'empledada té absències en aquest període de temps:\n%(abs_name)s" % {
+                              'empl_name': att_id.employee_id.name,
+                              'abs_name': emp_leave_ids[0].name_get(),
+                          })
+                    )

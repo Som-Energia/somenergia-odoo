@@ -67,8 +67,9 @@ class HrContractImportWizard(models.TransientModel):
         sheet = sheets[0]
         init_data_row = 1
         limit_columns = 15
+        limit_rows = sheet.nrows
 
-        for row in range(sheet.nrows):
+        for row in range(limit_rows):
             if row < init_data_row:
                 continue
             name = sheet.cell(row, 0).value
