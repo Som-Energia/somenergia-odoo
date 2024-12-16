@@ -21,3 +21,6 @@ from . import res_config_settings
 from . import hr_leave_stress_day
 from . import hr_holidays_public
 from . import hr_leave_type
+from . import helpdesk_ticket_team
+from . import mail_thread
+from . import mail_mail
