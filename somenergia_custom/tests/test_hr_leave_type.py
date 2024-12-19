@@ -69,7 +69,7 @@ class TestHrLeaveType(TestHrHolidaysCommon):
 
         cls.holiday_3 = cls.env['hr.leave'].with_context(
             mail_create_nolog=True, mail_notrack=True
-        ).with_user(cls.employee_emp2).create({
+        ).with_user(cls.user_employee2).create({
             'name': 'Leave 3',
             'employee_id': cls.employee_emp2.id,
             'holiday_status_id': cls.hr_leave_type_2.id,
