@@ -98,6 +98,11 @@ class HrEmployee(models.Model):
         compute_sudo=True,
     )
 
+    @api.model
+    def _check_no_current_calendar_employees(self):
+        emp_ids = self.env['hr.employee'].search([('som_current_calendar_id', '=', False)])
+        emp_ids._compute_current_calendar()
+
 
 class HrEmployeePublic(models.Model):
     _inherit = "hr.employee.public"
