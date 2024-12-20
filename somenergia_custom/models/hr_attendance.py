@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-
+import pytz
 from odoo import models, fields, api, exceptions, _
 from datetime import datetime
 from datetime import timedelta
@@ -47,6 +47,44 @@ class HrAttendance(models.Model):
         checkout_str = checkout_time_utc.strftime("%m/%d/%Y %H:%M:%S")
         checkout_time = datetime.strptime(checkout_str, "%m/%d/%Y %H:%M:%S")
         return checkout_time
+
+
+    def get_hours_today_without_me(self):
+        self.ensure_one()
+        att_ids = self.env['hr.attendance'].search([
+            ('employee_id', '=', self.employee_id.id),
+            ('id', '!=', self.id),
+            ('check_in', '!=', False),
+            ('check_out', '!=', False),
+        ])
+        worked_hours = 0
+        for att_id in att_ids.filtered(lambda x: x.check_in.date() == self.check_in.date()):
+            delta = att_id.check_out - att_id.check_in
+            worked_hours += delta.total_seconds() / 3600.0
+        return worked_hours
+        # return self.employee_id.hours_today - self.open_worked_hours
+
+    def get_max_hours_today(self):
+        self.ensure_one()
+        th = self.env['hr.attendance.theoretical.time.report']._theoretical_hours(
+            self.employee_id.sudo(), datetime.today()
+        )
+        max_ov_hours = self.employee_id.sudo().som_current_calendar_id.som_max_overtime_per_day
+        return th + max_ov_hours
+
+    def get_max_checkout(self):
+        if not self.check_in:
+            return False
+        #import pudb; pu.db
+        max_hours_today = self.get_max_hours_today()
+        hours_today_no_me = self.get_hours_today_without_me()
+
+        time_left = max_hours_today - hours_today_no_me
+        h, m, s = self._get_data_time(time_left)
+        time_aux = timedelta(hours=h, minutes=m, seconds=s)
+
+        max_check_out = self.check_in + time_aux
+        return max_check_out
 
     def autoclose_attendance(self, reason):
         try:
@@ -116,6 +154,23 @@ class HrAttendance(models.Model):
                 mail.send()
             except Exception:
                 _logger.exception("Attendance autoclose - Unable to send email.")
+
+    @api.constrains('check_in', 'check_out', 'employee_id')
+    def _check_overtime(self):
+        feature_flag_date_from = datetime(2024, 12, 19)
+        for att_id in self.filtered(lambda x: x.check_in > feature_flag_date_from):
+            if att_id.check_in and att_id.check_out:
+                max_check_out = att_id.get_max_checkout()
+                if att_id.check_out > max_check_out:
+                    user_tz = att_id.employee_id.user_id.sudo().tz
+                    max_check_out_tz = max_check_out.astimezone(pytz.timezone(user_tz))
+                    str_max_check_out_tz = max_check_out_tz.strftime('%d/%m/%Y %H:%M')
+                    raise exceptions.ValidationError(
+                        _("L'hora màxima per tancar l'assistència és %(max_check_out)s, " % {
+                              'max_check_out': str_max_check_out_tz,
+                          })
+                    )
+
 
     @api.constrains('check_in', 'check_out', 'employee_id')
     def _check_validity_leaves(self):
