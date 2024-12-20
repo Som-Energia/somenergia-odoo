@@ -60,6 +60,7 @@
         'views/res_config_settings_views.xml',
         'views/hr_leave_stress_day_views.xml',
         'views/hr_leave_type_views.xml',
+        'views/resource_calendar_views.xml',
         'wizards/hr_contract_import_wizard.xml',
         'wizards/hr_appraisal_generate_wizard.xml',
         'wizards/sh_survey_export_xls_wizard_views.xml',
