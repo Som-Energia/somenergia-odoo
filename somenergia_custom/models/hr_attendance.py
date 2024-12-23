@@ -157,20 +157,18 @@ class HrAttendance(models.Model):
 
     @api.constrains('check_in', 'check_out', 'employee_id')
     def _check_overtime(self):
-        feature_flag_date_from = datetime(2024, 12, 19)
-        for att_id in self.filtered(
-                lambda x: x.check_in > feature_flag_date_from and x.check_in and x.check_out
-        ):
-            max_check_out = att_id.get_max_checkout()
-            if att_id.check_out > max_check_out:
-                user_tz = att_id.employee_id.user_id.sudo().tz
-                max_check_out_tz = max_check_out.astimezone(pytz.timezone(user_tz))
-                str_max_check_out_tz = max_check_out_tz.strftime('%d/%m/%Y %H:%M')
-                raise exceptions.ValidationError(
-                    _("L'hora màxima per tancar l'assistència és %(max_check_out)s " % {
-                          'max_check_out': str_max_check_out_tz,
-                      })
-                )
+        if self.env.company.som_restrictive_overtime:
+            for att_id in self.filtered(lambda x: x.check_in and x.check_out):
+                max_check_out = att_id.get_max_checkout()
+                if att_id.check_out > max_check_out:
+                    user_tz = att_id.employee_id.user_id.sudo().tz
+                    max_check_out_tz = max_check_out.astimezone(pytz.timezone(user_tz))
+                    str_max_check_out_tz = max_check_out_tz.strftime('%d/%m/%Y %H:%M')
+                    raise exceptions.ValidationError(
+                        _("L'hora màxima per tancar l'assistència és %(max_check_out)s " % {
+                              'max_check_out': str_max_check_out_tz,
+                          })
+                    )
 
     @api.constrains('check_in', 'check_out', 'employee_id')
     def _check_validity_leaves(self):
