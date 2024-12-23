@@ -103,6 +103,13 @@ class HrEmployee(models.Model):
         emp_ids = self.env['hr.employee'].search([('som_current_calendar_id', '=', False)])
         emp_ids._compute_current_calendar()
 
+    def _attendance_action_change(self):
+        attendance = super(
+            HrEmployee, self.with_context(som_from_attendance_action_change=True)
+        )._attendance_action_change()
+        # attendance = super()._attendance_action_change()
+        return attendance
+
 
 class HrEmployeePublic(models.Model):
     _inherit = "hr.employee.public"

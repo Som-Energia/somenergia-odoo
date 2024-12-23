@@ -170,6 +170,16 @@ class HrAttendance(models.Model):
                           })
                     )
 
+    def write(self, vals):
+        if (self.env.company.som_restrictive_overtime and
+                vals.get('check_out') and self.env.context.get('som_from_attendance_action_change')):
+            for att_id in self: # we do it but in theory just one record expected
+                max_check_out = att_id.get_max_checkout()
+                if vals.get('check_out') > max_check_out:
+                    vals['check_out'] = max_check_out
+                    vals['som_comments'] = '-'
+        return super().write(vals)
+
     @api.constrains('check_in', 'check_out', 'employee_id')
     def _check_validity_leaves(self):
         feature_flag_date_from = datetime.today()
