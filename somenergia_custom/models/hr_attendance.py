@@ -163,7 +163,7 @@ class HrAttendance(models.Model):
                 if att_id.check_out > max_check_out:
                     user_tz = att_id.employee_id.user_id.sudo().tz
                     max_check_out_tz = max_check_out.astimezone(pytz.timezone(user_tz))
-                    str_max_check_out_tz = max_check_out_tz.strftime('%d/%m/%Y %H:%M')
+                    str_max_check_out_tz = max_check_out_tz.strftime('%d/%m/%Y %H:%M:%S')
                     raise exceptions.ValidationError(
                         _("L'hora màxima per tancar l'assistència és %(max_check_out)s " % {
                               'max_check_out': str_max_check_out_tz,
@@ -174,11 +174,61 @@ class HrAttendance(models.Model):
         if (self.env.company.som_restrictive_overtime and
                 vals.get('check_out') and self.env.context.get('som_from_attendance_action_change')):
             for att_id in self: # we do it but in theory just one record expected
+                origin_check_out = vals.get('check_out')
                 max_check_out = att_id.get_max_checkout()
-                if vals.get('check_out') > max_check_out:
+                if origin_check_out > max_check_out:
                     vals['check_out'] = max_check_out
                     vals['som_comments'] = '-'
+                    self.send_mail_attendance_reminder(att_id, origin_check_out, max_check_out)
         return super().write(vals)
+
+    @api.model
+    def send_mail_attendance_reminder(self, att_id, origin_checkout, new_checkout):
+        somadmin_user_id = self.env.ref('base.somadmin')
+        user_tz = att_id.employee_id.user_id.sudo().tz
+        str_day = new_checkout.astimezone(pytz.timezone(user_tz)).strftime('%d/%m/%Y')
+        float_hours_diff = (origin_checkout - new_checkout).total_seconds() / 3600
+        h, m, s = self._get_data_time(float_hours_diff)
+        str_mail_body = "%s -> %s [- %s:%s:%s]" % (
+            origin_checkout.astimezone(pytz.timezone(user_tz)).strftime('%d/%m/%Y %H:%M'),
+            new_checkout.astimezone(pytz.timezone(user_tz)).strftime('%d/%m/%Y %H:%M'),
+            h, m, s,
+        )
+        str_subject = _("Recordatori dia: %s [%s]" % (str_day, str(att_id.id)))
+        try:
+            mail_html = _("""
+                                <div style="margin: 0px; padding: 0px;">
+                                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                                        Hola,
+                                        <br/><br/>
+                                        %s
+                                        <br/><br/>
+                                        %s
+                                        <br/><br/>
+                                        Salut!
+                                    </p>
+                                </div>
+                            """) % (
+                str_subject,
+                str_mail_body,
+            )
+
+            mail_values = {
+                'author_id': somadmin_user_id.partner_id.id,
+                'body_html': mail_html,
+                'subject': str_subject,
+                'email_from':
+                    somadmin_user_id.email_formatted or somadmin_user_id.company_id.catchall or
+                    somadmin_user_id.company_id.email,
+                'email_to': att_id.employee_id.user_id.email_formatted,
+                'auto_delete': False,
+            }
+
+            mail = self.env['mail.mail'].sudo().create(mail_values)
+            mail.send()
+
+        except Exception as e:
+            _logger.exception("send_mail_attendance_reminder - unable to send email.")
 
     @api.constrains('check_in', 'check_out', 'employee_id')
     def _check_validity_leaves(self):
