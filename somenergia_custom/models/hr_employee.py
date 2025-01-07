@@ -4,6 +4,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from odoo import models, fields, api, exceptions, _
 from odoo.exceptions import UserError
+from odoo.tools import float_round
 
 
 class HrEmployeeBase(models.AbstractModel):
@@ -97,6 +98,17 @@ class HrEmployee(models.Model):
         store=True,
         compute_sudo=True,
     )
+
+    @api.depends('overtime_ids.duration', 'attendance_ids')
+    def _compute_total_overtime(self):
+        for employee in self:
+            if employee.company_id.hr_attendance_overtime:
+                overtime_this_year_ids = employee.overtime_ids.filtered(
+                    lambda x: x.date.year == datetime.date.today().year
+                )
+                employee.total_overtime = float_round(sum(overtime_this_year_ids.mapped('duration')), 2)
+            else:
+                employee.total_overtime = 0
 
 
 class HrEmployeePublic(models.Model):
