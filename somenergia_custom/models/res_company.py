@@ -9,3 +9,8 @@ class ResCompany(models.Model):
         string="Restrictive stress days",
         default=True,
     )
+
+    som_restrictive_overtime = fields.Boolean(
+        string="Restrictive overtime",
+        default=False,
+    )

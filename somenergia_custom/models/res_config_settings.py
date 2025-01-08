@@ -9,3 +9,8 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.som_restrictive_stress_days',
         readonly=False,
     )
+
+    som_restrictive_overtime = fields.Boolean(
+        related='company_id.som_restrictive_overtime',
+        readonly=False,
+    )

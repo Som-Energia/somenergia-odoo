@@ -24,6 +24,19 @@
                     </div>
                 </div>
             </xpath>
+
+            <xpath expr="//label[@for='overtime_company_threshold']/.." position="inside">
+                <br/>
+                <br/>
+                <label for="som_restrictive_overtime">
+                    Set up overtime restriction
+                </label>
+                <div class="text-muted">
+                    Set up overtime restriction
+                </div>
+                <field name="som_restrictive_overtime" class="text-center"/><span>Enable restrictive overtime</span>
+            </xpath>
+
         </field>
     </record>
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-
+import pytz
 from odoo import models, fields, api, exceptions, _
 from datetime import datetime
 from datetime import timedelta
@@ -47,6 +47,44 @@ class HrAttendance(models.Model):
         checkout_str = checkout_time_utc.strftime("%m/%d/%Y %H:%M:%S")
         checkout_time = datetime.strptime(checkout_str, "%m/%d/%Y %H:%M:%S")
         return checkout_time
+
+
+    def get_hours_today_without_me(self):
+        self.ensure_one()
+        att_ids = self.env['hr.attendance'].search([
+            ('employee_id', '=', self.employee_id.id),
+            ('id', '!=', self.id),
+            ('check_in', '!=', False),
+            ('check_out', '!=', False),
+        ])
+        worked_hours = 0
+        for att_id in att_ids.filtered(lambda x: x.check_in.date() == self.check_in.date()):
+            delta = att_id.check_out - att_id.check_in
+            worked_hours += delta.total_seconds() / 3600.0
+        return worked_hours
+        # return self.employee_id.hours_today - self.open_worked_hours
+
+    def get_max_hours_today(self):
+        self.ensure_one()
+        th = self.env['hr.attendance.theoretical.time.report']._theoretical_hours(
+            self.employee_id.sudo(), datetime.today()
+        )
+        max_ov_hours = self.employee_id.sudo().som_current_calendar_id.som_max_overtime_per_day
+        return th + max_ov_hours
+
+    def get_max_checkout(self):
+        if not self.check_in:
+            return False
+        #import pudb; pu.db
+        max_hours_today = self.get_max_hours_today()
+        hours_today_no_me = self.get_hours_today_without_me()
+
+        time_left = max_hours_today - hours_today_no_me
+        h, m, s = self._get_data_time(time_left)
+        time_aux = timedelta(hours=h, minutes=m, seconds=s)
+
+        max_check_out = self.check_in + time_aux
+        return max_check_out
 
     def autoclose_attendance(self, reason):
         try:
@@ -116,6 +154,81 @@ class HrAttendance(models.Model):
                 mail.send()
             except Exception:
                 _logger.exception("Attendance autoclose - Unable to send email.")
+
+    @api.constrains('check_in', 'check_out', 'employee_id')
+    def _check_overtime(self):
+        if self.env.company.som_restrictive_overtime:
+            for att_id in self.filtered(lambda x: x.check_in and x.check_out):
+                max_check_out = att_id.get_max_checkout()
+                if att_id.check_out > max_check_out:
+                    user_tz = att_id.employee_id.user_id.sudo().tz
+                    max_check_out_tz = max_check_out.astimezone(pytz.timezone(user_tz))
+                    str_max_check_out_tz = max_check_out_tz.strftime('%d/%m/%Y %H:%M:%S')
+                    raise exceptions.ValidationError(
+                        _("L'hora màxima per tancar l'assistència és %(max_check_out)s " % {
+                              'max_check_out': str_max_check_out_tz,
+                          })
+                    )
+
+    def write(self, vals):
+        if (self.env.company.som_restrictive_overtime and
+                vals.get('check_out') and self.env.context.get('som_from_attendance_action_change')):
+            for att_id in self: # we do it but in theory just one record expected
+                origin_check_out = vals.get('check_out')
+                max_check_out = att_id.get_max_checkout()
+                if origin_check_out > max_check_out:
+                    vals['check_out'] = max_check_out
+                    vals['som_comments'] = '-'
+                    self.send_mail_attendance_reminder(att_id, origin_check_out, max_check_out)
+        return super().write(vals)
+
+    @api.model
+    def send_mail_attendance_reminder(self, att_id, origin_checkout, new_checkout):
+        somadmin_user_id = self.env.ref('base.somadmin')
+        user_tz = att_id.employee_id.user_id.sudo().tz
+        str_day = new_checkout.astimezone(pytz.timezone(user_tz)).strftime('%d/%m/%Y')
+        float_hours_diff = (origin_checkout - new_checkout).total_seconds() / 3600
+        h, m, s = self._get_data_time(float_hours_diff)
+        str_mail_body = "%s -> %s [- %s:%s:%s]" % (
+            origin_checkout.astimezone(pytz.timezone(user_tz)).strftime('%d/%m/%Y %H:%M'),
+            new_checkout.astimezone(pytz.timezone(user_tz)).strftime('%d/%m/%Y %H:%M'),
+            h, m, s,
+        )
+        str_subject = _("Recordatori dia: %s [%s]" % (str_day, str(att_id.id)))
+        try:
+            mail_html = _("""
+                                <div style="margin: 0px; padding: 0px;">
+                                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                                        Hola,
+                                        <br/><br/>
+                                        %s
+                                        <br/><br/>
+                                        %s
+                                        <br/><br/>
+                                        Salut!
+                                    </p>
+                                </div>
+                            """) % (
+                str_subject,
+                str_mail_body,
+            )
+
+            mail_values = {
+                'author_id': somadmin_user_id.partner_id.id,
+                'body_html': mail_html,
+                'subject': str_subject,
+                'email_from':
+                    somadmin_user_id.email_formatted or somadmin_user_id.company_id.catchall or
+                    somadmin_user_id.company_id.email,
+                'email_to': att_id.employee_id.user_id.email_formatted,
+                'auto_delete': False,
+            }
+
+            mail = self.env['mail.mail'].sudo().create(mail_values)
+            mail.send()
+
+        except Exception as e:
+            _logger.exception("send_mail_attendance_reminder - unable to send email.")
 
     @api.constrains('check_in', 'check_out', 'employee_id')
     def _check_validity_leaves(self):
