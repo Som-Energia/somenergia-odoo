@@ -46,6 +46,7 @@ class TestHrAttendanceOvertime(common.TransactionCase):
         return tz.localize(datetime(year, month, day, hour, minute)).astimezone(pytz.utc).replace(tzinfo=None)
 
     def test_restrictive_overtime_setup_disabled(self):
+        """ no restriction """
         self.env.company.som_restrictive_overtime = False
         year_aux, month_aux, day_aux = (2025, 1, 2)
 
@@ -80,7 +81,7 @@ class TestHrAttendanceOvertime(common.TransactionCase):
 
         self.assertEqual(att1_id.get_max_hours_today(), 8)
 
-    def test_restrictive_overtime_setup_enabled__1_extra_hour_allowed(self):
+    def test_restrictive_overtime_setup_enabled__att_1_extra_hour_allowed(self):
         """
         max_hours_today = 8 (7 + 1)
         check_in and check_out in UTC
@@ -89,14 +90,14 @@ class TestHrAttendanceOvertime(common.TransactionCase):
         year_aux, month_aux, day_aux = (2025, 1, 2)
 
         # 3 hours attendance (so far hours_today = 3)
-        att1_id = self.env['hr.attendance'].create({
+        self.env['hr.attendance'].create({
             'employee_id': self.employee_emp.id,
             'check_in': datetime(year_aux, month_aux, day_aux, 7, 10),
             'check_out': datetime(year_aux, month_aux, day_aux, 10, 10),
         })
 
         # 4:45 hours attendance (so far hours_today = 7:45)
-        att2_id = self.env['hr.attendance'].create({
+        self.env['hr.attendance'].create({
             'employee_id': self.employee_emp.id,
             'check_in': datetime(year_aux, month_aux, day_aux, 11, 00),
             'check_out': datetime(year_aux, month_aux, day_aux, 15, 45),
@@ -118,7 +119,7 @@ class TestHrAttendanceOvertime(common.TransactionCase):
                                   pytz.utc).replace(tzinfo=None)):
             self.assertEqual(self.employee_emp.hours_today, 7.75, "It should have counted 7.75 hours")
 
-    def test_restrictive_overtime_setup_enabled__2_extra_hours_allowed(self):
+    def test_restrictive_overtime_setup_enabled__att_2_extra_hours_allowed(self):
         """
         max_hours_today = 8 (7 + 1)
         check_in and check_out in UTC
@@ -162,3 +163,117 @@ class TestHrAttendanceOvertime(common.TransactionCase):
                           lambda: self._tz_datetime(year_aux, month_aux, day_aux, 19, 0).astimezone(
                               pytz.utc).replace(tzinfo=None)):
             self.assertEqual(self.employee_emp.hours_today, 8.5, "It should have counted 8.5 hours")
+
+    @freeze_time('2025-01-02 18:00:00')
+    def test_restrictive_overtime_setup_enabled__checkout_forced(self):
+        """ assuming max_hours_today = 8 (7 + 1) """
+        self.env.company.som_restrictive_overtime = True
+        year_aux, month_aux, day_aux = (2025, 1, 2)
+
+        # 3 hours attendance (so far hours_today = 3)
+        self.env['hr.attendance'].create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 7, 10),
+            'check_out': datetime(year_aux, month_aux, day_aux, 10, 10),
+        })
+
+        # 4:45 hours attendance (so far hours_today = 7:45)
+        self.env['hr.attendance'].create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 11, 00),
+            'check_out': datetime(year_aux, month_aux, day_aux, 15, 45),
+        })
+
+        self.env['hr.attendance'].create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 16, 00),
+        })
+        self.assertEqual(self.employee_emp.attendance_state, 'checked_in')
+
+        with patch(
+                'odoo.addons.somenergia_custom.models.hr_attendance.HrAttendance.send_mail_attendance_reminder'
+        ) as mock_send_mail_attendance_reminder:
+            att_3_id = self.employee_emp._attendance_action_change()
+            mock_send_mail_attendance_reminder.assert_called_once()
+            mock_send_mail_attendance_reminder.assert_called_with(
+                att_3_id,
+                datetime(year_aux, month_aux, day_aux, 18, 00),
+                datetime(year_aux, month_aux, day_aux, 16, 15),
+            )
+        self.assertEqual(self.employee_emp.attendance_state, 'checked_out')
+        self.assertIsNotNone(att_3_id)
+        self.assertEqual(att_3_id.check_out, datetime(year_aux, month_aux, day_aux, 16, 15))
+        self.assertEqual(att_3_id.get_max_hours_today(), self.employee_emp.hours_today)
+
+    @freeze_time('2025-01-02 16:10:00')
+    def test_restrictive_overtime_setup_enabled__checkout_ok(self):
+        """ assuming max_hours_today = 8 (7 + 1) """
+        self.env.company.som_restrictive_overtime = True
+        year_aux, month_aux, day_aux = (2025, 1, 2)
+
+        # 3 hours attendance (so far hours_today = 3)
+        self.env['hr.attendance'].create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 7, 10),
+            'check_out': datetime(year_aux, month_aux, day_aux, 10, 10),
+        })
+
+        # 4:45 hours attendance (so far hours_today = 7:45)
+        self.env['hr.attendance'].create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 11, 00),
+            'check_out': datetime(year_aux, month_aux, day_aux, 15, 45),
+        })
+
+        self.env['hr.attendance'].create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 16, 00),
+        })
+        self.assertEqual(self.employee_emp.attendance_state, 'checked_in')
+
+        with patch(
+                'odoo.addons.somenergia_custom.models.hr_attendance.HrAttendance.send_mail_attendance_reminder'
+        ) as mock_send_mail_attendance_reminder:
+            att_3_id = self.employee_emp._attendance_action_change()
+            mock_send_mail_attendance_reminder.assert_not_called()
+        self.assertEqual(self.employee_emp.attendance_state, 'checked_out')
+        self.assertIsNotNone(att_3_id)
+        self.assertEqual(att_3_id.check_out, datetime(year_aux, month_aux, day_aux, 16, 10))
+
+    @freeze_time('2025-01-02 18:00:00')
+    def test_restrictive_overtime_setup_disabled__checkout_ok(self):
+        """ assuming max_hours_today = 8 (7 + 1) """
+        self.env.company.som_restrictive_overtime = False
+        year_aux, month_aux, day_aux = (2025, 1, 2)
+
+        # 3 hours attendance (so far hours_today = 3)
+        self.env['hr.attendance'].create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 7, 10),
+            'check_out': datetime(year_aux, month_aux, day_aux, 10, 10),
+        })
+
+        # 4:45 hours attendance (so far hours_today = 7:45)
+        self.env['hr.attendance'].create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 11, 00),
+            'check_out': datetime(year_aux, month_aux, day_aux, 15, 45),
+        })
+
+        # 2 hours attendance (so far hours_today = 9:45)
+        self.env['hr.attendance'].create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 16, 00),
+        })
+        self.assertEqual(self.employee_emp.attendance_state, 'checked_in')
+
+        with patch(
+                'odoo.addons.somenergia_custom.models.hr_attendance.HrAttendance.send_mail_attendance_reminder'
+        ) as mock_send_mail_attendance_reminder:
+            att_3_id = self.employee_emp._attendance_action_change()
+            mock_send_mail_attendance_reminder.assert_not_called()
+
+        self.assertEqual(self.employee_emp.attendance_state, 'checked_out')
+        self.assertIsNotNone(att_3_id)
+        self.assertEqual(att_3_id.check_out, datetime(year_aux, month_aux, day_aux, 18, 00))
+        self.assertEqual(self.employee_emp.hours_today, 9.75, "It should have counted 9.75 hours")
