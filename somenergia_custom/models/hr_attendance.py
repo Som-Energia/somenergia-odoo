@@ -63,18 +63,19 @@ class HrAttendance(models.Model):
             worked_hours += delta.total_seconds() / 3600.0
         return worked_hours
 
-    def get_max_hours_today(self, date):
+    def get_max_hours_today(self):
         self.ensure_one()
         th = self.env['hr.attendance.theoretical.time.report']._theoretical_hours(
-            self.employee_id.sudo(), date
+            self.employee_id.sudo(), self.check_in.date() or datetime.today()
         )
         max_ov_hours = self.employee_id.sudo().som_current_calendar_id.som_max_overtime_per_day
         return th + max_ov_hours
 
     def get_max_checkout(self):
+        self.ensure_one()
         if not self.check_in:
             return False
-        max_hours_today = self.get_max_hours_today(self.check_in.date())
+        max_hours_today = self.get_max_hours_today()
         hours_today_no_me = self.get_hours_today_without_me()
 
         time_left = max_hours_today - hours_today_no_me
