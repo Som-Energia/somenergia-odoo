@@ -59,6 +59,16 @@ class Project(models.Model):
             cr.execute(query)
 
     @api.model
+    def get_internal_projects(self):
+        internal_tag_ids = self.env['project.tags'].search([
+            ('som_for_internal_project', '=', True),
+        ])
+        internal_project_ids = self.env['project.project'].search([
+            ('tag_ids', 'in', internal_tag_ids.ids),
+        ])
+        return internal_project_ids
+
+    @api.model
     def _do_initialize_projects(self):
         self._load_default_tasks()
         self._load_table_calendar_weeks()
