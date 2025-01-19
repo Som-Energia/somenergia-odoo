@@ -223,3 +223,15 @@ class AccountAnalyticLine(models.Model):
                         'unit_amount': worked_hours,
                     })
             pass
+
+
+    def button_resume_work(self):
+        internal_project_ids = self.env['project.project'].get_internal_projects()
+        timesheets_to_avoid_timer_ids = self.env['account.analytic.line'].search([
+            '|',
+            ('som_is_cumulative', '=', True),
+            ('project_id', 'in', internal_project_ids.ids),
+        ])
+        result = super().button_resume_work()
+        result["context"] = {"resuming_lines": timesheets_to_avoid_timer_ids.ids}
+        return result

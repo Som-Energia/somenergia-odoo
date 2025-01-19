@@ -33,6 +33,9 @@
         'hr_employee_calendar_planning',
         'custom_pnt',
         'sh_survey_export_xls',
+        'helpdesk_mgmt',
+        'helpdesk_mgmt_timesheet',
+        'project_timesheet_time_control',
     ],
 
     # always loaded
@@ -61,6 +64,7 @@
         'views/hr_leave_stress_day_views.xml',
         'views/hr_leave_type_views.xml',
         'views/resource_calendar_views.xml',
+        'views/helpdesk_ticket_team_view.xml',
         'wizards/hr_contract_import_wizard.xml',
         'wizards/hr_appraisal_generate_wizard.xml',
         'wizards/sh_survey_export_xls_wizard_views.xml',
