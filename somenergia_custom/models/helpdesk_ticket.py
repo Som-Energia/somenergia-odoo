@@ -15,3 +15,11 @@ class HelpdeskTicket(models.Model):
         result = super().button_start_work()
         result["context"].update({"resuming_lines": timesheets_to_avoid_timer_ids.ids})
         return result
+
+    @api.model
+    def message_new(self, msg, custom_values=None):
+        ticket_id = super().message_new(msg, custom_values=custom_values)
+        # assign default project
+        if ticket_id.team_id and ticket_id.team_id.default_project_id:
+            ticket_id.project_id = ticket_id.team_id.default_project_id
+        return ticket_id
