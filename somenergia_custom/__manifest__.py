@@ -34,6 +34,8 @@
         'custom_pnt',
         'sh_survey_export_xls',
         'helpdesk_mgmt',
+        'helpdesk_mgmt_timesheet',
+        'project_timesheet_time_control',
     ],
 
     # always loaded

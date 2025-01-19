@@ -24,3 +24,4 @@ from . import hr_leave_type
 from . import helpdesk_ticket_team
 from . import mail_thread
 from . import mail_mail
+from . import helpdesk_ticket
