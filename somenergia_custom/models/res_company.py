@@ -14,3 +14,13 @@ class ResCompany(models.Model):
         string="Restrictive overtime",
         default=False,
     )
+
+    som_amend_attendance_restrictive = fields.Boolean(
+        string="Restrictive amend attendance",
+        default=False,
+    )
+
+    som_amend_attendance_days_to = fields.Integer(
+        string="Days to amend attendance",
+        default=1,
+    )

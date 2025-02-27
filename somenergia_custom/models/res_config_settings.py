@@ -14,3 +14,13 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.som_restrictive_overtime',
         readonly=False,
     )
+
+    som_amend_attendance_restrictive = fields.Boolean(
+        related='company_id.som_amend_attendance_restrictive',
+        readonly=False,
+    )
+
+    som_amend_attendance_days_to = fields.Integer(
+        related='company_id.som_amend_attendance_days_to',
+        readonly=False,
+    )
