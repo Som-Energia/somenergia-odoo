@@ -35,7 +35,24 @@
                     Set up overtime restriction
                 </div>
                 <field name="som_restrictive_overtime" class="text-center"/><span>Enable restrictive overtime</span>
+
+                <br/>
+                <br/>
+                <label for="som_amend_attendance_restrictive">
+                    Set up attendance editing restriction
+                </label>
+                <div class="text-muted">
+                    Set up attendance editing restriction
+                </div>
+                <field name="som_amend_attendance_restrictive" class="text-center"/><span>Enable attendance editing restriction</span>
+                <br/>
+
+                <span attrs="{'invisible': [('som_amend_attendance_restrictive', '=', False)]}">Days to edit attendances</span>
+                <field name="som_amend_attendance_days_to"
+                       attrs="{'invisible': [('som_amend_attendance_restrictive', '=', False)]}"
+                       class="text-center"/>
             </xpath>
+
 
         </field>
     </record>

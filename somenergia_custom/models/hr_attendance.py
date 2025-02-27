@@ -12,8 +12,23 @@ _logger = logging.getLogger(__name__)
 class HrAttendance(models.Model):
     _inherit = "hr.attendance"
 
+    def _compute_som_edition_allowed(self):
+        for record in self:
+            allowed = True
+            if self.env.company.som_amend_attendance_restrictive:
+                days_to = self.env.company.som_amend_attendance_days_to
+                date_to = fields.Date.to_date(fields.Date.today() - timedelta(days=days_to))
+                allowed = (date_to <= record.check_in.date() <= fields.Date.today())
+            record.som_edition_allowed = allowed
+
     som_comments = fields.Text(
         string="Comments"
+    )
+
+    som_edition_allowed = fields.Boolean(
+        string='Edition allowed',
+        compute='_compute_som_edition_allowed',
+        store=False,
     )
 
     def _get_data_time(self, float_hours):
