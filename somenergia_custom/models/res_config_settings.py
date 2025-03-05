@@ -24,3 +24,13 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.som_amend_attendance_days_to',
         readonly=False,
     )
+
+    som_attendance_limit_checkin = fields.Float(
+        related='company_id.som_attendance_limit_checkin',
+        readonly=False,
+    )
+
+    som_attendance_limit_checkout = fields.Float(
+        related='company_id.som_attendance_limit_checkout',
+        readonly=False,
+    )

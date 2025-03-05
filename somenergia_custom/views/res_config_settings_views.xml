@@ -43,6 +43,49 @@
                     class="row mt16 o_settings_container"
                     name="som_attendance_settings_container"
                 >
+
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane" />
+                        <div class="o_setting_right_pane">
+                            <label
+                                string="Checkin limit"
+                                for="som_attendance_limit_checkin"
+                            />
+                            <div class="row">
+                                <div class="text-muted col-lg-8">
+                                    Attendance can't start before this hour
+                                </div>
+                            </div>
+                            <div class="content-group mt16">
+                                <field
+                                    name="som_attendance_limit_checkin"
+                                    widget="float_time"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane" />
+                        <div class="o_setting_right_pane">
+                            <label
+                                string="Checkout limit"
+                                for="som_attendance_limit_checkout"
+                            />
+                            <div class="row">
+                                <div class="text-muted col-lg-8">
+                                    Attendance can't end after this hour
+                                </div>
+                            </div>
+                            <div class="content-group mt16">
+                                <field
+                                    name="som_attendance_limit_checkout"
+                                    widget="float_time"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-12 col-lg-6 o_setting_box">
                         <div class="o_setting_left_pane">
                             <field name="som_amend_attendance_restrictive" />

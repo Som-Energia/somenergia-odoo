@@ -24,3 +24,11 @@ class ResCompany(models.Model):
         string="Days to amend attendance",
         default=1,
     )
+
+    som_attendance_limit_checkin = fields.Float(
+        digits=(2, 2), default=6.0
+    )
+
+    som_attendance_limit_checkout = fields.Float(
+        digits=(2, 2), default=22.0
+    )
