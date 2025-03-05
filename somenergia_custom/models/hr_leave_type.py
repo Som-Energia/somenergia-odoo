@@ -20,6 +20,11 @@ class HRLeaveType(models.Model):
         default=1,
     )
 
+    som_mandatory_description = fields.Boolean(
+        string="Mandatory description",
+        default=False,
+    )
+
     @api.model
     def get_days_notify_types(self):
         """

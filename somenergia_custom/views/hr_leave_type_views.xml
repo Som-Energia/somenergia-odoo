@@ -5,6 +5,9 @@
         <field name="model">hr.leave.type</field>
         <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form"/>
         <field name="arch" type="xml">
+            <field name="time_type" position="after">
+                <field name="som_mandatory_description"/>
+            </field>
             <xpath expr="//group[@name='public_holidays']" position="after">
                 <group name="public_holidays" string="End of absence notification">
                     <field name="som_eoa_notification_mail"/>
@@ -22,6 +25,7 @@
             <field name="leave_validation_type" position="after">
                 <field name="som_eoa_notification_mail" optional="show"/>
                 <field name="som_eoa_notification_days" optional="show"/>
+                <field name="som_mandatory_description" optional="show"/>
             </field>
         </field>
     </record>

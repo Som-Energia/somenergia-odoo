@@ -22,6 +22,13 @@ class HolidaysRequest(models.Model):
         store=False
     )
 
+    som_mandatory_description_rel = fields.Boolean(
+        string="Mandatory description",
+        related="holiday_status_id.som_mandatory_description",
+        store=False,
+        readonly=True,
+    )
+
     def _get_resource_calendar_attendance_target(self, date):
         employee_id = self.env['hr.employee'].sudo().search(
             [('user_id', '=', self.env.user.id)])
