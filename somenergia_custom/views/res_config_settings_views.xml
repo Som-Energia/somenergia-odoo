@@ -35,22 +35,28 @@
                     Set up overtime restriction
                 </div>
                 <field name="som_restrictive_overtime" class="text-center"/><span>Enable restrictive overtime</span>
+            </xpath>
 
-                <br/>
-                <br/>
-                <label for="som_amend_attendance_restrictive">
-                    Set up attendance editing restriction
-                </label>
-                <div class="text-muted">
-                    Set up attendance editing restriction
+            <xpath expr="//div[@data-key='hr_attendance']" position="inside">
+                <h2>Attendance Settings</h2>
+                <div
+                    class="row mt16 o_settings_container"
+                    name="som_attendance_settings_container"
+                >
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane">
+                            <field name="som_amend_attendance_restrictive" />
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="som_amend_attendance_restrictive" />
+                            <div class="text-muted">Set up attendance restriction</div>
+                            <span attrs="{'invisible': [('som_amend_attendance_restrictive', '=', False)]}">Days to edit attendances</span>
+                            <field name="som_amend_attendance_days_to"
+                                   attrs="{'invisible': [('som_amend_attendance_restrictive', '=', False)]}"
+                                   class="text-center"/>
+                        </div>
+                    </div>
                 </div>
-                <field name="som_amend_attendance_restrictive" class="text-center"/><span>Enable attendance editing restriction</span>
-                <br/>
-
-                <span attrs="{'invisible': [('som_amend_attendance_restrictive', '=', False)]}">Days to edit attendances</span>
-                <field name="som_amend_attendance_days_to"
-                       attrs="{'invisible': [('som_amend_attendance_restrictive', '=', False)]}"
-                       class="text-center"/>
             </xpath>
 
 
