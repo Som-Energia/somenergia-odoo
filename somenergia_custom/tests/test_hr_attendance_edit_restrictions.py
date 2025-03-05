@@ -11,6 +11,7 @@ from odoo.tests.common import tagged, TransactionCase
 from odoo.exceptions import ValidationError, AccessError
 from odoo.addons.base.tests.common import DISABLED_MAIL_CONTEXT
 
+
 @tagged('som_attendance_edit_restrictions')
 class TestHrAttendanceEditRestrictions(common.TransactionCase):
     @classmethod
