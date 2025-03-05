@@ -266,9 +266,9 @@ class HrAttendance(models.Model):
                                 (x.request_unit_half or x.request_unit_hours)
                                 and
                                 (
-                                        (att_id.check_in and x.date_from <= att_id.check_in <= x.date_to)
+                                        (att_id.check_in and x.date_from <= att_id.check_in < x.date_to)
                                         or
-                                        (att_id.check_out and x.date_from <= att_id.check_out <= x.date_to)
+                                        (att_id.check_out and x.date_from < att_id.check_out < x.date_to)
                                         or
                                         (att_id.check_in and att_id.check_out and att_id.check_in < x.date_from
                                          and x.date_to < att_id.check_out)
