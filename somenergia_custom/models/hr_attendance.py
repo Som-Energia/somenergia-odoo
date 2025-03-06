@@ -38,31 +38,33 @@ class HrAttendance(models.Model):
         h, m = divmod(m, 60)
         return h, m, s
 
-    def get_attendance_hour_limit(self):
+    def get_attendance_hour_limit(self, hour_limit):
         self.ensure_one()
         check_in = self.check_in
-        hour_limit = self.employee_id.company_id.attendance_maximum_hours_per_day
+        # hour_limit = p_hour_limit or self.employee_id.company_id.attendance_maximum_hours_per_day
         h, m, s = self._get_data_time(hour_limit)
-        check_out_limit = datetime(check_in.year, check_in.month, check_in.day, h, m, s)
-        return check_out_limit
+        limit = datetime(check_in.year, check_in.month, check_in.day, h, m, s)
+        return limit
 
     def needs_autoclose(self):
         self.ensure_one()
-        check_out_limit = self.get_attendance_hour_limit()
+        check_out_limit = self.get_attendance_hour_limit(self.employee_id.company_id.attendance_maximum_hours_per_day)
         if self.check_in < check_out_limit <= fields.Datetime.now():
             return True
         return False
 
     def get_checkout_time(self):
         self.ensure_one()
-        check_out_aux = self.get_attendance_hour_limit()
-        localtz = timezone('Europe/Madrid')
-        local_dt = localtz.localize(check_out_aux, is_dst=None)
-        checkout_time_utc = local_dt.astimezone(utc)
-        checkout_str = checkout_time_utc.strftime("%m/%d/%Y %H:%M:%S")
-        checkout_time = datetime.strptime(checkout_str, "%m/%d/%Y %H:%M:%S")
-        return checkout_time
+        check_out_aux = self.get_attendance_hour_limit(self.employee_id.company_id.attendance_maximum_hours_per_day)
+        return self._get_local_tz_datetime(check_out_aux)
 
+    def _get_local_tz_datetime(self, datetime_aux):
+        local_tz = timezone('Europe/Madrid')
+        local_dt = local_tz.localize(datetime_aux, is_dst=None)
+        dt_time_utc = local_dt.astimezone(utc)
+        dt_str = dt_time_utc.strftime("%m/%d/%Y %H:%M:%S")
+        dt_time = datetime.strptime(dt_str, "%m/%d/%Y %H:%M:%S")
+        return dt_time
 
     def get_hours_today_without_me(self):
         self.ensure_one()
@@ -103,7 +105,6 @@ class HrAttendance(models.Model):
     def autoclose_attendance(self, reason):
         try:
             self.ensure_one()
-            checkout_time = self.get_checkout_time()
             vals = {"check_out": self.check_in}
             if reason:
                 vals["attendance_reason_ids"] = [(4, reason.id)]
@@ -243,6 +244,28 @@ class HrAttendance(models.Model):
 
         except Exception as e:
             _logger.exception("send_mail_attendance_reminder - unable to send email.")
+
+    @api.constrains('check_in', 'check_out')
+    def _check_validity_hour_limits(self):
+        hour_limit_start = self.env.company.som_attendance_limit_checkin
+        hour_limit_end = self.env.company.som_attendance_limit_checkout
+        for att_id in self:
+            checkin_limit = att_id.get_attendance_hour_limit(hour_limit_start)
+            checkin_limit_tz = self._get_local_tz_datetime(checkin_limit)
+            checkout_limit = att_id.get_attendance_hour_limit(hour_limit_end)
+            checkout_limit_tz = self._get_local_tz_datetime(checkout_limit)
+            if att_id.check_in and att_id.check_in < checkin_limit_tz:
+                raise exceptions.ValidationError(
+                    _("No es pot obrir l'assitència abans de les %(limit)s" % {
+                          'limit': checkin_limit.strftime('%d/%m/%Y %H:%M'),
+                      })
+                )
+            if att_id.check_out and att_id.check_out > checkout_limit_tz:
+                raise exceptions.ValidationError(
+                    _("No es pot tancar l'assitència després de les %(limit)s" % {
+                          'limit': checkout_limit.strftime('%d/%m/%Y %H:%M'),
+                      })
+                )
 
     @api.constrains('check_in', 'check_out', 'employee_id')
     def _check_validity_leaves(self):
