@@ -19,9 +19,12 @@
                 <field name="som_last_message_date" />
             </field>
             <xpath expr="//*[hasclass('o_kanban_record_body')]" position="inside">
-                <div t-if="record.som_last_message_date.raw_value" name="som_last_message_date">
+                <span t-if="record.create_date.raw_value" class="oe_span" style="margin-right: 10px;" name="create_date">
+                    <field name="create_date" widget="remaining_days"/>
+                </span>
+                <span t-if="record.som_last_message_date.raw_value" name="som_last_message_date">
                     <field name="som_last_message_date"/>
-                </div>
+                </span>
             </xpath>
         </field>
     </record>
