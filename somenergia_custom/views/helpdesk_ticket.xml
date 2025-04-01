@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<odoo>
+
+    <record id="helpdesk_ticket_form_view_som" model="ir.ui.view">
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk_mgmt.ticket_view_form" />
+        <field name="arch" type="xml">
+            <field name="closed_date" position="after">
+                <field name="som_last_message_date" />
+            </field>
+        </field>
+    </record>
+
+    <record id="helpdesk_ticket_kanban_view_som" model="ir.ui.view">
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk_mgmt.view_helpdesk_ticket_kanban" />
+        <field name="arch" type="xml">
+            <field name="assigned_date" position="after">
+                <field name="som_last_message_date" />
+            </field>
+            <xpath expr="//*[hasclass('o_kanban_record_body')]" position="inside">
+                <div t-if="record.som_last_message_date.raw_value" name="som_last_message_date">
+                    <field name="som_last_message_date"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="helpdesk_ticket_tree_view_som" model="ir.ui.view">
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk_mgmt.ticket_view_tree" />
+        <field name="arch" type="xml">
+            <field name="last_stage_update" position="after">
+                <field name="som_last_message_date" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

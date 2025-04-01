@@ -66,6 +66,7 @@
         'views/hr_leave_type_views.xml',
         'views/resource_calendar_views.xml',
         'views/helpdesk_ticket_team_view.xml',
+        'views/helpdesk_ticket.xml',
         'wizards/hr_contract_import_wizard.xml',
         'wizards/hr_appraisal_generate_wizard.xml',
         'wizards/sh_survey_export_xls_wizard_views.xml',

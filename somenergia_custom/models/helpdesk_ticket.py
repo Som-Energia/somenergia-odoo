@@ -11,6 +11,8 @@ class HelpdeskTicket(models.Model):
             if record.som_message_ids:
                 last_message_id = record.som_message_ids.sorted('date', reverse=True)[:1]
                 record.som_last_message_date = last_message_id.date
+                if last_message_id.create_uid.id not in record.team_id.user_ids.ids:
+                    record.kanban_state = 'blocked'
 
     som_message_ids = fields.One2many(
         string="Messages",
