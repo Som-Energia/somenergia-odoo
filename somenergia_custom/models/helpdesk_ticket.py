@@ -5,6 +5,25 @@ from odoo import api, fields, models
 class HelpdeskTicket(models.Model):
     _inherit = "helpdesk.ticket"
 
+    @api.depends('som_message_ids')
+    def _compute_som_last_message(self):
+        for record in self:
+            if record.som_message_ids:
+                last_message_id = record.som_message_ids.sorted('date', reverse=True)[:1]
+                record.som_last_message_date = last_message_id.date
+
+    som_message_ids = fields.One2many(
+        string="Messages",
+        comodel_name="mail.message",
+        inverse_name="som_ticket_id",
+    )
+
+    som_last_message_date = fields.Datetime(
+        string = "Last message date",
+        compute='_compute_som_last_message',
+        store=True,
+    )
+
     def button_start_work(self):
         internal_project_ids = self.env['project.project'].get_internal_projects()
         timesheets_to_avoid_timer_ids = self.env['account.analytic.line'].search([
