@@ -12,7 +12,7 @@ class MailMail(models.Model):
             ctx = self.env.context
             if ctx.get('som_from_ticket') and ctx.get('som_id_support_partner') and ctx.get('som_mail_from'):
                 recipient_ids = vals_list[0].get("recipient_ids")
-                if recipient_ids[0][1] == ctx.get('som_id_support_partner'):
+                if ctx.get('som_id_support_partner') in [r[1] for r in recipient_ids]:
                     vals_list[0].update({"email_from": ctx.get('som_mail_from')})
         except Exception as e:
             pass
