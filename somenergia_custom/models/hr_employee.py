@@ -17,13 +17,10 @@ class HrEmployeeBase(models.AbstractModel):
             ('date_from', '<=', fields.Datetime.now()),
             ('date_to', '>=', fields.Datetime.now()),
         ])
-        leave_data = {}
-        for holiday in holidays:
-            leave_data[holiday.employee_id.id] = {}
-            leave_data[holiday.employee_id.id]['current_leave_state'] = holiday.state
+        leave_data = {leave.employee_id.id: leave.state for leave in holidays}
 
         for employee in self:
-            employee.som_is_absent_regardless_state = leave_data.get(employee.id)
+            employee.som_is_absent_regardless_state = leave_data.get(employee.id, False)
 
     def _compute_is_present(self):
         for record in self:
