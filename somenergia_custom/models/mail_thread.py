@@ -14,6 +14,6 @@ class MailThread(models.AbstractModel):
                     som_from_ticket=True,
                     som_id_support_partner= self.team_id.som_support_partner_id.id,
                     som_mail_from=mail_from)
-            )._notify_thread(message, msg_vals=msg_vals, **kwargs)
+            )._notify_thread(message, msg_vals=msg_vals, mail_auto_delete=False, **kwargs)
         else:
             return super(MailThread, self)._notify_thread(message, msg_vals=msg_vals, **kwargs)
