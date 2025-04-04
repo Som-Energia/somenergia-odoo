@@ -12,6 +12,7 @@ _logger = logging.getLogger(__name__)
 class HrAttendance(models.Model):
     _inherit = "hr.attendance"
 
+    @api.depends('check_in')
     def _compute_som_edition_allowed(self):
         for record in self:
             allowed = True
@@ -244,6 +245,10 @@ class HrAttendance(models.Model):
 
         except Exception as e:
             _logger.exception("send_mail_attendance_reminder - unable to send email.")
+
+    @api.constrains('check_in')
+    def _check_allowed(self):
+        self._compute_som_edition_allowed()
 
     @api.constrains('check_in', 'check_out')
     def _check_validity_hour_limits(self):
