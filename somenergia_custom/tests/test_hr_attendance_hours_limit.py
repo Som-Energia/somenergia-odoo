@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytz
 from datetime import datetime
+from freezegun import freeze_time
 from odoo.tests import common, new_test_user
 from odoo.tests.common import tagged, TransactionCase
 from odoo.exceptions import ValidationError, AccessError
@@ -50,6 +51,7 @@ class TestHrAttendanceHoursLimit(common.TransactionCase):
         tz = pytz.timezone('Europe/Brussels')
         return tz.localize(datetime(year, month, day, hour, minute)).astimezone(pytz.utc).replace(tzinfo=None)
 
+    @freeze_time('2025-03-06 6:00:00')
     def test_ahl_raise_before_checkin_limit(self):
         year_aux, month_aux, day_aux = (2025, 3, 6)
 
@@ -65,6 +67,7 @@ class TestHrAttendanceHoursLimit(common.TransactionCase):
         att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
         self.assertEqual(len(att_ids), 0)
 
+    @freeze_time('2025-03-06 6:00:00')
     def test_ahl_noraise_checkin_limit(self):
         year_aux, month_aux, day_aux = (2025, 3, 6)
 
@@ -79,6 +82,7 @@ class TestHrAttendanceHoursLimit(common.TransactionCase):
         att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
         self.assertEqual(len(att_ids), 1)
 
+    @freeze_time('2025-03-06 18:00:00')
     def test_ahl_raise_after_checkout_limit(self):
         year_aux, month_aux, day_aux = (2025, 3, 6)
 
@@ -99,6 +103,7 @@ class TestHrAttendanceHoursLimit(common.TransactionCase):
         self.assertEqual(len(att_ids), 1)
         self.assertEqual(att_id.check_out, False)
 
+    @freeze_time('2025-03-06 18:00:00')
     def test_ahl_noraise_checkout_limit(self):
         year_aux, month_aux, day_aux = (2025, 3, 6)
 
