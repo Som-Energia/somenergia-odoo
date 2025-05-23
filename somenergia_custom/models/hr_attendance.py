@@ -272,6 +272,12 @@ class HrAttendance(models.Model):
                       })
                 )
 
+            if (self.env.company.som_amend_attendance_restrictive and
+                    att_id.check_out and att_id.check_out > fields.Datetime.now()):
+                raise exceptions.ValidationError(
+                    _("No es pot tancar l'assitència a futur")
+                )
+
     @api.constrains('check_in', 'check_out', 'employee_id')
     def _check_validity_leaves(self):
         feature_flag_date_from = datetime.today()

@@ -103,7 +103,7 @@ class TestHrAttendanceHoursLimit(common.TransactionCase):
         self.assertEqual(len(att_ids), 1)
         self.assertEqual(att_id.check_out, False)
 
-    @freeze_time('2025-03-06 18:00:00')
+    @freeze_time('2025-03-06 20:00:00')
     def test_ahl_noraise_checkout_limit(self):
         year_aux, month_aux, day_aux = (2025, 3, 6)
 

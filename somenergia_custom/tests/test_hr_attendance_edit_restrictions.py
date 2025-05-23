@@ -344,3 +344,44 @@ class TestHrAttendanceEditRestrictions(common.TransactionCase):
             att2_id.with_user(self.employee_user.id).unlink()
         att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
         self.assertEqual(len(att_ids), 1)
+
+    # CHECKOUT FUTURE
+    # ---------------------------------
+    @freeze_time('2025-03-04 8:00:00')
+    def test_rae__setup_enabled__checkout_future_raise(self):
+        self.env.company.som_amend_attendance_restrictive = True
+        self.env.company.som_amend_attendance_days_to = 0
+        year_aux, month_aux, day_aux = (2025, 3, 4)
+
+        att_id = self.env['hr.attendance'].with_user(self.employee_user.id).create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 7, 10),
+        })
+
+        att_id.with_user(self.employee_user.id).write({
+            'check_out': datetime(year_aux, month_aux, day_aux, 7, 40),
+        })
+
+        with self.assertRaises(ValidationError) as context:
+            att_id.with_user(self.employee_user.id).write({
+                'check_out': datetime(year_aux, month_aux, day_aux, 8, 10),
+            })
+
+    @freeze_time('2025-03-04 8:00:00')
+    def test_rae__setup_disabled__checkout_future_no_raise(self):
+        self.env.company.som_amend_attendance_restrictive = False
+        self.env.company.som_amend_attendance_days_to = 0
+        year_aux, month_aux, day_aux = (2025, 3, 4)
+
+        att_id = self.env['hr.attendance'].with_user(self.employee_user.id).create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 7, 10),
+        })
+
+        att_id.with_user(self.employee_user.id).write({
+            'check_out': datetime(year_aux, month_aux, day_aux, 7, 40),
+        })
+
+        att_id.with_user(self.employee_user.id).write({
+            'check_out': datetime(year_aux, month_aux, day_aux, 8, 10),
+        })
