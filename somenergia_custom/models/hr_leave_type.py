@@ -141,3 +141,22 @@ class HRLeaveType(models.Model):
 
         except Exception as e:
             _logger.exception("End of absences reminder - Unable to send email.")
+
+    @api.model
+    def get_absences_start_ais_exclusion(self):
+        absence_type_ids = self.env['hr.leave.type'].search(
+            [('som_mark_as_excluded_ta', '=', True)],
+        )
+        date_from = datetime.datetime.today().date()
+        domain = [
+            ('holiday_status_id', 'in', absence_type_ids.ids),
+            ('request_date_from', '=', date_from),
+            ('state', 'in', ['validate', 'confirm']),
+        ]
+        return self.env['hr.leave'].search(domain)
+
+    @api.model
+    def check_exclude_employees_from_ais_tasks(self):
+        absence_start_exc_ids = self.get_absences_start_ais_exclusion()
+        empl_ids = absence_start_exc_ids.mapped('employee_ids')
+        empl_ids.write({'som_excluded_from_tel_assistance': True})
