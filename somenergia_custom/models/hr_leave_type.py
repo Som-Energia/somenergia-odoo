@@ -25,6 +25,12 @@ class HRLeaveType(models.Model):
         default=False,
     )
 
+    som_mark_as_excluded_ta = fields.Boolean(
+        string="Mark as excluded from AiS tasks",
+        help="Automatically mark employee as excluded from telephone attendance tasks when absence is created",
+        default=False,
+    )
+
     @api.model
     def get_days_notify_types(self):
         """
