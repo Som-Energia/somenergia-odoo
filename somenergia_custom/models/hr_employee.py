@@ -75,6 +75,10 @@ class HrEmployeeBase(models.AbstractModel):
         string="Feedback ref date",
     )
 
+    som_excluded_from_tel_assistance = fields.Boolean(
+        string='Excluded from telephone assistance',
+    )
+
 
 class HrEmployee(models.Model):
     _inherit = "hr.employee"

@@ -74,9 +74,10 @@
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
-            <field name="job_id" position="after">
+            <field name="parent_id" position="before">
                 <field name="som_recruitment_date"/>
                 <field name="som_appraisal_ref_date"/>
+                <field name="som_excluded_from_tel_assistance"/>
             </field>
         </field>
     </record>
