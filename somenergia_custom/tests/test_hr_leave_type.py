@@ -246,3 +246,51 @@ class TestHrLeaveType(TestHrHolidaysCommon):
 
         msg_absence_name_get = f'<br/>{self.holiday_3.name_get()[0][1]}'
         self.assertNotIn(msg_absence_name_get, str_msg)
+
+    # Feature exclude from AiS tasks
+    @freeze_time('2024-11-27')
+    def test_excluded_employees_from_ais_tasks__excluding_absences_1(self):
+        total_excluding_absences_pre = len(self.env['hr.leave.type'].get_absences_start_ais_exclusion())
+        self.hr_leave_type_1.write({
+            'som_mark_as_excluded_ta': False,
+        })
+        total_excluding_absences_post = len(self.env['hr.leave.type'].get_absences_start_ais_exclusion())
+        self.assertEqual(total_excluding_absences_post, total_excluding_absences_pre)
+
+        self.hr_leave_type_1.write({
+            'som_mark_as_excluded_ta': True,
+        })
+        total_excluding_absences_post = len(self.env['hr.leave.type'].get_absences_start_ais_exclusion())
+        self.assertEqual(total_excluding_absences_post, total_excluding_absences_pre + 1)
+
+    @freeze_time('2024-11-28')
+    def test_excluded_employees_from_ais_tasks__excluding_absences_2(self):
+        total_excluding_absences_pre = len(self.env['hr.leave.type'].get_absences_start_ais_exclusion())
+        self.hr_leave_type_1.write({
+            'som_mark_as_excluded_ta': False,
+        })
+        total_excluding_absences_post = len(self.env['hr.leave.type'].get_absences_start_ais_exclusion())
+        self.assertEqual(total_excluding_absences_post, total_excluding_absences_pre)
+
+        self.hr_leave_type_1.write({
+            'som_mark_as_excluded_ta': True,
+        })
+        total_excluding_absences_post = len(self.env['hr.leave.type'].get_absences_start_ais_exclusion())
+        self.assertEqual(total_excluding_absences_post, total_excluding_absences_pre)
+
+    @freeze_time('2024-11-27')
+    def test_excluded_employees_from_ais_tasks__excluding_employees_1(self):
+        self.env['hr.leave.type'].check_exclude_employees_from_ais_tasks()
+        pre_excluded_employee_ids = self.env['hr.employee'].search([
+            ('som_excluded_from_tel_assistance', '=', True),
+        ])
+        self.hr_leave_type_1.write({
+            'som_mark_as_excluded_ta': True,
+        })
+        self.env['hr.leave.type'].check_exclude_employees_from_ais_tasks()
+        post_excluded_employee_ids = self.env['hr.employee'].search([
+            ('som_excluded_from_tel_assistance', '=', True),
+        ])
+        self.assertEqual(len(post_excluded_employee_ids), len(pre_excluded_employee_ids) + 1)
+        self.assertNotIn(self.employee_emp.id, pre_excluded_employee_ids.ids)
+        self.assertIn(self.employee_emp.id, post_excluded_employee_ids.ids)
