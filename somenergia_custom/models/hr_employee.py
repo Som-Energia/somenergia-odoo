@@ -123,6 +123,20 @@ class HrEmployee(models.Model):
         # attendance = super()._attendance_action_change()
         return attendance
 
+    @api.model
+    def get_available_worker_emails(self, department):
+        """
+        This function returns a list with the emails of available employees
+        It's used by 'Info dispatcher'
+        """
+        empl_ids = self.env['hr.employee'].search([
+            ('department_ids', 'ilike', department),
+            ('is_present', '=', True),
+            ('som_excluded_from_tel_assistance', '=', True),
+        ])
+        res = [empl_id.user_id.email for empl_id in empl_ids]
+        return res
+
 
 class HrEmployeePublic(models.Model):
     _inherit = "hr.employee.public"
