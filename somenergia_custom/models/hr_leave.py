@@ -161,6 +161,28 @@ class HolidaysRequest(models.Model):
                     'end_time': end_datetime,
                 })
 
+        # we create fake leaves for employees with 'som_excluded_from_tel_assistance'
+        empl_excluded_ids = self.env['hr.employee'].search([
+            ('som_excluded_from_tel_assistance', '=', True),
+        ])
+
+        dt_start_date = fields.Datetime.from_string(start_date)
+        start_datetime = datetime(
+            dt_start_date.year, dt_start_date.month, dt_start_date.day, 7, 0, 0
+        )
+
+        dt_end_date = fields.Datetime.from_string(end_date)
+        end_datetime = datetime(
+            dt_end_date.year, dt_end_date.month, dt_end_date.day, 14, 0, 0
+        )
+        for employee_id in empl_excluded_ids:
+            worker = employee_id.user_id.email
+            res.append({
+                'worker': worker,
+                'start_time': start_datetime,
+                'end_time': end_datetime,
+            })
+
         return res
 
     def write(self, vals):
