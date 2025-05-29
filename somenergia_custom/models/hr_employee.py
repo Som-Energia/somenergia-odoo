@@ -132,7 +132,7 @@ class HrEmployee(models.Model):
         empl_ids = self.env['hr.employee'].search([
             ('department_ids', 'ilike', department),
             ('is_present', '=', True),
-            ('som_excluded_from_tel_assistance', '=', True),
+            ('som_excluded_from_tel_assistance', '=', False),
         ])
         res = [empl_id.user_id.email for empl_id in empl_ids]
         return res
