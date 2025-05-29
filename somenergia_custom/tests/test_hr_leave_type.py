@@ -248,6 +248,7 @@ class TestHrLeaveType(TestHrHolidaysCommon):
         self.assertNotIn(msg_absence_name_get, str_msg)
 
     # Feature exclude from AiS tasks
+    # ---------------------------------
     @freeze_time('2024-11-27')
     def test_excluded_employees_from_ais_tasks__excluding_absences_1(self):
         total_excluding_absences_pre = len(self.env['hr.leave.type'].get_absences_start_ais_exclusion())
@@ -294,3 +295,59 @@ class TestHrLeaveType(TestHrHolidaysCommon):
         self.assertEqual(len(post_excluded_employee_ids), len(pre_excluded_employee_ids) + 1)
         self.assertNotIn(self.employee_emp.id, pre_excluded_employee_ids.ids)
         self.assertIn(self.employee_emp.id, post_excluded_employee_ids.ids)
+
+    @freeze_time('2024-11-27')
+    def test_excluded_employees_from_ais_tasks__excluding_employees_1(self):
+        self.env['hr.leave.type'].check_exclude_employees_from_ais_tasks()
+        pre_excluded_employee_ids = self.env['hr.employee'].search([
+            ('som_excluded_from_tel_assistance', '=', True),
+        ])
+        self.hr_leave_type_1.write({
+            'som_mark_as_excluded_ta': True,
+        })
+        self.env['hr.leave.type'].check_exclude_employees_from_ais_tasks()
+        post_excluded_employee_ids = self.env['hr.employee'].search([
+            ('som_excluded_from_tel_assistance', '=', True),
+        ])
+        self.assertEqual(len(post_excluded_employee_ids), len(pre_excluded_employee_ids) + 1)
+        self.assertNotIn(self.employee_emp.id, pre_excluded_employee_ids.ids)
+        self.assertIn(self.employee_emp.id, post_excluded_employee_ids.ids)
+
+    @freeze_time('2024-11-27')
+    def test_excluded_employees_from_ais_tasks__get_leaves(self):
+        mail_to_check = self.user_employee.email
+        # get leaves in the future
+        leaves = self.env['hr.leave'].get_leaves('2024-12-09','2024-12-13')
+        is_present = any(leave['worker'] == mail_to_check for leave in leaves)
+        self.assertFalse(is_present)
+
+        self.hr_leave_type_1.write({
+            'som_mark_as_excluded_ta': True,
+        })
+        self.env['hr.leave.type'].check_exclude_employees_from_ais_tasks()
+
+        leaves = self.env['hr.leave'].get_leaves('2024-12-09', '2024-12-13')
+        is_present = any(leave['worker'] == mail_to_check for leave in leaves)
+        self.assertTrue(is_present)
+
+    @freeze_time('2024-12-09')
+    def test_excluded_employees_from_ais_tasks__get_available_worker_emails(self):
+        self.employee_emp.write({
+            'department_ids': [(6, 0, [self.rd_dept.id])],
+        })
+
+        mail_to_check = self.user_employee.email
+        department_name = self.rd_dept.name
+        available_mails = self.env['hr.employee'].get_available_worker_emails(department_name)
+        is_present = mail_to_check in available_mails
+        self.assertTrue(is_present)
+
+        self.employee_emp.write({
+            'som_excluded_from_tel_assistance': True,
+        })
+
+        available_mails = self.env['hr.employee'].get_available_worker_emails(department_name)
+        is_present = mail_to_check in available_mails
+        self.assertFalse(is_present)
+
+    # ---------------------------------
