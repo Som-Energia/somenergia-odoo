@@ -32,7 +32,7 @@ class TestHrEmployeeCalendar(common.TransactionCase):
         self.assertTrue(self.employee.som_current_calendar_id)
 
     @freeze_time('2024-10-15')
-    def test_current_calendar__when_change(self):
+    def test_current_calendar__when_change_no_end(self):
         self.employee.calendar_ids = [
             (0, 0, {"date_start": "2024-01-01", "date_end": "2024-09-30", "calendar_id": self.calendar1.id}),
         ]
@@ -44,3 +44,30 @@ class TestHrEmployeeCalendar(common.TransactionCase):
         ]
         self.assertTrue(self.employee.som_current_calendar_id)
         self.assertEqual(self.employee.som_current_calendar_id.id, self.calendar2.id)
+
+    @freeze_time('2024-10-15')
+    def test_current_calendar__start_and_future_end(self):
+        self.employee.calendar_ids = [
+            (0, 0, {"date_start": "2024-01-01", "date_end": "2024-09-30", "calendar_id": self.calendar1.id}),
+        ]
+        self.assertTrue(self.employee.resource_calendar_id)
+        self.assertFalse(self.employee.som_current_calendar_id)
+
+        self.employee.calendar_ids = [
+            (0, 0, {"date_start": "2024-10-01", "date_end": "2024-12-31", "calendar_id": self.calendar2.id}),
+        ]
+        self.assertTrue(self.employee.som_current_calendar_id)
+        self.assertEqual(self.employee.som_current_calendar_id.id, self.calendar2.id)
+
+    @freeze_time('2024-10-15')
+    def test_current_calendar__start_and_past_end(self):
+        self.employee.calendar_ids = [
+            (0, 0, {"date_start": "2024-01-01", "date_end": "2024-09-30", "calendar_id": self.calendar1.id}),
+        ]
+        self.assertTrue(self.employee.resource_calendar_id)
+        self.assertFalse(self.employee.som_current_calendar_id)
+
+        self.employee.calendar_ids = [
+            (0, 0, {"date_start": "2024-10-01", "date_end": "2024-10-14", "calendar_id": self.calendar2.id}),
+        ]
+        self.assertFalse(self.employee.som_current_calendar_id)
