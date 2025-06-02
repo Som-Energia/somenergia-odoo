@@ -10,6 +10,7 @@ from odoo.tools import float_round
 class HrEmployeeBase(models.AbstractModel):
     _inherit = "hr.employee.base"
 
+
     def _compute_som_is_absent_regardless_state(self):
         # Used SUPERUSER_ID to forcefully get status of other user's leave, to bypass record rule
         holidays = self.env['hr.leave'].sudo().search([
@@ -83,11 +84,13 @@ class HrEmployeeBase(models.AbstractModel):
 class HrEmployee(models.Model):
     _inherit = "hr.employee"
 
+
     @api.depends('calendar_ids', 'calendar_ids.date_start', 'calendar_ids.date_end')
     def _compute_current_calendar(self):
         for record in self:
             calendar_id = record.calendar_ids.filtered(
-                lambda x: (x.date_start and x.date_start <= fields.Date.today() and not x.date_end) or
+                lambda x: (x.date_start and x.date_start <= fields.Date.today() and
+                           (not x.date_end or (x.date_end and x.date_end >= fields.Date.today()))) or
                           (not x.date_start and not x.date_end)
             )
             record.som_current_calendar_id = calendar_id[0].calendar_id.id if calendar_id else False
@@ -140,6 +143,7 @@ class HrEmployee(models.Model):
 
 class HrEmployeePublic(models.Model):
     _inherit = "hr.employee.public"
+
 
     department_ids = fields.Many2many(
         readonly=True,
