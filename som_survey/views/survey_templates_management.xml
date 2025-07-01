@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <template id="som_survey_navigation" inherit_id="survey.survey_navigation" name="Custom Survey Navigation">
+            <xpath expr="//div[hasclass('d-inline-block')]" position="replace">
+                <div class="d-inline-block">
+                    <button
+                        t-if="survey and survey.users_can_go_back"
+                        t-att-disabled="not can_go_back"
+                        type="submit" class="btn border-start p-0 shadow-none o_survey_navigation_submit" name="button_submit" value="previous" t-att-data-previous-page-id="previous_page_id">
+                        <i class="fa fa-chevron-left p-2" />
+                        PREV
+                        <i class="fa fa-hyphen p-2" />
+                    </button>
+                    <t t-set="can_go_forward"
+                        t-value="survey and survey.questions_layout in ['page_per_question', 'page_per_section'] and answer and answer.state != 'done' and not answer.is_session_answer"/>
+                    <button
+                        t-att-disabled="not can_go_forward"
+                        type="submit" class="btn border-start p-0 shadow-none o_survey_navigation_submit" t-att-value="'next' if not survey_last else 'finish'">
+                        <i class="fa fa-hyphen p-2" />
+                        NEXT
+                        <i class="fa fa-chevron-right p-2" />
+                    </button>
+                </div>
+            </xpath>
+        </template>
+
+    </data>
+</odoo>
