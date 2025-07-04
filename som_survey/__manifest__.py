@@ -23,8 +23,11 @@
 
     # always loaded
     'data': [
+        'security/survey_security.xml',
+        'security/ir.model.access.csv',
         'views/survey_templates_management.xml',
         'views/survey_user_views.xml',
+        'views/survey_menus.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
