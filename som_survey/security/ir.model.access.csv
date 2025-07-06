@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_survey_public_manager,survey.survey.public.manager,survey.model_survey_survey,som_survey.som_group_survey_public_manager,1,1,1,1
+access_survey_question_public_manager,survey.question.public.manager,survey.model_survey_question,som_survey.som_group_survey_public_manager,1,1,1,1
+access_survey_question_answer_public_manager,survey.question.answer.public.manager,survey.model_survey_question_answer,som_survey.som_group_survey_public_manager,1,1,1,1
+access_survey_user_input_public_manager,survey.user_input.public.manager,survey.model_survey_user_input,som_survey.som_group_survey_public_manager,1,1,1,1
+access_survey_user_input_line_public_manager,survey.user_input.line.public.manager,survey.model_survey_user_input_line,som_survey.som_group_survey_public_manager,1,1,1,1
+access_survey_invite_public_manager,access.survey.invite,survey.model_survey_invite,som_survey.som_group_survey_public_manager,1,1,1,0

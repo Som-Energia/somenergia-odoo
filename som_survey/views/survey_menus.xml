@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <!-- Main menu -->
+    <menuitem id="survey.menu_surveys"
+      groups="survey.group_survey_user,som_group_survey_public_manager"/>
+  </data>
+</odoo>
