@@ -24,6 +24,7 @@
     # always loaded
     'data': [
         'data/event_data.xml',
+        'views/event_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
