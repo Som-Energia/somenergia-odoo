@@ -7,18 +7,23 @@
         <field name="inherit_id" ref="event.view_event_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='tag_ids']" position="after">
-                <field name="som_channel_tag_ids"
-                       widget="many2many_tags"
-                       options="{'color_field': 'color', 'no_quick_create': True}"/>
-                <field name="som_scope_tag_ids"
-                       widget="many2many_tags"
-                       options="{'color_field': 'color', 'no_quick_create': True}"/>
-                <field name="som_sector_tag_ids"
-                       widget="many2many_tags"
-                       options="{'color_field': 'color', 'no_quick_create': True}"/>
-                <field name="som_type_tag_ids"
-                       widget="many2many_tags"
-                       options="{'color_field': 'color', 'no_quick_create': True}"/>
+                <field name="som_channel_tag_id" />
+                <field name="som_scope_tag_id" />
+                <field name="som_sector_tag_id" />
+                <field name="som_type_tag_id" />
+                <!--  Option many2many -->
+<!--                <field name="som_channel_tag_ids"-->
+<!--                       widget="many2many_tags"-->
+<!--                       options="{'color_field': 'color', 'no_quick_create': True}"/>-->
+<!--                <field name="som_scope_tag_ids"-->
+<!--                       widget="many2many_tags"-->
+<!--                       options="{'color_field': 'color', 'no_quick_create': True}"/>-->
+<!--                <field name="som_sector_tag_ids"-->
+<!--                       widget="many2many_tags"-->
+<!--                       options="{'color_field': 'color', 'no_quick_create': True}"/>-->
+<!--                <field name="som_type_tag_ids"-->
+<!--                       widget="many2many_tags"-->
+<!--                       options="{'color_field': 'color', 'no_quick_create': True}"/>-->
             </xpath>
         </field>
     </record>

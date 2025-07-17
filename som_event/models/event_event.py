@@ -26,38 +26,63 @@ class EventEvent(models.Model):
         except Exception as e:
             return [('id', '=', False)]
 
-    som_channel_tag_ids = fields.Many2many(
-        "event.tag",
+    som_channel_tag_id = fields.Many2one(
+        comodel_name="event.tag",
         string="Canal",
-        relation="som_event_channel_rel",
-        column1="event_id",
-        column2="channel_tag_id",
         domain=lambda self: self._get_tags_domain_by_type("channel")
     )
 
-    som_scope_tag_ids = fields.Many2many(
-        "event.tag",
+    som_scope_tag_id = fields.Many2one(
+        comodel_name="event.tag",
         string="Abast",
-        relation="som_event_scope_rel",
-        column1="event_id",
-        column2="scope_tag_id",
         domain=lambda self: self._get_tags_domain_by_type("scope")
     )
 
-    som_sector_tag_ids = fields.Many2many(
-        "event.tag",
+    som_sector_tag_id = fields.Many2one(
+        comodel_name="event.tag",
         string="Sector",
-        relation="som_event_sector_rel",
-        column1="event_id",
-        column2="sector_tag_id",
         domain=lambda self: self._get_tags_domain_by_type("sector")
     )
 
-    som_type_tag_ids = fields.Many2many(
-        "event.tag",
-        string="Typus",
-        relation="som_event_type_rel",
-        column1="event_id",
-        column2="type_tag_id",
+    som_type_tag_id = fields.Many2one(
+        comodel_name="event.tag",
+        string="Tipus",
         domain=lambda self: self._get_tags_domain_by_type("type")
     )
+    # Option many2many
+    # ----------------------
+    # som_channel_tag_ids = fields.Many2many(
+    #     "event.tag",
+    #     string="Canal",
+    #     relation="som_event_channel_rel",
+    #     column1="event_id",
+    #     column2="channel_tag_id",
+    #     domain=lambda self: self._get_tags_domain_by_type("channel")
+    # )
+    #
+    # som_scope_tag_ids = fields.Many2many(
+    #     "event.tag",
+    #     string="Abast",
+    #     relation="som_event_scope_rel",
+    #     column1="event_id",
+    #     column2="scope_tag_id",
+    #     domain=lambda self: self._get_tags_domain_by_type("scope")
+    # )
+    #
+    # som_sector_tag_ids = fields.Many2many(
+    #     "event.tag",
+    #     string="Sector",
+    #     relation="som_event_sector_rel",
+    #     column1="event_id",
+    #     column2="sector_tag_id",
+    #     domain=lambda self: self._get_tags_domain_by_type("sector")
+    # )
+    #
+    # som_type_tag_ids = fields.Many2many(
+    #     "event.tag",
+    #     string="Typus",
+    #     relation="som_event_type_rel",
+    #     column1="event_id",
+    #     column2="type_tag_id",
+    #     domain=lambda self: self._get_tags_domain_by_type("type")
+    # )
