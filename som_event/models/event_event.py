@@ -54,6 +54,19 @@ class EventEvent(models.Model):
                         else:
                             record.som_duration_display = "Menys d'un minut"
 
+    som_contact_id = fields.Many2one(
+        comodel_name="res.partner",
+        string="Contacte/Periodista",
+        domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]",
+    )
+
+    som_contact_phone_rel = fields.Char(
+        string="Telèfon",
+        related="som_contact_id.phone",
+        store=False,
+        readonly=True,
+    )
+
     som_channel_tag_id = fields.Many2one(
         comodel_name="event.tag",
         string="Canal",
@@ -96,6 +109,50 @@ class EventEvent(models.Model):
         compute='_som_compute_duration',
         store=False,
         readonly=True,
+    )
+
+    som_program = fields.Char(
+        string='Programa',
+    )
+
+    som_theme = fields.Html(
+        string='Temàtica',
+        translate=False,
+    )
+
+    som_broadcast_date = fields.Date(
+        string="Data d'emissió",
+    )
+
+    som_link = fields.Html(
+        string='Link',
+        translate=False,
+    )
+
+    som_spokesperson_ids = fields.Many2many(
+        "res.partner",
+        string="Portaveus",
+        relation="som_event_spokesperson_rel",
+        column1="event_id",
+        column2="partner_id",
+        domain="[('is_company', '=', False)]",
+    )
+
+    som_spokesperson_men = fields.Integer(
+        string='Homes',
+    )
+
+    som_spokesperson_women = fields.Integer(
+        string='Dones',
+    )
+
+    som_spokesperson_no_binary = fields.Integer(
+        string='No binari',
+    )
+
+    som_spokesperson_tag_ids = fields.Many2many(
+        'res.partner.category',
+        string='Customer Tags'
     )
 
     # Option many2many

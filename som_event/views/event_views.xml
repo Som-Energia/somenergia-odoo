@@ -7,28 +7,68 @@
         <field name="inherit_id" ref="event.view_event_form"/>
         <field name="arch" type="xml">
 
-            <xpath expr="//field[@name='tag_ids']" position="after">
-                <field name="som_channel_tag_id" />
-                <field name="som_scope_tag_id" />
-                <field name="som_sector_tag_id" />
+            <field name="event_type_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="tag_ids" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="seats_limited" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="auto_confirm" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <xpath expr="//label[@for='seats_limited']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='seats_limited']/.." position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+
+            <xpath expr="//label[@for='date_begin']" position="before">
                 <field name="som_type_tag_id" />
-                <!--  Option many2many -->
-<!--                <field name="som_channel_tag_ids"-->
-<!--                       widget="many2many_tags"-->
-<!--                       options="{'color_field': 'color', 'no_quick_create': True}"/>-->
-<!--                <field name="som_scope_tag_ids"-->
-<!--                       widget="many2many_tags"-->
-<!--                       options="{'color_field': 'color', 'no_quick_create': True}"/>-->
-<!--                <field name="som_sector_tag_ids"-->
-<!--                       widget="many2many_tags"-->
-<!--                       options="{'color_field': 'color', 'no_quick_create': True}"/>-->
-<!--                <field name="som_type_tag_ids"-->
-<!--                       widget="many2many_tags"-->
-<!--                       options="{'color_field': 'color', 'no_quick_create': True}"/>-->
             </xpath>
 
             <xpath expr="//field[@name='date_tz']" position="before">
                 <field name="som_duration_display" />
+                <field name="som_channel_tag_id" />
+            </xpath>
+
+            <xpath expr="//field[@name='date_tz']" position="after">
+                <separator colspan="2" string="Altra informació" />
+                <field name="som_scope_tag_id" />
+                <field name="som_sector_tag_id" />
+                <field name="som_program" />
+                <field name="som_theme" />
+            </xpath>
+
+            <xpath expr="//field[@name='address_id']" position="after">
+                <field name="som_contact_id"
+                       context="{'show_email': 1}"
+                       options='{"always_reload": True}'/>
+                <field name="som_contact_phone_rel" />
+
+                <separator colspan="2" string="Publicació" />
+                <field name="som_broadcast_date" />
+                <field name="som_link"/>
+
+            </xpath>
+
+            <xpath expr="//group[last()]" position="after">
+                <group name="spokesperson" string="Portaveu">
+                    <group col="2">
+                        <field name="som_spokesperson_ids" widget="many2many_tags" />
+                        <field name="som_spokesperson_tag_ids" widget="many2many_tags" />
+                    </group>
+                    <group col="2">
+                        <field name="som_spokesperson_men" />
+                        <field name="som_spokesperson_women" />
+                        <field name="som_spokesperson_no_binary" />
+                    </group>
+                </group>
+
             </xpath>
 
         </field>
