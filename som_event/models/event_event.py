@@ -26,6 +26,34 @@ class EventEvent(models.Model):
         except Exception as e:
             return [('id', '=', False)]
 
+    @api.depends('date_begin', 'date_end')
+    def _som_compute_duration(self):
+        for record in self:
+            record.som_duration_days = 0
+            record.som_duration_hours = 0.0
+            record.som_duration_display = "N/A"
+
+            if record.date_begin and record.date_end:
+                if record.date_end >= record.date_begin:
+                    time_difference = record.date_end - record.date_begin
+
+                    record.som_duration_days = time_difference.days
+                    record.som_duration_hours = time_difference.total_seconds() / 3600.0
+
+                    # Formated duration to display
+                    if time_difference.days > 0:
+                        record.som_duration_display = \
+                            f"{time_difference.days} dies, {time_difference.seconds // 3600} hores"
+                    else:
+                        hours = time_difference.total_seconds() / 3600
+                        minutes = (time_difference.total_seconds() % 3600) // 60
+                        if hours >= 1:
+                            record.som_duration_display = f"{int(hours)} hores, {int(minutes)} minuts"
+                        elif minutes > 0:
+                            record.som_duration_display = f"{int(minutes)} minuts"
+                        else:
+                            record.som_duration_display = "Menys d'un minut"
+
     som_channel_tag_id = fields.Many2one(
         comodel_name="event.tag",
         string="Canal",
@@ -49,6 +77,27 @@ class EventEvent(models.Model):
         string="Tipus",
         domain=lambda self: self._get_tags_domain_by_type("type")
     )
+
+    som_duration_days = fields.Integer(
+        string='Duració (díes)',
+        compute='_som_compute_duration',
+        store=True  # Almacenar el valor para que sea buscable y filtrable
+    )
+
+    # Campo calculado para la duración en horas (opcional)
+    som_duration_hours = fields.Float(
+        string='Duració (hores)',
+        compute='_som_compute_duration',
+        store=True
+    )
+
+    som_duration_display = fields.Char(
+        string='Duració',
+        compute='_som_compute_duration',
+        store=False,
+        readonly=True,
+    )
+
     # Option many2many
     # ----------------------
     # som_channel_tag_ids = fields.Many2many(

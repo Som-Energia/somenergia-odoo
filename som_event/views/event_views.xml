@@ -6,6 +6,7 @@
         <field name="priority" eval="10"/>
         <field name="inherit_id" ref="event.view_event_form"/>
         <field name="arch" type="xml">
+
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="som_channel_tag_id" />
                 <field name="som_scope_tag_id" />
@@ -24,6 +25,25 @@
 <!--                <field name="som_type_tag_ids"-->
 <!--                       widget="many2many_tags"-->
 <!--                       options="{'color_field': 'color', 'no_quick_create': True}"/>-->
+            </xpath>
+
+            <xpath expr="//field[@name='date_tz']" position="before">
+                <field name="som_duration_display" />
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="som_event_view_tree" model="ir.ui.view">
+        <field name="model">event.event</field>
+        <field name="inherit_id" ref="event.view_event_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date_end']" position="after">
+                <field name="som_duration_display" optional="show"/>
+                <field name="som_channel_tag_id" />
+                <field name="som_scope_tag_id" />
+                <field name="som_sector_tag_id" />
+                <field name="som_type_tag_id" />
             </xpath>
         </field>
     </record>
