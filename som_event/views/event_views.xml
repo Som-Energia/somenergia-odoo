@@ -130,11 +130,11 @@
                 <field name="som_theme" optional="show"/>
                 <field name="som_broadcast_date" optional="show"/>
                 <field name="som_link" optional="show"/>
-                <field name="som_spokesperson_ids" optional="show"/>
+                <field name="som_spokesperson_ids" widget="many2many_tags" optional="show"/>
                 <field name="som_spokesperson_men" optional="show"/>
                 <field name="som_spokesperson_women" optional="show"/>
                 <field name="som_spokesperson_no_binary" optional="show"/>
-                <field name="som_spokesperson_tag_ids" optional="show"/>
+                <field name="som_spokesperson_tag_ids" widget="many2many_tags" optional="show"/>
             </xpath>
         </field>
     </record>
