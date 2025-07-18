@@ -158,10 +158,10 @@
             </field>
 
             <field name="user_id" position="after">
-                <field name="som_type_tag_id" />
+                <field name="som_type_tag_id" filters="1"/>
                 <field name="address_id" />
                 <field name="som_contact_id"/>
-                <field name="som_contact_phone_rel"/>
+                <field name="som_contact_phone_rel" />
                 <field name="som_spokesperson_ids" />
             </field>
 
