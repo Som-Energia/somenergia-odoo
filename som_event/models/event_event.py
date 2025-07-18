@@ -57,7 +57,6 @@ class EventEvent(models.Model):
     som_contact_id = fields.Many2one(
         comodel_name="res.partner",
         string="Contacte/Periodista",
-        domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]",
     )
 
     som_contact_phone_rel = fields.Char(
@@ -70,38 +69,37 @@ class EventEvent(models.Model):
     som_channel_tag_id = fields.Many2one(
         comodel_name="event.tag",
         string="Canal",
-        domain=lambda self: self._get_tags_domain_by_type("channel")
+        domain=lambda self: self._get_tags_domain_by_type("channel"),
     )
 
     som_scope_tag_id = fields.Many2one(
         comodel_name="event.tag",
         string="Abast",
-        domain=lambda self: self._get_tags_domain_by_type("scope")
+        domain=lambda self: self._get_tags_domain_by_type("scope"),
     )
 
     som_sector_tag_id = fields.Many2one(
         comodel_name="event.tag",
         string="Sector",
-        domain=lambda self: self._get_tags_domain_by_type("sector")
+        domain=lambda self: self._get_tags_domain_by_type("sector"),
     )
 
     som_type_tag_id = fields.Many2one(
         comodel_name="event.tag",
         string="Tipus",
-        domain=lambda self: self._get_tags_domain_by_type("type")
+        domain=lambda self: self._get_tags_domain_by_type("type"),
     )
 
     som_duration_days = fields.Integer(
         string='Duració (díes)',
         compute='_som_compute_duration',
-        store=True  # Almacenar el valor para que sea buscable y filtrable
+        store=True,
     )
 
-    # Campo calculado para la duración en horas (opcional)
     som_duration_hours = fields.Float(
         string='Duració (hores)',
         compute='_som_compute_duration',
-        store=True
+        store=True,
     )
 
     som_duration_display = fields.Char(
@@ -152,43 +150,5 @@ class EventEvent(models.Model):
 
     som_spokesperson_tag_ids = fields.Many2many(
         'res.partner.category',
-        string='Customer Tags'
+        string='Órgan',
     )
-
-    # Option many2many
-    # ----------------------
-    # som_channel_tag_ids = fields.Many2many(
-    #     "event.tag",
-    #     string="Canal",
-    #     relation="som_event_channel_rel",
-    #     column1="event_id",
-    #     column2="channel_tag_id",
-    #     domain=lambda self: self._get_tags_domain_by_type("channel")
-    # )
-    #
-    # som_scope_tag_ids = fields.Many2many(
-    #     "event.tag",
-    #     string="Abast",
-    #     relation="som_event_scope_rel",
-    #     column1="event_id",
-    #     column2="scope_tag_id",
-    #     domain=lambda self: self._get_tags_domain_by_type("scope")
-    # )
-    #
-    # som_sector_tag_ids = fields.Many2many(
-    #     "event.tag",
-    #     string="Sector",
-    #     relation="som_event_sector_rel",
-    #     column1="event_id",
-    #     column2="sector_tag_id",
-    #     domain=lambda self: self._get_tags_domain_by_type("sector")
-    # )
-    #
-    # som_type_tag_ids = fields.Many2many(
-    #     "event.tag",
-    #     string="Typus",
-    #     relation="som_event_type_rel",
-    #     column1="event_id",
-    #     column2="type_tag_id",
-    #     domain=lambda self: self._get_tags_domain_by_type("type")
-    # )
