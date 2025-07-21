@@ -1,0 +1,434 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <!-- Category and Tags -->
+        <record id="som_event_tag_category_channel" model="event.tag.category">
+            <field name="name">Canal</field>
+            <field name="sequence">1</field>
+        </record>
+        <record id="som_event_tag_category_scope" model="event.tag.category">
+            <field name="name">Abast</field>
+            <field name="sequence">2</field>
+        </record>
+        <record id="event_tag_category_sector" model="event.tag.category">
+            <field name="name">Sector</field>
+            <field name="sequence">3</field>
+        </record>
+        <record id="event_tag_category_type" model="event.tag.category">
+            <field name="name">Tipus petició</field>
+            <field name="sequence">4</field>
+        </record>
+
+        <!-- Tags Channel-->
+        <record id="som_event_tag_category_channel_tag_1" model="event.tag">
+            <field name="name">Administració Pública</field>
+            <field name="sequence">1</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">1</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_2" model="event.tag">
+            <field name="name">Ajuntaments</field>
+            <field name="sequence">2</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">2</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_3" model="event.tag">
+            <field name="name">Altres esdeveniments</field>
+            <field name="sequence">3</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">3</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_4" model="event.tag">
+            <field name="name">Blogs</field>
+            <field name="sequence">4</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">4</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_5" model="event.tag">
+            <field name="name">Congrès</field>
+            <field name="sequence">5</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">5</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_6" model="event.tag">
+            <field name="name">Cooperativa</field>
+            <field name="sequence">6</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">6</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_7" model="event.tag">
+            <field name="name">Diari digital</field>
+            <field name="sequence">7</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">7</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_8" model="event.tag">
+            <field name="name">Fira</field>
+            <field name="sequence">8</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">8</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_9" model="event.tag">
+            <field name="name">Internet</field>
+            <field name="sequence">9</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">9</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_10" model="event.tag">
+            <field name="name">Newsletters</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">1</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_11" model="event.tag">
+            <field name="name">Premsa</field>
+            <field name="sequence">11</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">2</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_12" model="event.tag">
+            <field name="name">Ràdio</field>
+            <field name="sequence">12</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">3</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_13" model="event.tag">
+            <field name="name">Revistes</field>
+            <field name="sequence">13</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">4</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_14" model="event.tag">
+            <field name="name">Sessió fotos</field>
+            <field name="sequence">14</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">5</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_15" model="event.tag">
+            <field name="name">Telenotícies</field>
+            <field name="sequence">15</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">6</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_16" model="event.tag">
+            <field name="name">Televisió</field>
+            <field name="sequence">16</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">7</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_17" model="event.tag">
+            <field name="name">Universitat</field>
+            <field name="sequence">17</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">8</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_18" model="event.tag">
+            <field name="name">Xarxes socials</field>
+            <field name="sequence">18</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">9</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_19" model="event.tag">
+            <field name="name">Podcast</field>
+            <field name="sequence">19</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">1</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_20" model="event.tag">
+            <field name="name">Webinar</field>
+            <field name="sequence">20</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">2</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_21" model="event.tag">
+            <field name="name">Xerrada + streaming</field>
+            <field name="sequence">21</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">3</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_22" model="event.tag">
+            <field name="name">Xerrada</field>
+            <field name="sequence">22</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">4</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_23" model="event.tag">
+            <field name="name">Fundació</field>
+            <field name="sequence">23</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">5</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_24" model="event.tag">
+            <field name="name">Jornada</field>
+            <field name="sequence">24</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">6</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_25" model="event.tag">
+            <field name="name">Partit polític</field>
+            <field name="sequence">25</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">7</field>
+        </record>
+
+        <record id="som_event_tag_category_channel_tag_26" model="event.tag">
+            <field name="name">Agència comunicació</field>
+            <field name="sequence">26</field>
+            <field name="category_id" ref="som_event_tag_category_channel"/>
+            <field name="color">8</field>
+        </record>
+
+
+        <!-- Tags Scope -->
+        <record id="som_event_tag_category_scope_tag_1" model="event.tag">
+            <field name="name">Local</field>
+            <field name="sequence">1</field>
+            <field name="category_id" ref="som_event_tag_category_scope"/>
+            <field name="color">1</field>
+        </record>
+
+        <record id="som_event_tag_category_scope_tag_2" model="event.tag">
+            <field name="name">Provincia</field>
+            <field name="sequence">2</field>
+            <field name="category_id" ref="som_event_tag_category_scope"/>
+            <field name="color">2</field>
+        </record>
+
+        <record id="som_event_tag_category_scope_tag_3" model="event.tag">
+            <field name="name">Autonòmic</field>
+            <field name="sequence">3</field>
+            <field name="category_id" ref="som_event_tag_category_scope"/>
+            <field name="color">3</field>
+        </record>
+
+        <record id="som_event_tag_category_scope_tag_4" model="event.tag">
+            <field name="name">Estatal</field>
+            <field name="sequence">4</field>
+            <field name="category_id" ref="som_event_tag_category_scope"/>
+            <field name="color">4</field>
+        </record>
+
+        <record id="som_event_tag_category_scope_tag_5" model="event.tag">
+            <field name="name">Europeu</field>
+            <field name="sequence">5</field>
+            <field name="category_id" ref="som_event_tag_category_scope"/>
+            <field name="color">5</field>
+        </record>
+
+        <record id="som_event_tag_category_scope_tag_6" model="event.tag">
+            <field name="name">Internacional</field>
+            <field name="sequence">6</field>
+            <field name="category_id" ref="som_event_tag_category_scope"/>
+            <field name="color">6</field>
+        </record>
+
+        <!-- Tags Sector -->
+        <record id="event_tag_category_sector_tag_1" model="event.tag">
+            <field name="name">Cooperativa</field>
+            <field name="sequence">1</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">1</field>
+        </record>
+
+        <record id="event_tag_category_sector_tag_2" model="event.tag">
+            <field name="name">Empresarial</field>
+            <field name="sequence">2</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">2</field>
+        </record>
+
+        <record id="event_tag_category_sector_tag_3" model="event.tag">
+            <field name="name">Energia</field>
+            <field name="sequence">3</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">3</field>
+        </record>
+
+        <record id="event_tag_category_sector_tag_4" model="event.tag">
+            <field name="name">Escola</field>
+            <field name="sequence">4</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">4</field>
+        </record>
+
+        <record id="event_tag_category_sector_tag_5" model="event.tag">
+            <field name="name">Professional</field>
+            <field name="sequence">5</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">5</field>
+        </record>
+
+        <record id="event_tag_category_sector_tag_6" model="event.tag">
+            <field name="name">Societat</field>
+            <field name="sequence">6</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">6</field>
+        </record>
+
+        <record id="event_tag_category_sector_tag_7" model="event.tag">
+            <field name="name">Socis/sòcies</field>
+            <field name="sequence">7</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">7</field>
+        </record>
+
+        <record id="event_tag_category_sector_tag_8" model="event.tag">
+            <field name="name">Universitat</field>
+            <field name="sequence">8</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">8</field>
+        </record>
+
+        <record id="event_tag_category_sector_tag_9" model="event.tag">
+            <field name="name">Medi Ambient</field>
+            <field name="sequence">9</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">9</field>
+        </record>
+
+        <record id="event_tag_category_sector_tag_10" model="event.tag">
+            <field name="name">Emprenedoria</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">1</field>
+        </record>
+
+        <record id="event_tag_category_sector_tag_11" model="event.tag">
+            <field name="name">Canvi climàtic</field>
+            <field name="sequence">11</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">2</field>
+        </record>
+
+        <record id="event_tag_category_sector_tag_12" model="event.tag">
+            <field name="name">ESS</field>
+            <field name="sequence">12</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">3</field>
+        </record>
+
+        <record id="event_tag_category_sector_tag_13" model="event.tag">
+            <field name="name">Politica</field>
+            <field name="sequence">13</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">4</field>
+        </record>
+
+        <record id="event_tag_category_sector_tag_14" model="event.tag">
+            <field name="name">Mitjà generalista</field>
+            <field name="sequence">14</field>
+            <field name="category_id" ref="event_tag_category_sector"/>
+            <field name="color">5</field>
+        </record>
+
+        <!-- Tags Type -->
+        <record id="event_tag_category_type_tag_1" model="event.tag">
+            <field name="name">Mitjà</field>
+            <field name="sequence">1</field>
+            <field name="category_id" ref="event_tag_category_type"/>
+            <field name="color">1</field>
+        </record>
+
+        <record id="event_tag_category_type_tag_2" model="event.tag">
+            <field name="name">Xerrada/taula rodona</field>
+            <field name="sequence">2</field>
+            <field name="category_id" ref="event_tag_category_type"/>
+            <field name="color">2</field>
+        </record>
+
+        <record id="event_tag_category_type_tag_3" model="event.tag">
+            <field name="name">Centre docent</field>
+            <field name="sequence">3</field>
+            <field name="category_id" ref="event_tag_category_type"/>
+            <field name="color">3</field>
+        </record>
+
+        <record id="event_tag_category_type_tag_4" model="event.tag">
+            <field name="name">Visites a l'oficina</field>
+            <field name="sequence">4</field>
+            <field name="category_id" ref="event_tag_category_type"/>
+            <field name="color">4</field>
+        </record>
+
+        <record id="event_tag_category_type_tag_5" model="event.tag">
+            <field name="name">Assessorament</field>
+            <field name="sequence">5</field>
+            <field name="category_id" ref="event_tag_category_type"/>
+            <field name="color">5</field>
+        </record>
+
+        <record id="event_tag_category_type_tag_6" model="event.tag">
+            <field name="name">Inauguració</field>
+            <field name="sequence">6</field>
+            <field name="category_id" ref="event_tag_category_type"/>
+            <field name="color">6</field>
+        </record>
+
+        <record id="event_tag_category_type_tag_7" model="event.tag">
+            <field name="name">Protocol</field>
+            <field name="sequence">7</field>
+            <field name="category_id" ref="event_tag_category_type"/>
+            <field name="color">7</field>
+        </record>
+
+        <record id="event_tag_category_type_tag_8" model="event.tag">
+            <field name="name">Premi</field>
+            <field name="sequence">8</field>
+            <field name="category_id" ref="event_tag_category_type"/>
+            <field name="color">8</field>
+        </record>
+
+        <record id="event_tag_category_type_tag_9" model="event.tag">
+            <field name="name">Presentació</field>
+            <field name="sequence">9</field>
+            <field name="category_id" ref="event_tag_category_type"/>
+            <field name="color">9</field>
+        </record>
+
+        <record id="event_tag_category_type_tag_10" model="event.tag">
+            <field name="name">Congrés</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="event_tag_category_type"/>
+            <field name="color">1</field>
+        </record>
+
+        <record id="event_tag_category_type_tag_11" model="event.tag">
+            <field name="name">Anunci</field>
+            <field name="sequence">11</field>
+            <field name="category_id" ref="event_tag_category_type"/>
+            <field name="color">2</field>
+        </record>
+
+        <record id="event_tag_category_type_tag_12" model="event.tag">
+            <field name="name">Entrevista</field>
+            <field name="sequence">12</field>
+            <field name="category_id" ref="event_tag_category_type"/>
+            <field name="color">3</field>
+        </record>
+
+    </data>
+</odoo>
