@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <odoo>
-    <data>
+    <data noupdate="1">
         <!-- Category and Tags -->
         <record id="som_event_tag_category_channel" model="event.tag.category">
             <field name="name">Canal</field>
