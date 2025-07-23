@@ -27,6 +27,7 @@
         'security/event_security.xml',
         'views/event_views.xml',
     ],
+    'post_init_hook': 'post_init_hook',
     # only loaded in demonstration mode
     'demo': [
     ],
