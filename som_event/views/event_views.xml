@@ -38,13 +38,18 @@
 
             <xpath expr="//field[@name='date_tz']" position="after">
                 <separator colspan="2" string="Altra informació" />
+                <field name="som_format_tag_id" />
+                <field name="som_origin_tag_id" />
                 <field name="som_scope_tag_id" />
                 <field name="som_sector_tag_id" />
                 <field name="som_program" />
+                <field name="som_topic_tag_ids" widget="many2many_tags"
+                       options="{'color_field': 'color', 'no_quick_create': True}"/>
                 <field name="som_theme" />
             </xpath>
 
             <xpath expr="//field[@name='address_id']" position="after">
+                <field name="som_free_address" />
                 <field name="som_contact_id"
                        context="{'show_email': 1}"
                        options='{"always_reload": True}'/>
@@ -118,16 +123,23 @@
         <field name="model">event.event</field>
         <field name="inherit_id" ref="event.view_event_tree"/>
         <field name="arch" type="xml">
+            <xpath expr="//field[@name='address_id']" position="after">
+                <field name="som_free_address" optional="show"/>
+            </xpath>
+
             <xpath expr="//field[@name='date_end']" position="after">
                 <field name="som_duration_display" optional="show"/>
+                <field name="som_contact_id" optional="show"/>
+                <field name="som_contact_phone_rel" optional="show"/>
                 <field name="som_channel_tag_id" optional="show"/>
                 <field name="som_scope_tag_id" optional="show"/>
                 <field name="som_sector_tag_id" optional="show"/>
                 <field name="som_type_tag_id" optional="show"/>
-                <field name="som_contact_id" optional="show"/>
-                <field name="som_contact_phone_rel" optional="show"/>
+                <field name="som_format_tag_id" optional="show"/>
+                <field name="som_origin_tag_id" optional="show"/>
                 <field name="som_program" optional="show"/>
                 <field name="som_theme" optional="show"/>
+                <field name="som_topic_tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="show"/>
                 <field name="som_broadcast_date" optional="show"/>
                 <field name="som_link" optional="show"/>
                 <field name="som_spokesperson_ids" widget="many2many_tags" optional="show"/>

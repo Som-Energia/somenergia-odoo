@@ -14,6 +14,9 @@ class EventEvent(models.Model):
         'scope': 'som_event.som_event_tag_category_scope',
         'sector': 'som_event.event_tag_category_sector',
         'type': 'som_event.event_tag_category_type',
+        'topic': 'som_event.som_event_tag_category_topic',
+        'format': 'som_event.som_event_tag_category_format',
+        'origin': 'som_event.som_event_tag_category_origin',
     }
 
     def _get_tags_domain_by_type(self, tag_type):
@@ -90,6 +93,18 @@ class EventEvent(models.Model):
         domain=lambda self: self._get_tags_domain_by_type("type"),
     )
 
+    som_format_tag_id = fields.Many2one(
+        comodel_name="event.tag",
+        string="Format",
+        domain=lambda self: self._get_tags_domain_by_type("format"),
+    )
+
+    som_origin_tag_id = fields.Many2one(
+        comodel_name="event.tag",
+        string="Origen",
+        domain=lambda self: self._get_tags_domain_by_type("origin"),
+    )
+
     som_duration_days = fields.Integer(
         string='Duració (díes)',
         compute='_som_compute_duration',
@@ -111,6 +126,15 @@ class EventEvent(models.Model):
 
     som_program = fields.Char(
         string='Programa',
+    )
+
+    som_topic_tag_ids = fields.Many2many(
+        "event.tag",
+        string="Temàtica tags",
+        relation="som_event_topic_tag_rel",
+        column1="event_id",
+        column2="topic_tag_id",
+        domain=lambda self: self._get_tags_domain_by_type("topic"),
     )
 
     som_theme = fields.Html(
@@ -151,4 +175,9 @@ class EventEvent(models.Model):
     som_spokesperson_tag_ids = fields.Many2many(
         'res.partner.category',
         string='Órgan',
+    )
+
+    som_free_address = fields.Html(
+        string='Adreça',
+        translate=False,
     )
