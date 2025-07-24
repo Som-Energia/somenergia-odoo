@@ -38,9 +38,13 @@
 
             <xpath expr="//field[@name='date_tz']" position="after">
                 <separator colspan="2" string="Altra informació" />
+                <field name="som_format_tag_id" />
+                <field name="som_origin_tag_id" />
                 <field name="som_scope_tag_id" />
                 <field name="som_sector_tag_id" />
                 <field name="som_program" />
+                <field name="som_topic_tag_ids" widget="many2many_tags"
+                       options="{'color_field': 'color', 'no_quick_create': True}"/>
                 <field name="som_theme" />
             </xpath>
 
