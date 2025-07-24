@@ -176,3 +176,8 @@ class EventEvent(models.Model):
         'res.partner.category',
         string='Órgan',
     )
+
+    som_free_address = fields.Html(
+        string='Adreça',
+        translate=False,
+    )
