@@ -16,7 +16,7 @@
     # Check https://github.com/odoo/odoo/blob/12.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Uncategorized',
-    'version': '0.1',
+    'version': '16.0.1.0.0',
 
     # any module necessary for this one to work correctly
     'depends': [
@@ -49,6 +49,7 @@
         'security/project_security.xml',
         'security/hr_attendance_overlapping_report_security.xml',
         'security/hr_attendance_edit_security.xml',
+        'security/hr_timesheet_security.xml',
         'views/hr_attendance_view.xml',
         'views/hr_leave_view.xml',
         'views/som_calendar_week_view.xml',
