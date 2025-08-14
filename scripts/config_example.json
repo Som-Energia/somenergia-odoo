@@ -1,0 +1,7 @@
+{
+    "odoo_url": "https://el_teu_odoo.com",
+    "db": "nom_base_de_dades",
+    "username": "usuari@example.com",
+    "password": "la_contrasenya"
+}
+
