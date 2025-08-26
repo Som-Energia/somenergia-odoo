@@ -13,7 +13,7 @@ class Survey(models.Model):
     def _ensure_survey_group_user(self, user):
         group_survey_user_id = self.env.ref('survey.group_survey_user')
         flag_remove_group = False
-        if not user.has_group('survey.group_survey_user') and user.has_group(
+        if user and not user.has_group('survey.group_survey_user') and user.has_group(
                 'som_survey.som_group_survey_public_manager'):
             # add the group to the user temporally to avoid restriction
             user.sudo().write({'groups_id': [(4, group_survey_user_id.id)]})
