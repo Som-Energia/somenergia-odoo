@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="som_crm_lead_view_form" model="ir.ui.view">
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form" />
+        <field name="arch" type="xml">
+            <field name="user_company_ids" position="after">
+                <field name="som_cups"/>
+                <field name="som_preferred_contact_time_ids" widget="many2many_tags"/>
+            </field>
+
+            <xpath expr="//group[@name='lead_partner']" position="inside">
+                <field name="som_cups"/>
+                <field name="som_preferred_contact_time_ids"
+                       widget="many2many_tags"
+                       options="{'color_field': 'color'}"/>
+
+            </xpath>
+
+
+        </field>
+    </record>
+</odoo>

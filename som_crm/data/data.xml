@@ -1,0 +1,25 @@
+<data noupdate="1">
+    <record id="time_slot_10_12" model="contact.time.slot">
+        <field name="name">10:00 - 12:00</field>
+        <field name="sequence">1</field>
+        <field name="color">1</field> <!-- Red -->
+    </record>
+
+    <record id="time_slot_12_14" model="contact.time.slot">
+        <field name="name">12:00 - 14:00</field>
+        <field name="sequence">2</field>
+        <field name="color">3</field> <!-- Blue -->
+    </record>
+
+    <record id="time_slot_14_16" model="contact.time.slot">
+        <field name="name">14:00 - 16:00</field>
+        <field name="sequence">3</field>
+        <field name="color">5</field> <!-- Green -->
+    </record>
+
+    <record id="time_slot_16_18" model="contact.time.slot">
+        <field name="name">16:00 - 18:00</field>
+        <field name="sequence">4</field>
+        <field name="color">7</field> <!-- Orange -->
+    </record>
+</data>
