@@ -19,8 +19,12 @@ class Lead(models.Model):
         string='Preferred contact time',
     )
 
-    som_self_consumption = fields.Boolean(
-        string='Self consumption',
+    som_self_consumption = fields.Selection(
+        selection=[
+            ("yes", _("Yes")),
+            ("no", _("No")),
+        ],
+        string="Self consumption",
         required=False,
     )
 

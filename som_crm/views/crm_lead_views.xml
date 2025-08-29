@@ -4,25 +4,31 @@
         <field name="model">crm.lead</field>
         <field name="inherit_id" ref="crm.crm_lead_view_form" />
         <field name="arch" type="xml">
-            <field name="user_company_ids" position="after">
+
+            <xpath expr="//group[@name='opportunity_partner']" position="inside">
                 <field name="som_cups"/>
                 <field name="som_preferred_contact_time_ids"
                        widget="many2many_tags"
                        options="{'color_field': 'color'}"/>
+            </xpath>
+
+            <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="som_self_consumption"/>
                 <field name="som_pricelist"/>
-            </field>
+            </xpath>
+
 
             <xpath expr="//group[@name='lead_partner']" position="inside">
                 <field name="som_cups"/>
+            </xpath>
+
+            <xpath expr="//group[@name='lead_info']" position="inside">
+                <field name="som_self_consumption"/>
+                <field name="som_pricelist"/>
                 <field name="som_preferred_contact_time_ids"
                        widget="many2many_tags"
                        options="{'color_field': 'color'}"/>
-                <field name="som_self_consumption"/>
-                <field name="som_pricelist"/>
-
             </xpath>
-
 
         </field>
     </record>
