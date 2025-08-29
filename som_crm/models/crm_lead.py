@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models, api
+from odoo import fields, models, api, _
 
 
 class Lead(models.Model):
@@ -17,4 +17,18 @@ class Lead(models.Model):
         'lead_id',
         'time_slot_id',
         string='Preferred contact time',
+    )
+
+    som_self_consumption = fields.Boolean(
+        string='Self consumption',
+        required=False,
+    )
+
+    som_pricelist = fields.Selection(
+        selection=[
+            ("indexed", _("Indexed")),
+            ("periods", _("Periods")),
+        ],
+        string="Pricelist",
+        required=False,
     )

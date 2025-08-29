@@ -8,7 +8,7 @@
             <tree string="Contact time slots" editable="top">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
-                <field name="color" widget="color_picker" invisible="1"/>
+                <field name="color" widget="color_picker"/>
                 <field name="active"/>
             </tree>
         </field>
@@ -27,7 +27,7 @@
                             <field name="sequence"/>
                         </group>
                         <group>
-                            <field name="color" widget="color_picker" invisible="1"/>
+                            <field name="color" widget="color_picker"/>
                             <field name="active"/>
                         </group>
                     </group>
