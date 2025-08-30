@@ -22,4 +22,11 @@
         <field name="sequence">4</field>
         <field name="color">7</field> <!-- Orange -->
     </record>
+
+
+    <!-- API Key Config parameters by default-->
+    <record id="crm_api_key_config" model="ir.config_parameter">
+        <field name="key">som_crm.api_key</field>
+        <field name="value">change_this_default_api_key_123</field>
+    </record>
 </data>
