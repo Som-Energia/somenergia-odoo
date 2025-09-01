@@ -21,6 +21,7 @@
         'crm',
         'crm_lead_vat',
         'mail_activity_board',
+        'odoo_callinfo',
     ],
 
     # always loaded
