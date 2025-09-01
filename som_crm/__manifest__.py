@@ -20,6 +20,7 @@
         'base',
         'crm',
         'crm_lead_vat',
+        'mail_activity_board',
     ],
 
     # always loaded
