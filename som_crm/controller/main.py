@@ -293,3 +293,86 @@ class CRMLeadAPIController(http.Controller):
             ]
         )
         return response
+
+    @http.route('/api/crm/docs', type='http', auth='public', methods=['GET'],
+                csrf=False, cors='*')
+    def api_documentation(self, **kwargs):
+        """
+        Endpoint de documentación de la API
+        """
+        docs = {
+            "api_info": {
+                "title": "CRM Lead API",
+                "version": "1.0.0",
+                "description": "API REST to create CRM Leads in Odoo 16"
+            },
+            "authentication": {
+                "methods": [
+                    {
+                        "type": "API Key",
+                        "description": "Send API Key in header X-API-Key",
+                        "example": "X-API-Key: your_secret_key_123"
+                    },
+                ]
+            },
+            "endpoints": [
+                {
+                    "path": "/api/crm/lead",
+                    "method": "POST",
+                    "description": "Create new CRM lead",
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "X-API-Key": "your_secret_key_123"
+                    },
+                    "request_body": {
+                        "required_fields": ["name"],
+                        "optional_fields": [
+                            "contact_name", "email", "phone", "description"
+                        ],
+                        "example": {
+                            "name": "Interested",
+                            "contact_name": "Juan Pérez",
+                            "email": "juan@empresa.com",
+                            "phone": "+34 123 456 789",
+                            "description": "Interested in you services",
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Lead successfully created",
+                            "example": {
+                                "success": True,
+                                "message": "Lead successfully created",
+                                "lead_id": 123,
+                                "lead_name": "Interested"
+                            }
+                        },
+                        "400": {
+                            "description": "Validation error",
+                            "example": {
+                                "success": False,
+                                "error": "Validation error",
+                                "message": "Required field: name"
+                            }
+                        },
+                        "401": {
+                            "description": "Unauthorized",
+                            "example": {
+                                "success": False,
+                                "error": "Authentication required"
+                            }
+                        }
+                    }
+                },
+            ],
+            "testing": {
+                "curl_examples": [
+                    {
+                        "description": "Create lead with API Key",
+                        "command": 'curl -X POST "http://tu-odoo.com/api/crm/lead" -H "Content-Type: application/json" -H "X-API-Key: your_key" -d \'{"name": "Test Lead", "email": "test@example.com"}\''
+                    },
+                ]
+            }
+        }
+
+        return self._json_response(docs)
