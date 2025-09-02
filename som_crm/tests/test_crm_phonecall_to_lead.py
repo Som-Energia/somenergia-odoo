@@ -1,11 +1,10 @@
-# tests/test_crm_phonecall.py
+# -*- coding: utf-8 -*-
 
 from odoo.tests.common import tagged, TransactionCase
 
 
 @tagged('som_phonecall_to_lead')
 class TestCrmPhonecallToLead(TransactionCase):
-
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -25,19 +24,25 @@ class TestCrmPhonecallToLead(TransactionCase):
         self.assertEqual(vals['vat'], 'ES12345678')
 
     def test_prepare_opportunity_vals_with_medium(self):
-        utm_medium_phone = self.env.ref('utm.utm_medium_phone', raise_if_not_found=False)
-        if not utm_medium_phone:
-            utm_medium_phone = self.env['utm.medium'].create({
+        utm_medium_phone_id = self.env.ref('utm.utm_medium_phone', raise_if_not_found=False)
+        if not utm_medium_phone_id:
+            utm_medium_phone_id = self.env['utm.medium'].create({
                 'name': 'Phone',
                 'active': True
             })
+            self.env['ir.model.data'].create({
+                'module': 'utm',
+                'name': 'utm_medium_phone',
+                'model': 'utm.medium',
+                'res_id': utm_medium_phone_id.id,
+            })
         vals = self.phonecall._prepare_opportunity_vals()
-        self.assertEqual(vals['medium_id'], utm_medium_phone.id)
+        self.assertEqual(vals['medium_id'], utm_medium_phone_id.id)
 
     def test_prepare_opportunity_vals_without_medium(self):
-        utm_medium_phone = self.env.ref('utm.utm_medium_phone', raise_if_not_found=False)
-        if utm_medium_phone:
-            utm_medium_phone.unlink()
+        utm_medium_phone_id = self.env.ref('utm.utm_medium_phone', raise_if_not_found=False)
+        if utm_medium_phone_id:
+            utm_medium_phone_id.unlink()
 
         vals = self.phonecall._prepare_opportunity_vals()
         self.assertFalse(vals.get('medium_id'))
