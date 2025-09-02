@@ -14,6 +14,13 @@ class TestCrmPhonecallToLead(TransactionCase):
             'email_from': 'john@example.com',
             'som_phone': '+34123456789',
             'som_caller_vat': 'ES12345678',
+            'som_operator': 'operator test',
+        })
+
+        cls.test_user = cls.env['res.users'].create({
+            'name': 'Test User',
+            'login': 'test_user',
+            'email': 'testuser@example.com',
         })
 
     def test_prepare_opportunity_vals(self):
@@ -46,3 +53,13 @@ class TestCrmPhonecallToLead(TransactionCase):
 
         vals = self.phonecall._prepare_opportunity_vals()
         self.assertFalse(vals.get('medium_id'))
+
+    def test_prepare_opportunity_vals_autoassigned(self):
+        self.test_user.write({'som_call_center_user': 'operator test'})
+        vals = self.phonecall._prepare_opportunity_vals()
+        self.assertEqual(vals['user_id'], self.test_user.id)
+
+    def test_prepare_opportunity_vals_no_operator(self):
+        self.test_user.write({'som_call_center_user': 'operator test 2'})
+        vals = self.phonecall._prepare_opportunity_vals()
+        self.assertFalse(vals.get('user_id'))
