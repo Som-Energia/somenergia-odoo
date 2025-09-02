@@ -30,6 +30,7 @@
         'data/data.xml',
         'views/crm_lead_views.xml',
         'views/contact_time_slot_views.xml',
+        'views/res_users_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
