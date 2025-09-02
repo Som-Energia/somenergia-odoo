@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+import base64
+import mimetypes
 from odoo import http
 from odoo.http import request
 from odoo.exceptions import ValidationError, AccessError
@@ -17,14 +19,6 @@ class CRMLeadAPIController(http.Controller):
         
         stored_api_key = request.env['ir.config_parameter'].sudo().get_param('som_crm.api_key')
         return api_key == stored_api_key
-    
-    # def _authenticate_user_session(self, login, password, database):
-    #     try:
-    #         uid = request.session.authenticate(database, login, password)
-    #         return uid
-    #     except Exception as e:
-    #         _logger.error(f"Error en autenticación: {e}")
-    #         return False
     
     def _validate_lead_data(self, data):
         required_fields = ['name']
@@ -59,7 +53,123 @@ class CRMLeadAPIController(http.Controller):
         
         # return not none values
         return {k: v for k, v in lead_values.items() if v is not None}
-    
+
+
+    def _get_json_data(self):
+        try:
+            if hasattr(request, 'httprequest') and request.httprequest.data:
+                data = json.loads(request.httprequest.data.decode('utf-8'))
+            else:
+                data = json.loads(request.params.get('data', '{}'))
+        except (json.JSONDecodeError, UnicodeDecodeError) as e:
+            return self._json_response({
+                'success': False,
+                'error': 'JSON inválido',
+                'message': str(e)
+            }, status=400)
+
+        # Extract files from JSON if exist
+        files = data.pop('files', []) if isinstance(data.get('files'), list) else []
+
+        return data, files
+
+    def _validate_files(self, files):
+        if not files:
+            return
+
+        # Allowed MIME types
+        allowed_types = {
+            'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/webp',
+            'application/pdf',
+            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'text/plain', 'text/csv',
+            'application/zip', 'application/x-rar-compressed'
+        }
+
+        max_size = 2 * 1024 * 1024  # 2MB por archivo
+        max_total_size = 20 * 1024 * 1024  # 20MB total
+
+        total_size = 0
+
+        for file_data in files:
+            if not isinstance(file_data, dict):
+                raise ValidationError("Invalid file format.")
+
+            if 'filename' not in file_data or 'content' not in file_data:
+                raise ValidationError("Each file must have “filename” and “content”.")
+
+            filename = file_data['filename']
+            if not filename or len(filename) > 255:
+                raise ValidationError(f"Invalid file name: {filename}")
+
+            try:
+                content = base64.b64decode(file_data['content'])
+                file_size = len(content)
+            except Exception:
+                raise ValidationError(f"Invalid file content in base64 for: {filename}")
+
+            if file_size > max_size:
+                raise ValidationError(f"File {filename} exceeds the maximum size of 2MB")
+
+            total_size += file_size
+
+            # Validar tipo MIME
+            mime_type, _ = mimetypes.guess_type(filename)
+            if file_data.get('mimetype'):
+                mime_type = file_data['mimetype']
+
+            if mime_type not in allowed_types:
+                raise ValidationError(f"Tipo de archivo no permitido para {filename}: {mime_type}")
+
+        if total_size > max_total_size:
+            raise ValidationError("The total file size exceeds 20MB.")
+
+    def _create_lead_attachments(self, lead_id, files):
+        if not files:
+            return []
+
+        attachments = []
+        filename = ""
+
+        for file_data in files:
+            try:
+                filename = file_data['filename']
+                content = base64.b64decode(file_data['content'])
+
+                mime_type = file_data.get('mimetype')
+                if not mime_type:
+                    mime_type, _ = mimetypes.guess_type(filename)
+                    if not mime_type:
+                        mime_type = 'application/octet-stream'
+
+                attachment = request.env['ir.attachment'].sudo().create({
+                    'name': filename,
+                    'datas': base64.b64encode(content),
+                    'mimetype': mime_type,
+                    'res_model': 'crm.lead',
+                    'res_id': lead_id.id,
+                    'res_name': f"Lead Attachment - {filename}",
+                    'type': 'binary',
+                })
+
+                attachments.append({
+                    'id': attachment.id,
+                    'name': attachment.name,
+                    'mimetype': attachment.mimetype,
+                    'file_size': attachment.file_size,
+                })
+
+                _logger.info(f"Created attachment: {filename} for lead {lead_id.id}")
+
+            except Exception as e:
+                _logger.error(f"Error creating attachment {filename}: {e}")
+                raise ValidationError(f"Error processing file {filename}: {str(e)}")
+
+        return attachments
+
     @http.route('/api/crm/lead', type='http', auth='none', methods=['POST'], cors='*', csrf=False)
     def create_lead(self, **kwargs):
         """
@@ -75,22 +185,19 @@ class CRMLeadAPIController(http.Controller):
             "contact_name": "Peter Samson",
             "email": "peter@company.com",
             "phone": "+34 123 456 789",
-            "description": "Call me please"
+            "description": "Call me please",
+            "files": [
+                {
+                    "filename": "document.pdf",
+                    "content": "base64_encoded_content",
+                    "mimetype": "application/pdf"
+                }
+            ]
         }
         """
         try:
-            # Obtener datos JSON
-            try:
-                if hasattr(request, 'httprequest') and request.httprequest.data:
-                    data = json.loads(request.httprequest.data.decode('utf-8'))
-                else:
-                    data = json.loads(request.params.get('data', '{}'))
-            except (json.JSONDecodeError, UnicodeDecodeError) as e:
-                return self._json_response({
-                    'success': False,
-                    'error': 'JSON inválido',
-                    'message': str(e)
-                }, status=400)
+
+            data, files = self._get_json_data()
 
             authenticated = False
 
@@ -109,33 +216,46 @@ class CRMLeadAPIController(http.Controller):
             # Data validation
             lead_data = data.get('lead_data', data)
             self._validate_lead_data(lead_data)
+            self._validate_files(files)
             
             # Prepare lead values
             lead_values = self._prepare_lead_values(lead_data)
             
             # Create lead
             odoo_bot = request.env.ref('base.user_root')
-            lead = request.env['crm.lead'].with_user(odoo_bot).create(lead_values)
+            lead_id = request.env['crm.lead'].with_user(odoo_bot).create(lead_values)
 
-            _logger.info(f"Lead successfully created: ID {lead.id}, Name: {lead.name}")
+            # Create attachments
+            attachments = []
+            if files:
+                attachments = self._create_lead_attachments(lead_id, files)
+
+            _logger.info(
+                f"Lead successfully created: ID {lead_id.id}, Name: {lead_id.name},  Attachments: {len(attachments)}"
+            )
             
-            return self._json_response({
+            response_data = {
                 'success': True,
                 'message': 'Lead successfully created',
-                'lead_id': lead.id,
-                'lead_name': lead.name,
+                'lead_id': lead_id.id,
+                'lead_name': lead_id.name,
                 'lead_data': {
-                    'id': lead.id,
-                    'name': lead.name,
-                    'contact_name': lead.contact_name,
-                    'email_from': lead.email_from,
-                    'phone': lead.phone,
+                    'id': lead_id.id,
+                    'name': lead_id.name,
+                    'contact_name': lead_id.contact_name,
+                    'email_from': lead_id.email_from,
+                    'phone': lead_id.phone,
                     # 'stage': lead.stage_id.name if lead.stage_id else None,
                     # 'team': lead.team_id.name if lead.team_id else None,
                     # 'user': lead.user_id.name if lead.user_id else None,
-                    'create_date': lead.create_date.isoformat() if lead.create_date else None
+                    'create_date': lead_id.create_date.isoformat() if lead_id.create_date else None
                 }
-            })
+            }
+
+            if attachments:
+                response_data['attachments'] = attachments
+
+            return self._json_response(response_data)
             
         except ValidationError as e:
             _logger.error(f"Validation error: {e}")
