@@ -1,0 +1,198 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* som_crm
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-02 09:57+0000\n"
+"PO-Revision-Date: 2025-09-02 09:57+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__active
+msgid "Actiu"
+msgstr ""
+
+#. module: som_crm
+#: model_terms:ir.ui.view,arch_db:som_crm.view_users_form
+msgid "CRM"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_cups
+msgid "CUPS"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_res_users__som_call_center_user
+msgid "Call center user"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__color
+msgid "Color"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model,name:som_crm.model_contact_time_slot
+msgid "Contact Time Slot"
+msgstr ""
+
+#. module: som_crm
+#: model_terms:ir.ui.view,arch_db:som_crm.contact_time_slot_form_view
+msgid "Contact time slot"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.actions.act_window,name:som_crm.contact_time_slot_action
+#: model_terms:ir.ui.view,arch_db:som_crm.contact_time_slot_tree_view
+msgid "Contact time slots"
+msgstr ""
+
+#. module: som_crm
+#: model:crm.stage,name:som_crm.som_stage_lead6
+msgid "Contracted"
+msgstr "Contractat"
+
+#. module: som_crm
+#: model_terms:ir.actions.act_window,help:som_crm.contact_time_slot_action
+msgid "Create your first contact time slot!"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__id
+msgid "ID"
+msgstr ""
+
+#. module: som_crm
+#. odoo-python
+#: code:addons/som_crm/models/crm_lead.py:0
+#: model:ir.model.fields.selection,name:som_crm.selection__crm_lead__som_pricelist__indexed
+#, python-format
+msgid "Indexed"
+msgstr ""
+
+#. module: som_crm
+#: model:crm.stage,name:som_crm.som_stage_lead5
+msgid "Interested and will contract"
+msgstr "Interès i diu que contractarà"
+
+#. module: som_crm
+#: model:ir.ui.menu,name:som_crm.contact_time_slot_menu
+msgid "Intervals horaris de contacte"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_contact_time_slot____last_update
+msgid "Last Modified on"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model,name:som_crm.model_crm_lead
+msgid "Lead/Opportunity"
+msgstr "Iniciativa/oportunitat"
+
+#. module: som_crm
+#. odoo-python
+#: code:addons/som_crm/models/crm_lead.py:0
+#: model:ir.model.fields.selection,name:som_crm.selection__crm_lead__som_self_consumption__no
+#, python-format
+msgid "No"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__name
+msgid "Nom"
+msgstr ""
+
+#. module: som_crm
+#. odoo-python
+#: code:addons/som_crm/models/crm_lead.py:0
+#: model:ir.model.fields.selection,name:som_crm.selection__crm_lead__som_pricelist__periods
+#, python-format
+msgid "Periods"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model,name:som_crm.model_crm_phonecall
+msgid "Phonecall"
+msgstr "Trucada"
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_preferred_contact_time_ids
+msgid "Preferred contact time"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_pricelist
+msgid "Pricelist"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_self_consumption
+msgid "Self consumption"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__sequence
+msgid "Seqüència"
+msgstr ""
+
+#. module: som_crm
+#. odoo-python
+#: code:addons/som_crm/models/res_users.py:0
+#, python-format
+msgid "The field 'Call center user' must be unique."
+msgstr ""
+
+#. module: som_crm
+#: model_terms:ir.actions.act_window,help:som_crm.contact_time_slot_action
+msgid ""
+"The hourly time slots allow you to define when clients prefer to be "
+"contacted."
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model,name:som_crm.model_res_users
+msgid "User"
+msgstr "Usuari"
+
+#. module: som_crm
+#. odoo-python
+#: code:addons/som_crm/models/crm_lead.py:0
+#: model:ir.model.fields.selection,name:som_crm.selection__crm_lead__som_self_consumption__yes
+#, python-format
+msgid "Yes"
+msgstr ""

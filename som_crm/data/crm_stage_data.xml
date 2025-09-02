@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+<!--    &lt;!&ndash; Update existing stages&ndash;&gt;-->
+<!--    <record model="crm.stage" id="stage_lead1">-->
+<!--        <field name="name">Pending 1st contact</field>-->
+<!--    </record>-->
+<!--    <record model="crm.stage" id="stage_lead2">-->
+<!--        <field name="name">Pending 1st contact and simulation</field>-->
+<!--    </record>-->
+<!--    <record model="crm.stage" id="stage_lead3">-->
+<!--        <field name="name">Pending simulation or comparison</field>-->
+<!--    </record>-->
+<!--    <record model="crm.stage" id="stage_lead4">-->
+<!--        <field name="name">Simulation or comparison sent</field>-->
+<!--        <field name="is_won">False</field>-->
+<!--    </record>-->
+
+    <!-- New stages-->
+    <record model="crm.stage" id="som_stage_lead5">
+        <field name="name">Interested and will contract</field>
+        <field name="sequence">10</field>
+    </record>
+    <record model="crm.stage" id="som_stage_lead6">
+        <field name="name">Contracted</field>
+        <field name="is_won">True</field>
+        <field name="fold">False</field>
+        <field name="sequence">20</field>
+    </record>
+
+</odoo>
