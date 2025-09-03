@@ -32,6 +32,7 @@
         'views/crm_lead_views.xml',
         'views/contact_time_slot_views.xml',
         'views/res_users_views.xml',
+        'views/res_config_settings_views.xml',
     ],
     'post_init_hook': 'post_init_hook',
     # only loaded in demonstration mode
