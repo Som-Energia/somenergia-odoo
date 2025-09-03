@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-02 09:57+0000\n"
-"PO-Revision-Date: 2025-09-02 09:57+0000\n"
+"POT-Creation-Date: 2025-09-03 14:22+0000\n"
+"PO-Revision-Date: 2025-09-03 14:22+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,13 +16,26 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: som_crm
+#: model_terms:ir.ui.view,arch_db:som_crm.res_config_settings_view_form
+msgid ""
+"<span class=\"fa fa-lg fa-building-o\" title=\"CRM Category\" role=\"img\" "
+"aria-label=\"Values set here are company-specific.\"/>"
+msgstr ""
+
+#. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__active
-msgid "Actiu"
+msgid "Active"
 msgstr ""
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.view_users_form
 msgid "CRM"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_res_company__som_crm_call_category_id
+#: model:ir.model.fields,field_description:som_crm.field_res_config_settings__som_crm_call_category_id
+msgid "CRM Category"
 msgstr ""
 
 #. module: som_crm
@@ -33,7 +46,7 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_res_users__som_call_center_user
 msgid "Call center user"
-msgstr ""
+msgstr "Usuari centraleta telefònica"
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__color
@@ -41,20 +54,31 @@ msgid "Color"
 msgstr ""
 
 #. module: som_crm
+#: model:ir.model,name:som_crm.model_res_company
+msgid "Companies"
+msgstr "Empreses"
+
+#. module: som_crm
+#: model:ir.model,name:som_crm.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustos de configuració"
+
+#. module: som_crm
 #: model:ir.model,name:som_crm.model_contact_time_slot
 msgid "Contact Time Slot"
-msgstr ""
+msgstr "Interval d'horari de contacte"
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.contact_time_slot_form_view
 msgid "Contact time slot"
-msgstr ""
+msgstr "Interval d'horari de contacte"
 
 #. module: som_crm
 #: model:ir.actions.act_window,name:som_crm.contact_time_slot_action
+#: model:ir.ui.menu,name:som_crm.contact_time_slot_menu
 #: model_terms:ir.ui.view,arch_db:som_crm.contact_time_slot_tree_view
 msgid "Contact time slots"
-msgstr ""
+msgstr "Intervals d'horari de contacte"
 
 #. module: som_crm
 #: model:crm.stage,name:som_crm.som_stage_lead6
@@ -64,7 +88,7 @@ msgstr "Contractat"
 #. module: som_crm
 #: model_terms:ir.actions.act_window,help:som_crm.contact_time_slot_action
 msgid "Create your first contact time slot!"
-msgstr ""
+msgstr "Crea el teu primer interval d'horari de contacte!"
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__create_uid
@@ -92,17 +116,12 @@ msgstr ""
 #: model:ir.model.fields.selection,name:som_crm.selection__crm_lead__som_pricelist__indexed
 #, python-format
 msgid "Indexed"
-msgstr ""
+msgstr "Indexada"
 
 #. module: som_crm
 #: model:crm.stage,name:som_crm.som_stage_lead5
 msgid "Interested and will contract"
 msgstr "Interès i diu que contractarà"
-
-#. module: som_crm
-#: model:ir.ui.menu,name:som_crm.contact_time_slot_menu
-msgid "Intervals horaris de contacte"
-msgstr ""
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_contact_time_slot____last_update
@@ -125,16 +144,16 @@ msgid "Lead/Opportunity"
 msgstr "Iniciativa/oportunitat"
 
 #. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__name
+msgid "Name"
+msgstr "Nom"
+
+#. module: som_crm
 #. odoo-python
 #: code:addons/som_crm/models/crm_lead.py:0
 #: model:ir.model.fields.selection,name:som_crm.selection__crm_lead__som_self_consumption__no
 #, python-format
 msgid "No"
-msgstr ""
-
-#. module: som_crm
-#: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__name
-msgid "Nom"
 msgstr ""
 
 #. module: som_crm
@@ -153,21 +172,32 @@ msgstr "Trucada"
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_preferred_contact_time_ids
 msgid "Preferred contact time"
-msgstr ""
+msgstr "Preferència d'horari de contacte"
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_pricelist
 msgid "Pricelist"
-msgstr ""
+msgstr "Tarifa"
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_self_consumption
 msgid "Self consumption"
-msgstr ""
+msgstr "Autoconsum"
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__sequence
-msgid "Seqüència"
+msgid "Sequence"
+msgstr "Seqüència"
+
+#. module: som_crm
+#: model_terms:ir.ui.view,arch_db:som_crm.res_config_settings_view_form
+msgid "Set default CRM Category"
+msgstr ""
+
+#. module: som_crm
+#: model:ir.actions.server,name:som_crm.som_crm_phone_call_to_opportunity_ir_actions_server
+#: model:ir.cron,cron_name:som_crm.som_crm_phone_call_to_opportunity
+msgid "Som - Convert phone calls to opportunities"
 msgstr ""
 
 #. module: som_crm
@@ -176,6 +206,7 @@ msgstr ""
 #, python-format
 msgid "The field 'Call center user' must be unique."
 msgstr ""
+"Ja hi ha una altra usuària amb aquesta configuració de centraleta telefònica"
 
 #. module: som_crm
 #: model_terms:ir.actions.act_window,help:som_crm.contact_time_slot_action
@@ -183,6 +214,8 @@ msgid ""
 "The hourly time slots allow you to define when clients prefer to be "
 "contacted."
 msgstr ""
+"Els intervals horaris et permeten definir quan els clients prefereixen ser "
+"contactats."
 
 #. module: som_crm
 #: model:ir.model,name:som_crm.model_res_users
@@ -195,4 +228,9 @@ msgstr "Usuari"
 #: model:ir.model.fields.selection,name:som_crm.selection__crm_lead__som_self_consumption__yes
 #, python-format
 msgid "Yes"
-msgstr ""
+msgstr "Sí"
+
+#. module: crm_lead_vat
+#: model:ir.model.fields,field_description:crm_lead_vat.field_crm_lead__vat
+msgid "TIN"
+msgstr "NIF"

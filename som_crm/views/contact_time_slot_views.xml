@@ -53,7 +53,7 @@
 
     <!-- Submenú -->
     <menuitem id="contact_time_slot_menu"
-              name="Intervals horaris de contacte"
+              name="Contact time slots"
               parent="crm.crm_menu_config"
               action="contact_time_slot_action"
               sequence="50"/>
