@@ -29,4 +29,23 @@
         <field name="key">som_crm.api_key</field>
         <field name="value">change_this_default_api_key_123</field>
     </record>
+
+    <record model="ir.cron" id="som_crm_phone_call_to_opportunity">
+        <field name="name">Som - Convert phone calls to opportunities</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field
+            name="nextcall"
+            eval="(DateTime.now() + timedelta(minutes=60)).strftime('%Y-%m-%d %H:05:00')"
+        />
+        <field name="doall" eval="True" />
+        <field name="active" eval="False" />
+        <field name="model_id" ref="som_crm.model_crm_phonecall" />
+        <field name="state">code</field>
+        <field name="code">
+            model._convert_to_opportunity_by_category()
+        </field>
+    </record>
+
 </data>

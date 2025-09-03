@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-
+import logging
 from odoo import api, fields, models, _, _lt
+
+_logger = logging.getLogger(__name__)
 
 
 class CrmPhonecall(models.Model):
@@ -18,8 +20,11 @@ class CrmPhonecall(models.Model):
         res = super()._prepare_opportunity_vals()
 
         utm_medium_phone_id = self.env.ref('utm.utm_medium_phone', raise_if_not_found=False) or False
-
         user_id = self._get_user_crm()
+
+        name = f'Lead from phonecall {self.som_phone}'
+        if not res.get('name', False):
+            res.update({'name': name})
 
         res.update({
             'medium_id': utm_medium_phone_id.id if utm_medium_phone_id else False,
@@ -30,3 +35,16 @@ class CrmPhonecall(models.Model):
             'user_id': user_id.id if user_id else False,
         })
         return res
+
+    @api.model
+    def _convert_to_opportunity_by_category(self):
+        crm_category_id = self.env.company.som_crm_call_category_id
+        pc_ids = self.env['crm.phonecall'].search([
+            ('som_category_ids', 'in', [crm_category_id.id]),
+            ('opportunity_id', '=', False),
+        ])
+        _logger.info(f"Phone calls to convert: {len(pc_ids)}")
+        # We do it with a for because the function is ensure_one
+        for pc_id in pc_ids:
+            pc_id.action_button_convert2opportunity()
+        _logger.info(f"{len(pc_ids)} Phone calls converted successfully")
