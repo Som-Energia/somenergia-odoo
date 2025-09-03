@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from odoo.tests.common import tagged, TransactionCase
 
 
@@ -21,6 +20,16 @@ class TestCrmPhonecallToLead(TransactionCase):
             'name': 'Test User',
             'login': 'test_user',
             'email': 'testuser@example.com',
+        })
+
+        cls.crm_category = cls.env['product.category'].create({
+            'name': 'Test Category for Conversion'
+        })
+
+        cls.env.company.som_crm_call_category_id = cls.crm_category
+
+        cls.other_category = cls.env['product.category'].create({
+            'name': 'Other Category'
         })
 
     def test_prepare_opportunity_vals(self):
@@ -63,3 +72,77 @@ class TestCrmPhonecallToLead(TransactionCase):
         self.test_user.write({'som_call_center_user': 'operator test 2'})
         vals = self.phonecall._prepare_opportunity_vals()
         self.assertFalse(vals.get('user_id'))
+
+    # tests cron
+    def test_convert_phonecalls_with_correct_category(self):
+        phonecalls = self.env['crm.phonecall'].create([
+            {
+                'name': 'Test Call 1',
+                'som_category_ids': [(6, 0, [self.crm_category.id])],
+                'state': 'open',
+            },
+            {
+                'name': 'Test Call 2',
+                'som_category_ids': [(6, 0, [self.crm_category.id])],
+                'state': 'open',
+            }
+        ])
+
+        self.assertFalse(phonecalls[0].opportunity_id)
+        self.assertFalse(phonecalls[1].opportunity_id)
+
+        self.env['crm.phonecall']._convert_to_opportunity_by_category()
+
+        self.assertTrue(phonecalls[0].opportunity_id)
+        self.assertTrue(phonecalls[1].opportunity_id)
+
+        self.assertNotEqual(phonecalls[0].opportunity_id.id,
+                            phonecalls[1].opportunity_id.id)
+
+    def test_no_conversion_for_wrong_category(self):
+        phonecall = self.env['crm.phonecall'].create({
+            'name': 'Test Call Wrong Category',
+            'som_category_ids': [(6, 0, [self.other_category.id])],
+            'state': 'open',
+        })
+
+        self.env['crm.phonecall']._convert_to_opportunity_by_category()
+        self.assertFalse(phonecall.opportunity_id)
+
+    def test_no_conversion_for_calls_with_existing_opportunity(self):
+        opportunity = self.env['crm.lead'].create({
+            'name': 'Existing Opportunity',
+
+        })
+
+        phonecall = self.env['crm.phonecall'].create({
+            'name': 'Test Call With Opportunity',
+            'som_category_ids': [(6, 0, [self.crm_category.id])],
+            'opportunity_id': opportunity.id,
+            'state': 'open',
+        })
+
+        self.env['crm.phonecall']._convert_to_opportunity_by_category()
+        self.assertEqual(phonecall.opportunity_id.id, opportunity.id)
+
+    def test_no_category_configured_in_company(self):
+        self.env.company.som_crm_call_category_id = False
+
+        phonecall = self.env['crm.phonecall'].create({
+            'name': 'Test Call',
+            'som_category_ids': [(6, 0, [self.crm_category.id])],
+            'state': 'open',
+        })
+        self.env['crm.phonecall']._convert_to_opportunity_by_category()
+
+        self.assertFalse(phonecall.opportunity_id)
+
+    def test_multiple_categories_on_phonecall(self):
+        phonecall = self.env['crm.phonecall'].create({
+            'name': 'Test Call Multiple Categories',
+            'som_category_ids': [(6, 0, [self.crm_category.id, self.other_category.id])],
+            'state': 'open',
+        })
+
+        self.env['crm.phonecall']._convert_to_opportunity_by_category()
+        self.assertTrue(phonecall.opportunity_id)
