@@ -3,7 +3,7 @@ import json
 import logging
 import base64
 import mimetypes
-from odoo import http, _
+from odoo import http, api,_
 from odoo.http import request
 from odoo.exceptions import ValidationError, AccessError
 from odoo.tools.misc import get_lang
@@ -16,7 +16,7 @@ TOTAL_FILES_MAX_SIZE_MB = 20
 
 
 class CRMLeadAPIController(http.Controller):
-    
+
     def _authenticate_api_key(self, api_key):
         if not api_key:
             return False
@@ -69,17 +69,10 @@ class CRMLeadAPIController(http.Controller):
 
 
     def _get_json_data(self):
-        try:
-            if hasattr(request, 'httprequest') and request.httprequest.data:
-                data = json.loads(request.httprequest.data.decode('utf-8'))
-            else:
-                data = json.loads(request.params.get('data', '{}'))
-        except (json.JSONDecodeError, UnicodeDecodeError) as e:
-            return self._json_response({
-                'success': False,
-                'error': 'JSON inválido',
-                'message': str(e)
-            }, status=400)
+        if hasattr(request, 'httprequest') and request.httprequest.data:
+            data = json.loads(request.httprequest.data.decode('utf-8'))
+        else:
+            data = json.loads(request.params.get('data', '{}'))
 
         # Extract files from JSON if exist
         files = data.pop('files', []) if isinstance(data.get('files'), list) else []
@@ -269,7 +262,14 @@ class CRMLeadAPIController(http.Controller):
                 response_data['attachments'] = attachments
 
             return self._json_response(response_data)
-            
+
+        except (json.JSONDecodeError, UnicodeDecodeError) as e:
+            return self._json_response({
+                'success': False,
+                'error': 'Invalid JSON',
+                'message': str(e)
+            }, status=400)
+
         except ValidationError as e:
             _logger.error(f"Validation error: {e}")
             return self._json_response({
