@@ -311,7 +311,7 @@ class CRMLeadAPIController(http.Controller):
                 csrf=False, cors='*')
     def api_documentation(self, **kwargs):
         """
-        Endpoint de documentación de la API
+        Endpoint for API documentation
         """
         docs = {
             "api_info": {
@@ -338,16 +338,23 @@ class CRMLeadAPIController(http.Controller):
                         "X-API-Key": "your_secret_key_123"
                     },
                     "request_body": {
-                        "required_fields": ["name"],
+                        "required_fields": [],
                         "optional_fields": [
-                            "contact_name", "email", "phone", "description"
+                            "contact_name", "email", "phone", "description", "lang",
                         ],
                         "example": {
-                            "name": "Interested",
-                            "contact_name": "Juan Pérez",
-                            "email": "juan@empresa.com",
+                            "contact_name": "Joana Pérez",
+                            "email": "joana@empresa.com",
                             "phone": "+34 123 456 789",
-                            "description": "Interested in you services",
+                            "description": "Interesada en els vostres serveis",
+                            "lang": "ca_ES",
+                            "files": [
+                                {
+                                    "filename": "documento_test.pdf",
+                                    "content": "base64_encoded_content",
+                                    "mimetype": "application/pdf",
+                                },
+                            ],
                         }
                     },
                     "responses": {
@@ -357,7 +364,7 @@ class CRMLeadAPIController(http.Controller):
                                 "success": True,
                                 "message": "Lead successfully created",
                                 "lead_id": 123,
-                                "lead_name": "Interested"
+                                "lead_name": "Web form opportunity"
                             }
                         },
                         "400": {
@@ -365,7 +372,7 @@ class CRMLeadAPIController(http.Controller):
                             "example": {
                                 "success": False,
                                 "error": "Validation error",
-                                "message": "Required field: name"
+                                "message": "Required field:"
                             }
                         },
                         "401": {
@@ -382,7 +389,7 @@ class CRMLeadAPIController(http.Controller):
                 "curl_examples": [
                     {
                         "description": "Create lead with API Key",
-                        "command": 'curl -X POST "http://tu-odoo.com/api/crm/lead" -H "Content-Type: application/json" -H "X-API-Key: your_key" -d \'{"name": "Test Lead", "email": "test@example.com"}\''
+                        "command": 'curl -X POST "http://your-odoo.com/api/crm/lead" -H "Content-Type: application/json" -H "X-API-Key: your_key" -d \'{"contact_name": "Test contact name", "email": "test@example.com"}\''
                     },
                 ]
             }
