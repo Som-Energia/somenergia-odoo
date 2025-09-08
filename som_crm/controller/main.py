@@ -342,6 +342,11 @@ class CRMLeadAPIController(http.Controller):
                         "optional_fields": [
                             "contact_name", "email", "phone", "description", "lang",
                         ],
+                        "field_restrictions":[
+                            {
+                               "lang": ["ca_ES", "es_ES"],
+                            }
+                        ],
                         "example": {
                             "contact_name": "Joana Pérez",
                             "email": "joana@empresa.com",
