@@ -3,12 +3,16 @@ import json
 import logging
 import base64
 import mimetypes
-from odoo import http
+from odoo import http, _
 from odoo.http import request
 from odoo.exceptions import ValidationError, AccessError
+from odoo.tools.misc import get_lang
 import werkzeug.wrappers
 
 _logger = logging.getLogger(__name__)
+
+FILE_MAX_SIZE_MB = 5
+TOTAL_FILES_MAX_SIZE_MB = 20
 
 
 class CRMLeadAPIController(http.Controller):
@@ -21,7 +25,8 @@ class CRMLeadAPIController(http.Controller):
         return api_key == stored_api_key
     
     def _validate_lead_data(self, data):
-        required_fields = ['name']
+        # required_fields = ['contact_name', 'email', 'phone']
+        required_fields = []
         
         for field in required_fields:
             if field not in data or not data[field]:
@@ -29,19 +34,27 @@ class CRMLeadAPIController(http.Controller):
         
         # # Additional validation
         # if 'email' in data and data['email']:
-        #     # Validación básica de email
+        #     # Basic mail format validation
         #     import re
         #     email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         #     if not re.match(email_pattern, data['email']):
         #         raise ValidationError("Invalid email format")
     
     def _prepare_lead_values(self, data):
+        website_medium_id = request.env.ref('utm.utm_medium_website', raise_if_not_found=False) or False
+        lang_code = data.get('lang', False)
+        lang_id = get_lang(request.env, lang_code) if lang_code else False
+
         lead_values = {
-            'name': data.get('name', 'New opportunity'),
+            'name': data.get('name', _('Web form opportunity')),
             'contact_name': data.get('contact_name', data.get('name')),
             'email_from': data.get('email'),
             'phone': data.get('phone'),
             'description': data.get('description'),
+            'medium_id': website_medium_id.id if website_medium_id else False,
+            'lang_id': lang_id.id if lang_id else False,
+            'type': 'opportunity',
+            'user_id': False,
             # 'mobile': data.get('mobile'),
             # 'website': data.get('website'),
             # 'street': data.get('street'),
@@ -89,8 +102,8 @@ class CRMLeadAPIController(http.Controller):
             'application/zip', 'application/x-rar-compressed'
         }
 
-        max_size = 2 * 1024 * 1024  # 2MB por archivo
-        max_total_size = 20 * 1024 * 1024  # 20MB total
+        max_size = FILE_MAX_SIZE_MB * 1024 * 1024  # 5MB por archivo
+        max_total_size = TOTAL_FILES_MAX_SIZE_MB * 1024 * 1024  # 20MB total
 
         total_size = 0
 
@@ -112,11 +125,11 @@ class CRMLeadAPIController(http.Controller):
                 raise ValidationError(f"Invalid file content in base64 for: {filename}")
 
             if file_size > max_size:
-                raise ValidationError(f"File {filename} exceeds the maximum size of 2MB")
+                raise ValidationError(f"File {filename} exceeds the maximum size of {FILE_MAX_SIZE_MB}MB")
 
             total_size += file_size
 
-            # Validar tipo MIME
+            # MIME type validation
             mime_type, _ = mimetypes.guess_type(filename)
             if file_data.get('mimetype'):
                 mime_type = file_data['mimetype']
@@ -125,7 +138,7 @@ class CRMLeadAPIController(http.Controller):
                 raise ValidationError(f"Tipo de archivo no permitido para {filename}: {mime_type}")
 
         if total_size > max_total_size:
-            raise ValidationError("The total file size exceeds 20MB.")
+            raise ValidationError(f"The total file size exceeds {TOTAL_FILES_MAX_SIZE_MB}MB.")
 
     def _create_lead_attachments(self, lead_id, files):
         if not files:
@@ -181,11 +194,11 @@ class CRMLeadAPIController(http.Controller):
         
         Body JSON:
         {
-            "name": "Opportunity name",
             "contact_name": "Peter Samson",
             "email": "peter@company.com",
             "phone": "+34 123 456 789",
             "description": "Call me please",
+            "lang": "es_ES" / "ca_ES" (code Español / Català)
             "files": [
                 {
                     "filename": "document.pdf",
