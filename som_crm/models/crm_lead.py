@@ -36,3 +36,6 @@ class Lead(models.Model):
         string="Pricelist",
         required=False,
     )
+
+    def assign_to_me(self):
+        self.write({"user_id": self.env.user.id})

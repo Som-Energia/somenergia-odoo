@@ -30,6 +30,14 @@
                        options="{'color_field': 'color'}"/>
             </xpath>
 
+            <xpath expr="//button[@name='action_set_won_rainbowman']" position="before">
+                <button
+                    string="Assign to me"
+                    name="assign_to_me"
+                    type="object"
+                    attrs="{'invisible' : [('user_id', '!=', False)]}"
+                />
+            </xpath>
         </field>
     </record>
 </odoo>
