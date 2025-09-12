@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-03 14:22+0000\n"
-"PO-Revision-Date: 2025-09-03 14:22+0000\n"
+"POT-Creation-Date: 2025-09-12 10:41+0000\n"
+"PO-Revision-Date: 2025-09-12 10:41+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -26,6 +26,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__active
 msgid "Active"
 msgstr ""
+
+#. module: som_crm
+#: model_terms:ir.ui.view,arch_db:som_crm.som_crm_lead_view_form
+msgid "Assign to me"
+msgstr "Assignar-me-la"
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.view_users_form
@@ -162,7 +167,7 @@ msgstr ""
 #: model:ir.model.fields.selection,name:som_crm.selection__crm_lead__som_pricelist__periods
 #, python-format
 msgid "Periods"
-msgstr ""
+msgstr "Períodes"
 
 #. module: som_crm
 #: model:ir.model,name:som_crm.model_crm_phonecall
@@ -224,13 +229,15 @@ msgstr "Usuari"
 
 #. module: som_crm
 #. odoo-python
+#: code:addons/som_crm/controller/main.py:0
+#, python-format
+msgid "Web form opportunity"
+msgstr "Oportunitat del formulari web"
+
+#. module: som_crm
+#. odoo-python
 #: code:addons/som_crm/models/crm_lead.py:0
 #: model:ir.model.fields.selection,name:som_crm.selection__crm_lead__som_self_consumption__yes
 #, python-format
 msgid "Yes"
 msgstr "Sí"
-
-#. module: crm_lead_vat
-#: model:ir.model.fields,field_description:crm_lead_vat.field_crm_lead__vat
-msgid "TIN"
-msgstr "NIF"
