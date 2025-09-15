@@ -1,0 +1,69 @@
+<data noupdate="1">
+    <record id="time_slot_10_12" model="contact.time.slot">
+        <field name="name">10:00 - 12:00</field>
+        <field name="sequence">1</field>
+        <field name="color">1</field> <!-- Red -->
+    </record>
+
+    <record id="time_slot_12_14" model="contact.time.slot">
+        <field name="name">12:00 - 14:00</field>
+        <field name="sequence">2</field>
+        <field name="color">3</field> <!-- Blue -->
+    </record>
+
+    <record id="time_slot_14_16" model="contact.time.slot">
+        <field name="name">14:00 - 16:00</field>
+        <field name="sequence">3</field>
+        <field name="color">5</field> <!-- Green -->
+    </record>
+
+    <record id="time_slot_16_18" model="contact.time.slot">
+        <field name="name">16:00 - 18:00</field>
+        <field name="sequence">4</field>
+        <field name="color">7</field> <!-- Orange -->
+    </record>
+
+
+    <!-- API Key Config parameters by default-->
+    <record id="crm_api_key_config" model="ir.config_parameter">
+        <field name="key">som_crm.api_key</field>
+        <field name="value">change_this_default_api_key_123</field>
+    </record>
+
+    <record model="ir.cron" id="som_crm_phone_call_to_opportunity">
+        <field name="name">Som - Convert phone calls to opportunities</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field
+            name="nextcall"
+            eval="(DateTime.now() + timedelta(minutes=60)).strftime('%Y-%m-%d %H:05:00')"
+        />
+        <field name="doall" eval="True" />
+        <field name="active" eval="False" />
+        <field name="model_id" ref="som_crm.model_crm_phonecall" />
+        <field name="state">code</field>
+        <field name="code">
+            model._convert_to_opportunity_by_category()
+        </field>
+    </record>
+
+    <record model="ir.cron" id="som_crm_erp_sync_opportunities">
+        <field name="name">Som - Check opportunities in ERP</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field
+            name="nextcall"
+            eval="(DateTime.now() + timedelta(minutes=60)).strftime('%Y-%m-%d %H:05:00')"
+        />
+        <field name="doall" eval="True" />
+        <field name="active" eval="False" />
+        <field name="model_id" ref="som_crm.model_crm_lead" />
+        <field name="state">code</field>
+        <field name="code">
+            model._erp_sync()
+        </field>
+    </record>
+
+</data>

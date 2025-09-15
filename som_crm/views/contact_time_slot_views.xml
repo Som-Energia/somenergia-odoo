@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree view -->
+    <record id="contact_time_slot_tree_view" model="ir.ui.view">
+        <field name="name">contact.time.slot.tree</field>
+        <field name="model">contact.time.slot</field>
+        <field name="arch" type="xml">
+            <tree string="Contact time slots" editable="top">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="contact_time_slot_form_view" model="ir.ui.view">
+        <field name="name">contact.time.slot.form</field>
+        <field name="model">contact.time.slot</field>
+        <field name="arch" type="xml">
+            <form string="Contact time slot">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="color" widget="color_picker"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="contact_time_slot_action" model="ir.actions.act_window">
+        <field name="name">Contact time slots</field>
+        <field name="res_model">contact.time.slot</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first contact time slot!
+            </p>
+            <p>
+                The hourly time slots allow you to define when clients prefer to be contacted.
+            </p>
+        </field>
+    </record>
+
+
+    <!-- Submenú -->
+    <menuitem id="contact_time_slot_menu"
+              name="Contact time slots"
+              parent="crm.crm_menu_config"
+              action="contact_time_slot_action"
+              sequence="50"/>
+
+</odoo>
