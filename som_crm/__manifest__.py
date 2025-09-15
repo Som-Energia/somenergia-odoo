@@ -24,6 +24,7 @@
         'mail_activity_board',
         'odoo_callinfo',
     ],
+    "external_dependencies": {"python": ["erppeek"]},
 
     # always loaded
     'data': [
