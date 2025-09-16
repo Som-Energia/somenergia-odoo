@@ -7,19 +7,22 @@
 
             <xpath expr="//group[@name='opportunity_partner']" position="inside">
                 <field name="som_cups"/>
-                <field name="som_preferred_contact_time_ids"
-                       widget="many2many_tags"
-                       options="{'color_field': 'color'}"/>
+                <field name="som_cups_number"/>
             </xpath>
 
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="som_self_consumption"/>
                 <field name="som_pricelist"/>
+                <field name="som_preferred_contact_time_ids"
+                       widget="many2many_tags"
+                       options="{'color_field': 'color'}"/>
             </xpath>
 
 
             <xpath expr="//group[@name='lead_partner']" position="inside">
                 <field name="som_cups"/>
+                <field name="som_cups_number"/>
+
             </xpath>
 
             <xpath expr="//group[@name='lead_info']" position="inside">
@@ -40,4 +43,52 @@
             </xpath>
         </field>
     </record>
+
+    <!-- main form -->
+    <!-- <record id="crm_lead_view_form_inherit_utm_medium" model="ir.ui.view">
+        <field name="name">crm.lead.view.form.inherit.utm.medium</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <field name="medium_id" position="attributes">
+                <attribute name="required">1</attribute>
+            </field>
+        </field>
+    </record> -->
+
+    <!-- quick view -->
+    <!-- <record id="crm_lead_view_form_quick_create_inherit_utm_medium" model="ir.ui.view">
+        <field name="name">crm.lead.view.form.quick.create.inherit.utm.medium</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.quick_create_opportunity_form"/>
+        <field name="arch" type="xml">
+            <field name="medium_id" position="attributes">
+                <attribute name="required">1</attribute>
+            </field>
+        </field>
+    </record> -->
+
+    <!-- opportunity view -->
+    <!-- <record id="crm_opportunity_view_form_inherit_utm_medium" model="ir.ui.view">
+        <field name="name">crm.lead.view.form.opportunity.inherit.utm.medium</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <field name="medium_id" position="attributes">
+                <attribute name="required">1</attribute>
+            </field>
+        </field>
+    </record> -->
+
+    <record id="crm_lead_view_form_add_utm_medium" model="ir.ui.view">
+        <field name="name">crm.lead.view.form.add.utm.medium</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='categorization']" position="inside">
+                <field name="medium_id" required="1"/>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>

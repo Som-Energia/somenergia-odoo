@@ -3,6 +3,7 @@ import logging
 from odoo import fields, models, api, _
 from erppeek import Client
 from odoo.tools import config
+from odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
 
@@ -40,6 +41,37 @@ class Lead(models.Model):
         string="Pricelist",
         required=False,
     )
+
+    som_cups_number = fields.Integer(
+        string="Number of CUPS",
+        default=1,
+        required=False,
+    )
+
+    medium_id = fields.Many2one(
+        'utm.medium',
+        string='Medium',
+        required=True,  # Make it required
+        ondelete='restrict',
+    )
+
+    @api.model
+    def create(self, vals):
+        if not vals.get('medium_id'):
+            raise ValidationError("The UTM medium is required for all leads/opportunities.")
+        return super().create(vals)
+
+    def write(self, vals):
+        if 'medium_id' in vals and not vals['medium_id']:
+            raise ValidationError("The UTM medium is required for all opportunities. Can't be deleted.")
+        return super().write(vals)
+
+    @api.constrains('medium_id')
+    def _check_medium_id(self):
+        for record in self:
+            if not record.medium_id:
+                raise ValidationError("The UTM medium is required for all opportunities.")
+
 
     def assign_to_me(self):
         self.write({"user_id": self.env.user.id})
