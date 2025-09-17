@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_activity_view_form_popup" model="ir.ui.view">
+        <field name="name">mail.activity.view.form.popup.inherit</field>
+        <field name="model">mail.activity</field>
+        <field name="inherit_id" ref="mail.mail_activity_view_form_popup"/>
+        <field name="arch" type="xml">
+            <field name="summary" position="after">
+                <field name="phone_call_result"
+                        attrs="{'required': [('activity_category', '=', 'phonecall')],
+                                'invisible': [('activity_category', '!=', 'phonecall')]}"
+                        placeholder="Select the result of the phone call"/>
+            </field>
+        </field>
+    </record>
+</odoo>

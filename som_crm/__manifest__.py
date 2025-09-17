@@ -36,6 +36,7 @@
         'views/res_users_views.xml',
         'views/res_config_settings_views.xml',
         'wizard/crm_lead_lost_views.xml',
+        'views/mail_activity_views.xml',
     ],
     'post_init_hook': 'post_init_hook',
     # only loaded in demonstration mode
