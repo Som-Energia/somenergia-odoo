@@ -8,6 +8,8 @@
             <xpath expr="//group[@name='opportunity_partner']" position="inside">
                 <field name="som_cups"/>
                 <field name="som_cups_number"/>
+                <field name="som_erp_lead_id"/>
+                <field name="som_last_call_date"/>
             </xpath>
 
             <xpath expr="//field[@name='tag_ids']" position="after">
@@ -22,7 +24,8 @@
             <xpath expr="//group[@name='lead_partner']" position="inside">
                 <field name="som_cups"/>
                 <field name="som_cups_number"/>
-
+                <field name="som_erp_lead_id"/>
+                <field name="som_last_call_date"/>
             </xpath>
 
             <xpath expr="//group[@name='lead_info']" position="inside">
@@ -86,6 +89,16 @@
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//group[@name='categorization']" position="inside">
+                <field name="medium_id" required="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="quick_create_opportunity_form" model="ir.ui.view">
+        <field name="inherit_id" ref="crm.quick_create_opportunity_form" />
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
                 <field name="medium_id" required="1"/>
             </xpath>
         </field>

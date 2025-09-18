@@ -40,8 +40,12 @@ class CRMLeadAPIController(http.Controller):
         #     if not re.match(email_pattern, data['email']):
         #         raise ValidationError("Invalid email format")
     
-    def _prepare_lead_values(self, data):
-        website_medium_id = request.env.ref('utm.utm_medium_website', raise_if_not_found=False) or False
+    def _prepare_lead_values(self, data, files):
+        #website_medium_id = request.env.ref('utm.utm_medium_website', raise_if_not_found=False) or False
+        medium_form_id = request.env.ref('som_medium_webform', raise_if_not_found=False) or False
+        medium_form_attachment_id = request.env.ref('som_medium_webform_att', raise_if_not_found=False) or False
+        medium_id = medium_form_attachment_id if files else medium_form_id
+
         lang_code = data.get('lang', False)
         lang_id = get_lang(request.env, lang_code) if lang_code else False
 
@@ -51,10 +55,11 @@ class CRMLeadAPIController(http.Controller):
             'email_from': data.get('email'),
             'phone': data.get('phone'),
             'description': data.get('description'),
-            'medium_id': website_medium_id.id if website_medium_id else False,
+            'medium_id': medium_id.id if medium_id else False,
             'lang_id': lang_id.id if lang_id else False,
             'type': 'opportunity',
             'user_id': False,
+
             # 'mobile': data.get('mobile'),
             # 'website': data.get('website'),
             # 'street': data.get('street'),
@@ -225,7 +230,7 @@ class CRMLeadAPIController(http.Controller):
             self._validate_files(files)
             
             # Prepare lead values
-            lead_values = self._prepare_lead_values(lead_data)
+            lead_values = self._prepare_lead_values(lead_data, files)
             
             # Create lead
             odoo_bot = request.env.ref('base.user_root')

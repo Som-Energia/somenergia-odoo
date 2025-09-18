@@ -11,6 +11,23 @@ _logger = logging.getLogger(__name__)
 class Lead(models.Model):
     _inherit = 'crm.lead'
 
+    @api.model
+    def _default_medium(self):
+        medium_id = self.env.ref('utm.utm_medium_direct', raise_if_not_found=False) or False
+        return medium_id
+
+    @api.depends('phonecall_ids', 'phonecall_ids.date')
+    def _compute_last_call_date(self):
+        for record in self:
+            if record.phonecall_ids:
+                last_call = record.phonecall_ids.sorted(key=lambda x: x.date, reverse=True)
+                if last_call:
+                    record.som_last_call_date = last_call[0].date
+                else:
+                    record.som_last_call_date = False
+            else:
+                record.som_last_call_date = False
+
     som_cups = fields.Char(
         string='CUPS',
         required=False,
@@ -50,9 +67,22 @@ class Lead(models.Model):
 
     medium_id = fields.Many2one(
         'utm.medium',
-        string='Medium',
         required=True,  # Make it required
         ondelete='restrict',
+        default=lambda self: self._default_medium(),
+    )
+
+    som_erp_lead_id = fields.Integer(
+        string='ERP Lead ID',
+        required=False,
+        help="ID of the lead in the ERP system",
+    )
+
+    som_last_call_date = fields.Datetime(
+        string='Last Call Date',
+        required=False,
+        compute='_compute_last_call_date',
+        help="Date of the last phone call made to this lead",
     )
 
     @api.model
@@ -99,29 +129,29 @@ class Lead(models.Model):
         ])
         return lead_ids
 
-    def _erp_search_by_cups(self, erp_lead_obj, cups_value):
+    def _erp_search_by_cups(self, erp_lead_obj, domain, cups_value):
         erp_field = 'cups'
         cups_truncated = cups_value[:20]
-        domain = [(erp_field, '=ilike', f'{cups_truncated}%')]
+        domain += [(erp_field, '=ilike', f'{cups_truncated}%')]
         return erp_lead_obj.search(domain, limit=1)
 
-    def _erp_search_by_vat(self, erp_lead_obj, vat_value):
+    def _erp_search_by_vat(self, erp_lead_obj, domain, vat_value):
         erp_field = 'titular_vat'
         normalized_vat = vat_value if vat_value.startswith('ES') else f'ES{vat_value}'
-        domain = [(erp_field, '=', normalized_vat)]
+        domain += [(erp_field, '=', normalized_vat)]
         return erp_lead_obj.search(domain, limit=1)
 
-    def _erp_search_by_email(self, erp_lead_obj, email_value):
+    def _erp_search_by_email(self, erp_lead_obj, domain, email_value):
         erp_field = 'titular_email'
-        domain = [(erp_field, '=', email_value)]
+        domain += [(erp_field, '=', email_value)]
         return erp_lead_obj.search(domain, limit=1)
 
-    def _erp_search_by_phone(self, erp_lead_obj, phone_value):
+    def _erp_search_by_phone(self, erp_lead_obj, domain, phone_value):
         erp_field = 'titular_phone'
         casted_phone = phone_value
         if len(phone_value) > 9:
             casted_phone = phone_value.replace(' ','')[3:]
-        domain = [(erp_field, '=', casted_phone)]
+        domain += [(erp_field, '=', casted_phone)]
         return erp_lead_obj.search(domain, limit=1)
 
     def get_contract_in_erp(self, erp_lead_obj):
@@ -141,8 +171,8 @@ class Lead(models.Model):
             value_to_search = getattr(self, lead_field, None)
             if not value_to_search:
                 continue
-
-            erp_lead_id = search_strategies[lead_field](erp_lead_obj, value_to_search)
+            domain = [('crm_lead_id', '=', False)]
+            erp_lead_id = search_strategies[lead_field](erp_lead_obj, domain, value_to_search)
             if erp_lead_id:
                 return erp_lead_id
 
@@ -181,7 +211,7 @@ class Lead(models.Model):
             erp_lead_id = lead_id.get_contract_in_erp(erp_lead_obj)
             if erp_lead_id:
                 found_ids.append(lead_id.id)
-                # TODO: new field to store ERP contract ID?
+                lead_id.som_erp_lead_id = erp_lead_id
 
 
         if not found_ids:

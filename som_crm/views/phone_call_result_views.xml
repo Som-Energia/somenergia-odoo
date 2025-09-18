@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree view -->
+    <record id="phone_call_result_view_tree" model="ir.ui.view">
+        <field name="name">phone.call.result.view.tree</field>
+        <field name="model">phone.call.result</field>
+        <field name="arch" type="xml">
+            <tree string="Phone Call Results" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="result_type" widget="badge"
+                        decoration-success="result_type == 'positive'"
+                        decoration-info="result_type == 'neutral'"
+                        decoration-warning="result_type == 'negative'"/>
+                <field name="description"/>
+                <field name="color" widget="color_picker"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="phone_call_result_view_form" model="ir.ui.view">
+        <field name="name">phone.call.result.view.form</field>
+        <field name="model">phone.call.result</field>
+        <field name="arch" type="xml">
+            <form string="Phone Call Result">
+                <sheet>
+                    <field name="active"/>
+                    <group>
+                        <group>
+                            <field name="name" placeholder="e.g., Answered - Interested"/>
+                            <field name="result_type"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="color" widget="color_picker"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1"
+                                placeholder="Describe when to use this result..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="phone_call_result_action" model="ir.actions.act_window">
+        <field name="name">Phone Call Results</field>
+        <field name="res_model">phone.call.result</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first phone call result!
+            </p>
+            <p>
+                Define different outcomes for phone call activities to track
+                and categorize your call results effectively.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="phone_call_result_menu"
+                name="Phone Call Results"
+                parent="crm_phonecall.menu_crm_config_phonecall"
+                action="phone_call_result_action"
+                sequence="20"/>
+
+</odoo>
