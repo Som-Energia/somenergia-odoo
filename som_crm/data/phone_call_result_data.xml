@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Default Phone Call Results -->
+        <record id="phone_call_result_answered_interested" model="phone.call.result">
+            <field name="name">Answered - Interested</field>
+            <field name="result_type">positive</field>
+            <field name="sequence">10</field>
+            <field name="color">10</field>
+            <field name="description">Contact answered and showed interest in the proposal</field>
+        </record>
+
+        <record id="phone_call_result_answered_not_interested" model="phone.call.result">
+            <field name="name">Answered - Not Interested</field>
+            <field name="result_type">negative</field>
+            <field name="sequence">20</field>
+            <field name="color">1</field>
+            <field name="description">Contact answered but expressed no interest</field>
+        </record>
+
+        <record id="phone_call_result_no_answer" model="phone.call.result">
+            <field name="name">No Answer</field>
+            <field name="result_type">neutral</field>
+            <field name="sequence">30</field>
+            <field name="color">3</field>
+            <field name="description">No one answered the phone call</field>
+        </record>
+
+        <record id="phone_call_result_busy" model="phone.call.result">
+            <field name="name">Busy</field>
+            <field name="result_type">neutral</field>
+            <field name="sequence">40</field>
+            <field name="color">4</field>
+            <field name="description">Line was busy during the call</field>
+        </record>
+
+        <record id="phone_call_result_voicemail" model="phone.call.result">
+            <field name="name">Left Voicemail</field>
+            <field name="result_type">neutral</field>
+            <field name="sequence">50</field>
+            <field name="color">5</field>
+            <field name="description">Left a voicemail message for the contact</field>
+        </record>
+
+        <record id="phone_call_result_wrong_number" model="phone.call.result">
+            <field name="name">Wrong Number</field>
+            <field name="result_type">negative</field>
+            <field name="sequence">60</field>
+            <field name="color">1</field>
+            <field name="description">The number dialed was incorrect</field>
+        </record>
+
+        <record id="phone_call_result_callback_requested" model="phone.call.result">
+            <field name="name">Callback Requested</field>
+            <field name="result_type">positive</field>
+            <field name="sequence">70</field>
+            <field name="color">9</field>
+            <field name="description">Contact requested to be called back at a later time</field>
+        </record>
+
+        <record id="phone_call_result_meeting_scheduled" model="phone.call.result">
+            <field name="name">Meeting Scheduled</field>
+            <field name="result_type">positive</field>
+            <field name="sequence">80</field>
+            <field name="color">10</field>
+            <field name="description">Successfully scheduled a meeting or appointment</field>
+        </record>
+
+    </data>
+</odoo>

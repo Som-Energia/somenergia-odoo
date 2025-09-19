@@ -9,6 +9,11 @@ class CrmPhonecall(models.Model):
     _name = 'crm.phonecall'
     _inherit = ['crm.phonecall']
 
+    som_phone_call_result_id = fields.Many2one(
+        'phone.call.result',
+        string='Phone Call Result',
+        help="Result of the phone call"
+    )
 
     def _get_user_crm(self):
         user_id = self.env['res.users'].search([
@@ -48,3 +53,18 @@ class CrmPhonecall(models.Model):
         for pc_id in pc_ids:
             pc_id.action_button_convert2opportunity()
         _logger.info(f"{len(pc_ids)} Phone calls converted successfully")
+
+    @api.model
+    def create(self, vals):
+        phonecall = super(CrmPhonecall, self).create(vals)
+        if phonecall.opportunity_id:
+            phonecall.opportunity_id._compute_last_call_date()
+        return phonecall
+
+    def write(self, vals):
+        result = super(CrmPhonecall, self).write(vals)
+        if 'date' in vals or 'opportunity_id' in vals:
+            for phonecall in self:
+                if phonecall.opportunity_id:
+                    phonecall.opportunity_id._compute_last_call_date()
+        return result
