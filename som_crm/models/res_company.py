@@ -10,3 +10,7 @@ class ResCompany(models.Model):
         comodel_name="product.category",
         domain="[('som_level', '=', 3)]",
     )
+
+    som_ff_call_to_opportunity = fields.Boolean(
+        string="Feature flag: Automatic Call to Opportunity conversion by Category",
+    )

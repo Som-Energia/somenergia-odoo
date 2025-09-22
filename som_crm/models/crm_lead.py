@@ -77,6 +77,7 @@ class Lead(models.Model):
         required=False,
         compute='_compute_last_call_date',
         help="Date of the last phone call made to this lead",
+        stored=True,
     )
 
     @api.model

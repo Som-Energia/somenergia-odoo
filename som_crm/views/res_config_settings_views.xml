@@ -21,6 +21,15 @@
                                 <field name="som_crm_call_category_id" class="o_light_label"/>
                             </div>
                         </div>
+                        <br/>
+                        <br/>
+                        <label for="som_ff_call_to_opportunity">
+                            Set up Enable convert to opportunity automation
+                        </label>
+                        <div class="text-muted">
+                            Set up Enable convert to opportunity automation
+                        </div>
+                        <field name="som_ff_call_to_opportunity" class="text-center"/><span>Enable convert to opportunity automation</span>
                     </div>
                 </div>
             </xpath>

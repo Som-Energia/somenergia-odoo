@@ -53,3 +53,26 @@ class CrmPhonecall(models.Model):
         for pc_id in pc_ids:
             pc_id.action_button_convert2opportunity()
         _logger.info(f"{len(pc_ids)} Phone calls converted successfully")
+
+    # TODO: Tests
+    @api.model
+    def auto_create_opportunity(self, vals):
+        if self.env.company.som_ff_call_to_opportunity and self.env.company.som_crm_call_category_id and vals.get('som_category_ids', False):
+            list_categories = vals.get('som_category_ids', [])[0][2]
+            if self.env.company.som_crm_call_category_id.id in list_categories :
+                return True
+        return False
+
+    @api.model
+    def create(self, vals):
+        phonecall_id = super(CrmPhonecall, self).create(vals)
+        if self.auto_create_opportunity(vals):
+            phonecall_id.action_button_convert2opportunity()
+        return phonecall_id
+
+    def write(self, vals):
+        result = super(CrmPhonecall, self).write(vals)
+        if self.auto_create_opportunity(vals):
+            for phonecall_id in self.filtered(lambda x: not x.opportunity_id):
+                phonecall_id.action_button_convert2opportunity()
+        return result
