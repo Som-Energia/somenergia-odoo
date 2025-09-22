@@ -59,12 +59,6 @@ class Lead(models.Model):
         required=False,
     )
 
-    som_cups_number = fields.Integer(
-        string="Number of CUPS",
-        default=1,
-        required=False,
-    )
-
     medium_id = fields.Many2one(
         'utm.medium',
         required=True,  # Make it required
@@ -174,7 +168,7 @@ class Lead(models.Model):
             domain = [('crm_lead_id', '=', False)]
             erp_lead_id = search_strategies[lead_field](erp_lead_obj, domain, value_to_search)
             if erp_lead_id:
-                return erp_lead_id
+                return erp_lead_id[0]
 
         return False
 
@@ -210,9 +204,9 @@ class Lead(models.Model):
         for lead_id in lead_ids:
             erp_lead_id = lead_id.get_contract_in_erp(erp_lead_obj)
             if erp_lead_id:
-                found_ids.append(lead_id.id)
+                erp_lead_obj.write(erp_lead_id, {'crm_lead_id': lead_id.id})
                 lead_id.som_erp_lead_id = erp_lead_id
-
+                found_ids.append(lead_id.id)
 
         if not found_ids:
             _logger.info("No leads with contract in ERP found")

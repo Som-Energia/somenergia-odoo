@@ -23,14 +23,3 @@ class PhoneCallResult(models.Model):
     _sql_constraints = [
         ('name_unique', 'unique(name)', 'Phone call result name must be unique!'),
     ]
-
-
-
-class MailActivity(models.Model):
-    _inherit = 'mail.activity'
-
-    phone_call_result_id = fields.Many2one(
-        'phone.call.result',
-        string='Phone Call Result',
-        help="Result of the phone call activity"
-    )

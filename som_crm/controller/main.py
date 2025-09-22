@@ -20,18 +20,18 @@ class CRMLeadAPIController(http.Controller):
     def _authenticate_api_key(self, api_key):
         if not api_key:
             return False
-        
+
         stored_api_key = request.env['ir.config_parameter'].sudo().get_param('som_crm.api_key')
         return api_key == stored_api_key
-    
+
     def _validate_lead_data(self, data):
         # required_fields = ['contact_name', 'email', 'phone']
         required_fields = []
-        
+
         for field in required_fields:
             if field not in data or not data[field]:
                 raise ValidationError(f"Required field: {field}")
-        
+
         # # Additional validation
         # if 'email' in data and data['email']:
         #     # Basic mail format validation
@@ -39,12 +39,14 @@ class CRMLeadAPIController(http.Controller):
         #     email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         #     if not re.match(email_pattern, data['email']):
         #         raise ValidationError("Invalid email format")
-    
+
     def _prepare_lead_values(self, data, files):
         #website_medium_id = request.env.ref('utm.utm_medium_website', raise_if_not_found=False) or False
         medium_form_id = request.env.ref('som_medium_webform', raise_if_not_found=False) or False
         medium_form_attachment_id = request.env.ref('som_medium_webform_att', raise_if_not_found=False) or False
         medium_id = medium_form_attachment_id if files else medium_form_id
+
+        # TODO: Set stage
 
         lang_code = data.get('lang', False)
         lang_id = get_lang(request.env, lang_code) if lang_code else False
@@ -68,7 +70,6 @@ class CRMLeadAPIController(http.Controller):
             # 'zip': data.get('zip'),
             # 'referred': data.get('referred'),
         }
-        
         # return not none values
         return {k: v for k, v in lead_values.items() if v is not None}
 
@@ -186,10 +187,10 @@ class CRMLeadAPIController(http.Controller):
         """
         Sample:
         POST /api/crm/lead
-        Headers: 
+        Headers:
         - Content-Type: application/json
         - X-API-Key: tu_clave_secreta
-        
+
         Body JSON:
         {
             "contact_name": "Peter Samson",
@@ -223,15 +224,15 @@ class CRMLeadAPIController(http.Controller):
                     'error': 'Authentication required',
                     'message': 'Provide X-API-Key in headers or auth in JSON body'
                 }, status=401)
-            
+
             # Data validation
             lead_data = data.get('lead_data', data)
             self._validate_lead_data(lead_data)
             self._validate_files(files)
-            
+
             # Prepare lead values
             lead_values = self._prepare_lead_values(lead_data, files)
-            
+
             # Create lead
             odoo_bot = request.env.ref('base.user_root')
             lead_id = request.env['crm.lead'].with_user(odoo_bot).create(lead_values)
@@ -244,7 +245,7 @@ class CRMLeadAPIController(http.Controller):
             _logger.info(
                 f"Lead successfully created: ID {lead_id.id}, Name: {lead_id.name},  Attachments: {len(attachments)}"
             )
-            
+
             response_data = {
                 'success': True,
                 'message': 'Lead successfully created',
@@ -282,7 +283,7 @@ class CRMLeadAPIController(http.Controller):
                 'error': 'Validation error',
                 'message': str(e)
             }, status=400)
-            
+
         except AccessError as e:
             _logger.error(f"Access error: {e}")
             return self._json_response({
@@ -290,7 +291,7 @@ class CRMLeadAPIController(http.Controller):
                 'error': 'Access error',
                 'message': 'You do not have sufficient permissions.'
             }, status=403)
-            
+
         except Exception as e:
             _logger.error(f"Error inesperado: {e}")
             return self._json_response({

@@ -6,10 +6,10 @@
         <field name="inherit_id" ref="mail.mail_activity_view_form_popup"/>
         <field name="arch" type="xml">
             <field name="summary" position="after">
-            <field name="phone_call_result_id"
+            <field name="som_phone_call_result_id"
                     attrs="{'invisible': [('activity_category', '!=', 'phonecall')]}"
                     placeholder="Select the result of the phone call"/>
-            <field class="oe_inline" name="phone_call_duration"  attrs="{'invisible': [('activity_category', '!=', 'phonecall')]}" style="vertical-align:baseline" widget="float_time"/>
+            <field class="oe_inline" name="som_phone_call_duration"  attrs="{'invisible': [('activity_category', '!=', 'phonecall')]}" style="vertical-align:baseline" widget="float_time"/>
             </field>
         </field>
     </record>
