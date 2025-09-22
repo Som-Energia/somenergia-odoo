@@ -7,7 +7,23 @@ class CrmPhonecall(models.Model):
     _name = 'crm.phonecall'
     _inherit = ['crm.phonecall', 'som.callinfo.endpoint']
 
+
+    @api.depends('direction')
+    def _compute_direction_icon(self):
+        for record in self:
+            if record.direction == 'out':
+                record.som_direction_icon = '<i class="fa fa-arrow-up text-success"></i>'
+            elif record.direction == 'in':
+                record.som_direction_icon = '<i class="fa fa-arrow-down text-primary"></i>'
+            else:
+                record.som_direction_icon = ''
+
     direction = fields.Selection(default="in")
+
+    som_direction_icon = fields.Html(
+        string="Direction icon",
+        compute="_compute_direction_icon",
+    )
 
     som_operator = fields.Char(
         string="Operator",
