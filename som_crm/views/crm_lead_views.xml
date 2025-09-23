@@ -34,6 +34,20 @@
                        options="{'color_field': 'color'}"/>
             </xpath>
 
+            <xpath expr="//label[@for='contact_name_page_lead']"  position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@id='contact_name_page_lead']/.."  position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group/group[@name='opportunity_partner']/field[@name='partner_id']" position="after">
+                <label for="som_contact_name_page_lead"/>
+                <div class="o_row">
+                    <field name="contact_name" id="som_contact_name_page_lead"/>
+                    <field name="title" placeholder="Title" domain="[]" options='{"no_open": True}'/>
+                </div>
+            </xpath>
+
             <xpath expr="//button[@name='action_set_won_rainbowman']" position="before">
                 <button
                     string="Assign to me"
