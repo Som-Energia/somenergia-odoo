@@ -18,6 +18,7 @@
     # any module necessary for this one to work correctly
     'depends': [
         'base',
+        'utm',
         'crm',
         'product',
         'crm_lead_vat',
@@ -40,6 +41,7 @@
         'views/mail_activity_views.xml',
         'views/phone_call_result_views.xml',
         'views/crm_phonecall_views.xml',
+        'views/utm_menus.xml',
     ],
     'post_init_hook': 'post_init_hook',
     # only loaded in demonstration mode
