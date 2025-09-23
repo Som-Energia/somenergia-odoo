@@ -2,6 +2,11 @@
 import logging
 from odoo import api, fields, models, _, _lt
 
+try:
+    import phonenumbers
+except ImportError:
+    logger.debug("Cannot import phonenumbers")
+
 _logger = logging.getLogger(__name__)
 
 
@@ -50,8 +55,44 @@ class CrmPhonecall(models.Model):
         _logger.info(f"Phone calls to convert: {len(pc_ids)}")
         # We do it with a for because the function is ensure_one
         for pc_id in pc_ids:
-            pc_id.action_button_convert2opportunity()
+            pc._assign_to_opportunity()
+            # pc_id.action_button_convert2opportunity()
         _logger.info(f"{len(pc_ids)} Phone calls converted successfully")
+
+    @api.model
+    def _get_parsed_phone_number(self, number):
+        try:
+            p = phonenumbers.parse(number, "ES")
+            digits = str(p.national_number)
+            if len(digits) == 9:
+                a, b, c, d = digits[:3], digits[3:5], digits[5:7], digits[7:9]
+                return f'+34 {a} {b} {c} {d}'
+            else:
+                return number
+        except Exception as e:
+            return number
+
+    def _assign_to_opportunity(self):
+        for record in self.filtered(lambda x: not x.opportunity_id and x.som_phone):
+            oppo_id = record._find_matching_opportunity()
+            if oppo_id:
+                record.opportunity_id = oppo_id.id
+            else:
+                record.action_button_convert2opportunity()
+
+    def _find_matching_opportunity(self):
+        self.ensure_one()
+        if not self.som_phone:
+            return False
+        parsed_number = phonenumbers.parse(self.som_phone, "ES")
+        domain = [
+            ('type', '=', 'opportunity'),
+            '|',
+            ('phone', '=', parsed_number),
+            ('phone', '=', self.som_phone),
+        ]
+        opportunity_id = self.env['crm.lead'].search(domain, limit=1)
+        return opportunity_id if len(opportunity_id) == 1 else False
 
     # TODO: Tests
     @api.model
@@ -66,12 +107,12 @@ class CrmPhonecall(models.Model):
     def create(self, vals):
         phonecall_id = super(CrmPhonecall, self).create(vals)
         if self.auto_create_opportunity(vals):
-            phonecall_id.action_button_convert2opportunity()
+            phonecall_id._assign_to_opportunity()
         return phonecall_id
 
     def write(self, vals):
         result = super(CrmPhonecall, self).write(vals)
         if self.auto_create_opportunity(vals):
             for phonecall_id in self.filtered(lambda x: not x.opportunity_id):
-                phonecall_id.action_button_convert2opportunity()
+                phonecall_id._assign_to_opportunity()
         return result
