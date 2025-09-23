@@ -1,5 +1,9 @@
+# -*- coding: utf-8 -*-
+import markupsafe
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
+from odoo.tools import html2plaintext
+
 
 class MailActivity(models.Model):
     _inherit = 'mail.activity'
@@ -23,10 +27,13 @@ class MailActivity(models.Model):
                 raise ValidationError("The phone call result is required for all done calls.")
             if self.activity_category == 'phonecall' and self.som_phone_call_result_id:
                 if feedback:
-                    feedback = f"{feedback}\n\n<strong>Phone Call Result:</strong> {self.som_phone_call_result_id.name}"
+                    feedback = markupsafe.Markup(
+                        f"{feedback}\n\n<strong>Phone Call Result: </strong> {self.som_phone_call_result_id.name}"
+                    )
                 else:
-                    feedback = f"<strong>Phone Call Result:</strong>{self.som_phone_call_result_id.name}"
-
+                    feedback = markupsafe.Markup(
+                        f"<strong>Phone Call Result: </strong>{self.som_phone_call_result_id.name}"
+                    )
                 lead = self.env['crm.lead'].browse(self.res_id)
                 self.env['crm.phonecall'].create({
                     'name': self.summary or 'Phone Call',
@@ -37,6 +44,7 @@ class MailActivity(models.Model):
                     'opportunity_id': self.res_id if self.res_model == 'crm.lead' else False,
                     'partner_id': lead.partner_id.id if self.res_model == 'crm.lead' else False,
                     'som_phone': lead.phone if self.res_model == 'crm.lead' else False,
-                    'description': self.note,
+                    'description': html2plaintext(self.note or ''),
+                    'state': 'done',
                 })
         return super()._action_done(feedback=feedback, attachment_ids=attachment_ids)

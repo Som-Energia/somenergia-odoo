@@ -10,7 +10,16 @@
         </field>
     </record>
 
-    <!-- (Opcional) Afegir també a la vista tree/kanban si ho vols veure en llista -->
+    <record id="som_view_crm_phonecall_tree_inherit_result" model="ir.ui.view">
+        <field name="model">crm.phonecall</field>
+        <field name="inherit_id" ref="crm_phonecall.crm_case_inbound_phone_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="som_phone_call_result_id"/>
+            </xpath>
+        </field>
+    </record>
+
     <record id="view_crm_phonecall_tree_inherit_result" model="ir.ui.view">
         <field name="model">crm.phonecall</field>
         <field name="inherit_id" ref="crm_phonecall.crm_case_phone_tree_view"/>
