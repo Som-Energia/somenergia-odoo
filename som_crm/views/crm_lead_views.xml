@@ -7,7 +7,7 @@
 
             <xpath expr="//group[@name='opportunity_partner']" position="inside">
                 <field name="som_cups"/>
-                <field name="som_erp_lead_id"/>
+                <field name="som_erp_lead_id" readonly="1"/>
                 <field name="som_last_call_date"/>
             </xpath>
 
@@ -22,7 +22,7 @@
 
             <xpath expr="//group[@name='lead_partner']" position="inside">
                 <field name="som_cups"/>
-                <field name="som_erp_lead_id"/>
+                <field name="som_erp_lead_id" readonly="1"/>
                 <field name="som_last_call_date"/>
             </xpath>
 
@@ -44,7 +44,6 @@
                 <label for="som_contact_name_page_lead"/>
                 <div class="o_row">
                     <field name="contact_name" id="som_contact_name_page_lead"/>
-                    <field name="title" placeholder="Title" domain="[]" options='{"no_open": True}'/>
                 </div>
             </xpath>
 

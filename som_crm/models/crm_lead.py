@@ -77,7 +77,7 @@ class Lead(models.Model):
         required=False,
         compute='_compute_last_call_date',
         help="Date of the last phone call made to this lead",
-        stored=True,
+        store=True,
     )
 
     @api.model
@@ -226,3 +226,16 @@ class Lead(models.Model):
         lead_to_update_ids.write({'stage_id': won_stage_id.id})
 
         _logger.info(f"Leads moved to 'Won' stage: {lead_to_update_ids.ids}")
+
+    def button_open_phonecall(self):
+        self.ensure_one()
+        action = self.env["ir.actions.actions"]._for_xml_id(
+            "crm_phonecall.crm_case_categ_phone_incoming0"
+        )
+        action['context'] = {
+            "default_opportunity_id": self.id,
+            "search_default_opportunity_id": self.id,
+            "default_partner_id": self.partner_id.id,
+            "default_duration": 1.0,
+        }
+        return action
