@@ -28,8 +28,7 @@ class CrmPhonecall(models.Model):
         user_id = self._get_user_crm()
 
         name = f'Lead from phonecall {self.som_phone}'
-        if not res.get('name', False):
-            res.update({'name': name})
+        res.update({'name': name})
 
         res.update({
             'medium_id': utm_medium_phone_id.id if utm_medium_phone_id else False,
