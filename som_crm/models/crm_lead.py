@@ -101,6 +101,15 @@ class Lead(models.Model):
     def assign_to_me(self):
         self.write({"user_id": self.env.user.id})
 
+    def assign_partner(self):
+        for record in self:
+            if not record.partner_id:
+                partner = record._find_matching_partner()
+                if partner:
+                    record.partner_id = partner.id
+                else:
+                    record._handle_partner_assignment(create_missing=True)
+
     @api.model
     def get_won_stage(self):
         stage_domain = [

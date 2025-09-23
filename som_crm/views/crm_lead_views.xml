@@ -41,6 +41,12 @@
                     type="object"
                     attrs="{'invisible' : [('user_id', '!=', False)]}"
                 />
+                <button
+                    string="Assign partner"
+                    name="assign_partner"
+                    type="object"
+                    attrs="{'invisible' : [('partner_id', '!=', False)]}"
+                />
             </xpath>
         </field>
     </record>
