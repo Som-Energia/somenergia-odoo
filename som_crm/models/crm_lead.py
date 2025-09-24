@@ -23,10 +23,13 @@ class Lead(models.Model):
                 last_call = record.phonecall_ids.sorted(key=lambda x: x.date, reverse=True)
                 if last_call:
                     record.som_last_call_date = last_call[0].date
+                    record.som_last_call_date_only = last_call[0].date.date()
                 else:
                     record.som_last_call_date = False
+                    record.som_last_call_date_only = False
             else:
                 record.som_last_call_date = False
+                record.som_last_call_date_only = False
 
     som_cups = fields.Char(
         string='CUPS',
@@ -74,6 +77,14 @@ class Lead(models.Model):
 
     som_last_call_date = fields.Datetime(
         string='Last Call Date',
+        required=False,
+        compute='_compute_last_call_date',
+        help="Date of the last phone call made to this lead",
+        store=True,
+    )
+
+    som_last_call_date_only = fields.Date(
+        string='Last Call Date Only',
         required=False,
         compute='_compute_last_call_date',
         help="Date of the last phone call made to this lead",
