@@ -66,4 +66,53 @@
         </field>
     </record>
 
+    <!-- UTM Mediums -->
+    <record model="utm.medium" id="som_medium_social_media">
+        <field name="name">Social media</field>
+        <field name="active" eval="True"/>
+    </record>
+    <record model="utm.medium" id="som_medium_other">
+        <field name="name">Other</field>
+        <field name="active" eval="True"/>
+    </record>
+    <record model="utm.medium" id="som_medium_webform">
+        <field name="name">Web form</field>
+        <field name="active" eval="True"/>
+    </record>
+    <record model="utm.medium" id="som_medium_webform_simulation">
+        <field name="name">Web Form simulation ready</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!-- UTM Sources -->
+    <record model="utm.source" id="som_source_organic">
+        <field name="name">Organic</field>
+    </record>
+    <record model="utm.source" id="som_source_google">
+        <field name="name">Google</field>
+    </record>
+    <record model="utm.source" id="som_source_meta">
+        <field name="name">Meta</field>
+    </record>
+    <record model="utm.source" id="som_source_referral">
+        <field name="name">Referral</field>
+    </record>
+
+    <!-- lost reasons -->
+    <record model="crm.lost.reason" id="som_lost_reason_no_membership">
+        <field name="name">Doesn't want to become a member</field>
+        <field name="active" eval="True"/>
+    </record>
+    <record model="crm.lost.reason" id="som_lost_reason_too_expensive">
+        <field name="name">Too expensive</field>
+        <field name="active" eval="True"/>
+    </record>
+    <record model="crm.lost.reason" id="som_lost_reason_no_bo_social">
+        <field name="name">Bo social isn't offered</field>
+        <field name="active" eval="True"/>
+    </record>
+    <record model="crm.lost.reason" id="som_lost_reason_contracting_process_too_complicated">
+        <field name="name">The contracting process is too complicated</field>
+        <field name="active" eval="True"/>
+    </record>
 </data>

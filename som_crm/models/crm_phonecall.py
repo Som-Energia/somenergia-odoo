@@ -2,6 +2,11 @@
 import logging
 from odoo import api, fields, models, _, _lt
 
+try:
+    import phonenumbers
+except ImportError:
+    logger.debug("Cannot import phonenumbers")
+
 _logger = logging.getLogger(__name__)
 
 
@@ -9,6 +14,11 @@ class CrmPhonecall(models.Model):
     _name = 'crm.phonecall'
     _inherit = ['crm.phonecall']
 
+    som_phone_call_result_id = fields.Many2one(
+        'phone.call.result',
+        string='Phone Call Result',
+        help="Result of the phone call"
+    )
 
     def _get_user_crm(self):
         user_id = self.env['res.users'].search([
@@ -23,8 +33,7 @@ class CrmPhonecall(models.Model):
         user_id = self._get_user_crm()
 
         name = f'Lead from phonecall {self.som_phone}'
-        if not res.get('name', False):
-            res.update({'name': name})
+        res.update({'name': name})
 
         res.update({
             'medium_id': utm_medium_phone_id.id if utm_medium_phone_id else False,
@@ -46,5 +55,77 @@ class CrmPhonecall(models.Model):
         _logger.info(f"Phone calls to convert: {len(pc_ids)}")
         # We do it with a for because the function is ensure_one
         for pc_id in pc_ids:
-            pc_id.action_button_convert2opportunity()
+            pc_id._assign_to_opportunity()
+            # pc_id.action_button_convert2opportunity()
         _logger.info(f"{len(pc_ids)} Phone calls converted successfully")
+
+    @api.model
+    def _get_parsed_phone_number(self, number):
+        try:
+            p = phonenumbers.parse(number, "ES")
+            digits = str(p.national_number)
+            if len(digits) == 9:
+                a, b, c, d = digits[:3], digits[3:5], digits[5:7], digits[7:9]
+                return f'+34 {a} {b} {c} {d}'
+            else:
+                return number
+        except Exception as e:
+            return number
+
+    def _assign_to_opportunity(self):
+        for record in self.filtered(lambda x: not x.opportunity_id and x.som_phone):
+            oppo_id = record._find_matching_opportunity()
+            if oppo_id:
+                record.opportunity_id = oppo_id.id
+            else:
+                record.action_button_convert2opportunity()
+
+    def _find_matching_opportunity(self):
+        self.ensure_one()
+        if not self.som_phone:
+            return False
+        parsed_number = phonenumbers.parse(self.som_phone, "ES")
+        domain = [
+            ('type', '=', 'opportunity'),
+            '|',
+            ('phone', '=', parsed_number),
+            ('phone', '=', self.som_phone),
+        ]
+        opportunity_id = self.env['crm.lead'].search(domain, limit=1)
+        return opportunity_id if len(opportunity_id) == 1 else False
+
+    # TODO: Tests
+    @api.model
+    def auto_create_opportunity(self, vals):
+        if self.env.company.som_ff_call_to_opportunity and self.env.company.som_crm_call_category_id and vals.get('som_category_ids', False):
+            list_categories = vals.get('som_category_ids', [])[0][2]
+            if self.env.company.som_crm_call_category_id.id in list_categories :
+                return True
+        return False
+
+    @api.model
+    def create(self, vals):
+        phonecall_id = super(CrmPhonecall, self).create(vals)
+        if self.auto_create_opportunity(vals):
+            phonecall_id._assign_to_opportunity()
+        return phonecall_id
+
+    def write(self, vals):
+        result = super(CrmPhonecall, self).write(vals)
+        if self.auto_create_opportunity(vals):
+            for phonecall_id in self.filtered(lambda x: not x.opportunity_id):
+                phonecall_id._assign_to_opportunity()
+        return result
+
+    def button_open_phonecall(self):
+        self.ensure_one()
+        action = self.env["ir.actions.actions"]._for_xml_id(
+            "crm_phonecall.crm_case_categ_phone_incoming0"
+        )
+        action['context'] = {
+            "default_opportunity_id": self.id,
+            "search_default_opportunity_id": self.id,
+            "default_partner_id": self.partner_id.id,
+            "default_duration": 1.0,
+        }
+        return action

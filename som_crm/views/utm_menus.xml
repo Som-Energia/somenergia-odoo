@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="som_menu_utm_medium"
+        action="utm.utm_medium_action"
+        parent="crm.crm_menu_config"
+        sequence="60"
+        groups="base.group_no_one"/>
+
+    <menuitem id="som_menu_utm_source"
+        action="utm.utm_source_action"
+        parent="crm.crm_menu_config"
+        sequence="70"
+        groups="base.group_no_one"/>
+</odoo>

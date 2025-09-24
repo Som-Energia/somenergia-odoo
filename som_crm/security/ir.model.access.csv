@@ -2,3 +2,6 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_contact_time_slot_user,contact.time.slot.user,model_contact_time_slot,base.group_user,1,0,0,0
 access_contact_time_slot_sales_user,contact.time.slot.sales.user,model_contact_time_slot,sales_team.group_sale_salesman,1,1,1,0
 access_contact_time_slot_sales_manager,contact.time.slot.sales.manager,model_contact_time_slot,sales_team.group_sale_manager,1,1,1,1
+access_phone_call_result_user,phone.call.result.user,model_phone_call_result,base.group_user,1,0,0,0
+access_phone_call_result_sales_user,phone.call.result.sales.user,model_phone_call_result,sales_team.group_sale_salesman,1,1,1,0
+access_phone_call_result_manager,phone.call.result.sales.manager,model_phone_call_result,sales_team.group_sale_manager,1,1,1,1

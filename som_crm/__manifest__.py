@@ -18,6 +18,7 @@
     # any module necessary for this one to work correctly
     'depends': [
         'base',
+        'utm',
         'crm',
         'product',
         'crm_lead_vat',
@@ -31,10 +32,16 @@
         'security/ir.model.access.csv',
         'data/data.xml',
         'data/crm_stage_data.xml',
+        'data/phone_call_result_data.xml',
         'views/crm_lead_views.xml',
         'views/contact_time_slot_views.xml',
         'views/res_users_views.xml',
         'views/res_config_settings_views.xml',
+        'wizard/crm_lead_lost_views.xml',
+        'views/mail_activity_views.xml',
+        'views/phone_call_result_views.xml',
+        'views/crm_phonecall_views.xml',
+        'views/utm_menus.xml',
     ],
     'post_init_hook': 'post_init_hook',
     # only loaded in demonstration mode

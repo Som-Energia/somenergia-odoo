@@ -9,3 +9,8 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.som_crm_call_category_id',
         readonly=False,
     )
+
+    som_ff_call_to_opportunity = fields.Boolean(
+        related='company_id.som_ff_call_to_opportunity',
+        readonly=False,
+    )

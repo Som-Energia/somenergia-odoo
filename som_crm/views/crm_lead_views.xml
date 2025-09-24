@@ -7,19 +7,23 @@
 
             <xpath expr="//group[@name='opportunity_partner']" position="inside">
                 <field name="som_cups"/>
-                <field name="som_preferred_contact_time_ids"
-                       widget="many2many_tags"
-                       options="{'color_field': 'color'}"/>
+                <field name="som_erp_lead_id" readonly="1"/>
+                <field name="som_last_call_date"/>
             </xpath>
 
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="som_self_consumption"/>
                 <field name="som_pricelist"/>
+                <field name="som_preferred_contact_time_ids"
+                       widget="many2many_tags"
+                       options="{'color_field': 'color'}"/>
             </xpath>
 
 
             <xpath expr="//group[@name='lead_partner']" position="inside">
                 <field name="som_cups"/>
+                <field name="som_erp_lead_id" readonly="1"/>
+                <field name="som_last_call_date"/>
             </xpath>
 
             <xpath expr="//group[@name='lead_info']" position="inside">
@@ -30,6 +34,19 @@
                        options="{'color_field': 'color'}"/>
             </xpath>
 
+            <xpath expr="//label[@for='contact_name_page_lead']"  position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@id='contact_name_page_lead']/.."  position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group/group[@name='opportunity_partner']/field[@name='partner_id']" position="after">
+                <label for="som_contact_name_page_lead"/>
+                <div class="o_row">
+                    <field name="contact_name" id="som_contact_name_page_lead"/>
+                </div>
+            </xpath>
+
             <xpath expr="//button[@name='action_set_won_rainbowman']" position="before">
                 <button
                     string="Assign to me"
@@ -37,7 +54,64 @@
                     type="object"
                     attrs="{'invisible' : [('user_id', '!=', False)]}"
                 />
+                <button
+                    string="Assign partner"
+                    name="assign_partner"
+                    type="object"
+                    attrs="{'invisible' : [('partner_id', '!=', False)]}"
+                />
             </xpath>
         </field>
     </record>
+
+    <record id="crm_lead_view_form_add_utm_medium" model="ir.ui.view">
+        <field name="name">crm.lead.view.form.add.utm.medium</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='categorization']" position="inside">
+                <field name="medium_id" required="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="quick_create_opportunity_form" model="ir.ui.view">
+        <field name="inherit_id" ref="crm.quick_create_opportunity_form" />
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="medium_id" required="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="som_crm_lead_view_kanban" model="ir.ui.view">
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads"/>
+        <field name="arch" type="xml">
+            <field name="recurring_revenue_monthly" position="after">
+                <field name="som_last_call_date"/>
+            </field>
+            <xpath expr="//field[@name='tag_ids']/.." position="after">
+                <div>
+                    <field name="som_last_call_date"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="som_view_crm_case_opportunities_filter">
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter" />
+        <field name="arch" type="xml">
+            <filter name="open_opportunities" position="after">
+                <separator/>
+                <filter string="Not contacted today" name="som_nct" domain="[('som_last_call_date_only', '!=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Contacted today" name="som_ct" domain="[('som_last_call_date_only', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Not contacted last 3 Days" name="som_nct_last_3_days" domain="[('som_last_call_date', '&lt;', datetime.datetime.now() - relativedelta(days=3))]"/>
+                <separator/>
+            </filter>
+        </field>
+    </record>
+
 </odoo>
