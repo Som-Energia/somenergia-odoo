@@ -140,6 +140,7 @@ class Lead(models.Model):
         lead_ids = self.env['crm.lead'].with_context(active_test=False).search([
             ("stage_id", "!=", won_stage_id.id),
             ("type", "=", 'opportunity'),
+            # ("id", "=", 105),
             # ("active", "!=", False), ??????
         ])
         return lead_ids
@@ -186,7 +187,8 @@ class Lead(models.Model):
             value_to_search = getattr(self, lead_field, None)
             if not value_to_search:
                 continue
-            domain = [('crm_lead_id', '=', False)]
+            # domain = [('crm_lead_id', '!=', False)]
+            domain = []
             erp_lead_id = search_strategies[lead_field](erp_lead_obj, domain, value_to_search)
             if erp_lead_id:
                 return erp_lead_id[0]
