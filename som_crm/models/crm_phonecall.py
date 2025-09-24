@@ -55,7 +55,7 @@ class CrmPhonecall(models.Model):
         _logger.info(f"Phone calls to convert: {len(pc_ids)}")
         # We do it with a for because the function is ensure_one
         for pc_id in pc_ids:
-            pc._assign_to_opportunity()
+            pc_id._assign_to_opportunity()
             # pc_id.action_button_convert2opportunity()
         _logger.info(f"{len(pc_ids)} Phone calls converted successfully")
 

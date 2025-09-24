@@ -64,7 +64,7 @@ class Lead(models.Model):
 
     medium_id = fields.Many2one(
         'utm.medium',
-        required=True,  # Make it required
+        required=False,
         ondelete='restrict',
         default=lambda self: self._default_medium(),
     )
@@ -90,24 +90,6 @@ class Lead(models.Model):
         help="Date of the last phone call made to this lead",
         store=True,
     )
-
-    @api.model
-    def create(self, vals):
-        if not vals.get('medium_id'):
-            raise ValidationError("The UTM medium is required for all leads/opportunities.")
-        return super().create(vals)
-
-    def write(self, vals):
-        if 'medium_id' in vals and not vals['medium_id']:
-            raise ValidationError("The UTM medium is required for all opportunities. Can't be deleted.")
-        return super().write(vals)
-
-    @api.constrains('medium_id')
-    def _check_medium_id(self):
-        for record in self:
-            if not record.medium_id:
-                raise ValidationError("The UTM medium is required for all opportunities.")
-
 
     def assign_to_me(self):
         self.write({"user_id": self.env.user.id})
