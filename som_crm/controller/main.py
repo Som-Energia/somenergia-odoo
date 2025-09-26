@@ -351,7 +351,7 @@ class CRMLeadAPIController(http.Controller):
                     "request_body": {
                         "required_fields": [],
                         "optional_fields": [
-                            "contact_name", "email", "phone", "description", "lang",
+                            "contact_name", "email", "phone", "description", "lang", "url_origin", "files"
                         ],
                         "field_restrictions":[
                             {
@@ -364,6 +364,7 @@ class CRMLeadAPIController(http.Controller):
                             "phone": "+34 123 456 789",
                             "description": "Interesada en els vostres serveis",
                             "lang": "ca_ES",
+                            "url_origin" : "https://www.somenergia.coop/ca/tarifes-llum/domestic-indexada/?mtm_cid=20251607&mtm_campaign=Indexada&mtm_medium=L&mtm_content=CA&mtm_source=xxss",
                             "files": [
                                 {
                                     "filename": "documento_test.pdf",
