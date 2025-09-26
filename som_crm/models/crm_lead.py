@@ -99,7 +99,7 @@ class Lead(models.Model):
     def assign_partner(self):
         for record in self:
             if not record.partner_id:
-                partner = record._find_matching_partner()
+                partner = record._find_matching_partner_custom()
                 if partner:
                     record.partner_id = partner.id
                 else:
@@ -233,3 +233,15 @@ class Lead(models.Model):
             "default_duration": 1.0,
         }
         return action
+
+    def _find_matching_partner_custom(self):
+        self.ensure_one()
+        partner = self.partner_id
+
+        if not partner and self.email_from:
+            partner = self.env['res.partner'].search([('email', '=', self.email_from)], limit=1)
+
+        if not partner and self.phone:
+            partner = self.env['res.partner'].search([('phone', '=', self.phone)], limit=1)
+
+        return partner
