@@ -106,9 +106,12 @@
         <field name="arch" type="xml">
             <filter name="open_opportunities" position="after">
                 <separator/>
-                <filter string="Not contacted today" name="som_nct" domain="[('som_last_call_date_only', '!=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter string="Contacted today" name="som_ct" domain="[('som_last_call_date_only', '=', context_today().strftime('%Y-%m-%d'))]"/>
-                <filter string="Not contacted last 3 Days" name="som_nct_last_3_days" domain="[('som_last_call_date', '&lt;', datetime.datetime.now() - relativedelta(days=3))]"/>
+                <filter string="Not contacted today" name="som_nct" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '!=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Not contacted yesterday" name="som_nct_last_1_days" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '&lt;', datetime.datetime.now() - relativedelta(days=1))]"/>
+                <filter string="Not contacted last 2 Days" name="som_nct_last_2_days" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '&lt;', datetime.datetime.now() - relativedelta(days=2))]"/>
+                <filter string="Not contacted last 3 Days" name="som_nct_last_3_days" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '&lt;', datetime.datetime.now() - relativedelta(days=3))]"/>
+                <filter string="Not contacted last 4 Days" name="som_nct_last_4_days" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '&lt;', datetime.datetime.now() - relativedelta(days=4))]"/>
                 <separator/>
             </filter>
         </field>
