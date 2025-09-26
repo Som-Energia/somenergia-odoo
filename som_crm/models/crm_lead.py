@@ -16,11 +16,13 @@ class Lead(models.Model):
         medium_id = self.env.ref('utm.utm_medium_direct', raise_if_not_found=False) or False
         return medium_id
 
-    @api.depends('phonecall_ids', 'phonecall_ids.date')
+    @api.depends('phonecall_ids', 'phonecall_ids.date', 'phonecall_ids.som_phone_call_result_id')
     def _compute_last_call_date(self):
         for record in self:
             if record.phonecall_ids:
-                last_call = record.phonecall_ids.sorted(key=lambda x: x.date, reverse=True)
+                last_call = record.phonecall_ids.filtered(
+                    lambda x: not x.som_phone_call_result_id.not_contacted
+                ).sorted(key=lambda x: x.date, reverse=True)
                 if last_call:
                     record.som_last_call_date = last_call[0].date
                     record.som_last_call_date_only = last_call[0].date.date()

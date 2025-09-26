@@ -8,12 +8,10 @@
             <tree string="Phone Call Results" editable="bottom">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
-                <field name="result_type" widget="badge"
-                        decoration-success="result_type == 'positive'"
-                        decoration-info="result_type == 'neutral'"
-                        decoration-warning="result_type == 'negative'"/>
+                <field name="result_type"/>
                 <field name="description"/>
                 <field name="color" widget="color_picker"/>
+                <field name="not_contacted" widget="boolean_toggle"/>
                 <field name="active" widget="boolean_toggle"/>
             </tree>
         </field>

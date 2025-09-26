@@ -12,6 +12,7 @@ class PhoneCallResult(models.Model):
     sequence = fields.Integer(string='Sequence', default=10, help="Used to order results")
     active = fields.Boolean(string='Active', default=True)
     color = fields.Integer(string='Color', help="Color for display purposes")
+    not_contacted = fields.Boolean(string='Not contacted', default=False)
 
     # Additional fields for categorization
     result_type = fields.Selection([
