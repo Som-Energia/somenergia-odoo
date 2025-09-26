@@ -16,11 +16,13 @@ class Lead(models.Model):
         medium_id = self.env.ref('utm.utm_medium_direct', raise_if_not_found=False) or False
         return medium_id
 
-    @api.depends('phonecall_ids', 'phonecall_ids.date')
+    @api.depends('phonecall_ids', 'phonecall_ids.date', 'phonecall_ids.som_phone_call_result_id')
     def _compute_last_call_date(self):
         for record in self:
             if record.phonecall_ids:
-                last_call = record.phonecall_ids.sorted(key=lambda x: x.date, reverse=True)
+                last_call = record.phonecall_ids.filtered(
+                    lambda x: not x.som_phone_call_result_id.not_contacted
+                ).sorted(key=lambda x: x.date, reverse=True)
                 if last_call:
                     record.som_last_call_date = last_call[0].date
                     record.som_last_call_date_only = last_call[0].date.date()
@@ -97,7 +99,7 @@ class Lead(models.Model):
     def assign_partner(self):
         for record in self:
             if not record.partner_id:
-                partner = record._find_matching_partner()
+                partner = record._find_matching_partner_custom()
                 if partner:
                     record.partner_id = partner.id
                 else:
@@ -122,8 +124,6 @@ class Lead(models.Model):
         lead_ids = self.env['crm.lead'].with_context(active_test=False).search([
             ("stage_id", "!=", won_stage_id.id),
             ("type", "=", 'opportunity'),
-            # ("id", "=", 105),
-            # ("active", "!=", False), ??????
         ])
         return lead_ids
 
@@ -169,8 +169,7 @@ class Lead(models.Model):
             value_to_search = getattr(self, lead_field, None)
             if not value_to_search:
                 continue
-            # domain = [('crm_lead_id', '!=', False)]
-            domain = []
+            domain = [('crm_lead_id', '=', 0)]
             erp_lead_id = search_strategies[lead_field](erp_lead_obj, domain, value_to_search)
             if erp_lead_id:
                 return erp_lead_id[0]
@@ -234,3 +233,15 @@ class Lead(models.Model):
             "default_duration": 1.0,
         }
         return action
+
+    def _find_matching_partner_custom(self):
+        self.ensure_one()
+        partner = self.partner_id
+
+        if not partner and self.email_from:
+            partner = self.env['res.partner'].search([('email', '=', self.email_from)], limit=1)
+
+        if not partner and self.phone:
+            partner = self.env['res.partner'].search([('phone', '=', self.phone)], limit=1)
+
+        return partner

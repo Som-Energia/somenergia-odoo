@@ -7,6 +7,11 @@
             <xpath expr="//field[@name='medium_id']" position="after">
                 <field name="som_phone_call_result_id"/>
             </xpath>
+
+            <xpath expr="//group[@name='categorization']" position="attributes">
+                <attribute name="groups">sales_team.group_sale_salesman</attribute>
+            </xpath>
+
         </field>
     </record>
 

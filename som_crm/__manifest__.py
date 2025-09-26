@@ -32,7 +32,6 @@
         'security/ir.model.access.csv',
         'data/data.xml',
         'data/crm_stage_data.xml',
-        'data/phone_call_result_data.xml',
         'views/crm_lead_views.xml',
         'views/contact_time_slot_views.xml',
         'views/res_users_views.xml',

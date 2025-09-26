@@ -41,12 +41,15 @@ class CRMLeadAPIController(http.Controller):
         #         raise ValidationError("Invalid email format")
 
     def _prepare_lead_values(self, data, files):
-        #website_medium_id = request.env.ref('utm.utm_medium_website', raise_if_not_found=False) or False
         medium_form_id = request.env.ref('som_medium_webform', raise_if_not_found=False) or False
-        medium_form_attachment_id = request.env.ref('som_medium_webform_att', raise_if_not_found=False) or False
+        medium_form_attachment_id = (
+            request.env.ref('som_medium_webform_att', raise_if_not_found=False) or False
+        )
         medium_id = medium_form_attachment_id if files else medium_form_id
 
-        # TODO: Set stage
+        stage1_id = request.env.ref('crm.stage_lead1', raise_if_not_found=False) or False
+        stage2_id = request.env.ref('crm.stage_lead2', raise_if_not_found=False) or False
+        stage_id = stage2_id if files else stage1_id
 
         lang_code = data.get('lang', False)
         lang_id = get_lang(request.env, lang_code) if lang_code else False
@@ -61,6 +64,7 @@ class CRMLeadAPIController(http.Controller):
             'lang_id': lang_id.id if lang_id else False,
             'type': 'opportunity',
             'user_id': False,
+            'stage_id': stage_id.id if stage_id else False,
 
             # 'mobile': data.get('mobile'),
             # 'website': data.get('website'),
@@ -198,6 +202,7 @@ class CRMLeadAPIController(http.Controller):
             "phone": "+34 123 456 789",
             "description": "Call me please",
             "lang": "es_ES" / "ca_ES" (code Español / Català)
+            "url_origin": "https://www.somenergia.coop/ca/tarifes-llum/domestic-indexada/?mtm_cid=20251607&mtm_campaign=Indexada&mtm_medium=L&mtm_content=CA&mtm_source=xxss",
             "files": [
                 {
                     "filename": "document.pdf",
@@ -346,7 +351,7 @@ class CRMLeadAPIController(http.Controller):
                     "request_body": {
                         "required_fields": [],
                         "optional_fields": [
-                            "contact_name", "email", "phone", "description", "lang",
+                            "contact_name", "email", "phone", "description", "lang", "url_origin", "files"
                         ],
                         "field_restrictions":[
                             {
@@ -359,6 +364,7 @@ class CRMLeadAPIController(http.Controller):
                             "phone": "+34 123 456 789",
                             "description": "Interesada en els vostres serveis",
                             "lang": "ca_ES",
+                            "url_origin" : "https://www.somenergia.coop/ca/tarifes-llum/domestic-indexada/?mtm_cid=20251607&mtm_campaign=Indexada&mtm_medium=L&mtm_content=CA&mtm_source=xxss",
                             "files": [
                                 {
                                     "filename": "documento_test.pdf",
