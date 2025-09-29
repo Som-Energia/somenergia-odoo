@@ -51,6 +51,8 @@ class CrmPhonecall(models.Model):
         pc_ids = self.env['crm.phonecall'].search([
             ('som_category_ids', 'in', [crm_category_id.id]),
             ('opportunity_id', '=', False),
+            ('som_phone', '!=', False),
+            ('direction', '=', 'in'),
         ])
         _logger.info(f"Phone calls to convert: {len(pc_ids)}")
         # We do it with a for because the function is ensure_one
@@ -84,12 +86,17 @@ class CrmPhonecall(models.Model):
         self.ensure_one()
         if not self.som_phone:
             return False
-        parsed_number = phonenumbers.parse(self.som_phone, "ES")
+        phone_sanitized = ""
+        try:
+            parsed_number = phonenumbers.parse(self.som_phone, "ES")
+            phone_sanitized = f"+{parsed_number.country_code}{parsed_number.national_number}"
+        except Exception as e:
+            pass
         domain = [
             ('type', '=', 'opportunity'),
             '|',
             ('phone', '=', parsed_number),
-            ('phone', '=', self.som_phone),
+            ('phone_sanitized', '=', phone_sanitized),
         ]
         opportunity_id = self.env['crm.lead'].search(domain, limit=1)
         return opportunity_id if len(opportunity_id) == 1 else False
