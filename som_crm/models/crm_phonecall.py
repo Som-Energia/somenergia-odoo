@@ -74,13 +74,25 @@ class CrmPhonecall(models.Model):
         except Exception as e:
             return number
 
+    def action_button_convert2opportunity(self):
+        oppo_id = self._assign_to_opportunity()
+        return oppo_id.redirect_lead_opportunity_view()
+
     def _assign_to_opportunity(self):
-        for record in self.filtered(lambda x: not x.opportunity_id and x.som_phone):
-            oppo_id = record._find_matching_opportunity()
-            if oppo_id:
-                record.opportunity_id = oppo_id.id
-            else:
-                record.action_button_convert2opportunity()
+        self.ensure_one()
+        if self.opportunity_id:
+            return False
+        oppo_id = self._find_matching_opportunity()
+        if not oppo_id:
+            oppo_id = self.env["crm.lead"].create(self._prepare_opportunity_vals())
+        self.write({"opportunity_id": oppo_id.id, "state": "done"})
+        # add tag to opportunity
+        self.sudo().env.company.som_ff_call_to_opportunity = False
+        crm_category_id = self.env.company.som_crm_call_category_id
+        if crm_category_id and crm_category_id not in self.som_category_ids:
+            self.write({'som_category_ids': [(4, crm_category_id.id)]})
+
+        return oppo_id
 
     def _find_matching_opportunity(self):
         self.ensure_one()
