@@ -7,6 +7,7 @@ from odoo import http, api,_
 from odoo.http import request
 from odoo.exceptions import ValidationError, AccessError
 from odoo.tools.misc import get_lang
+from urllib.parse import urlparse, parse_qs
 import werkzeug.wrappers
 
 _logger = logging.getLogger(__name__)

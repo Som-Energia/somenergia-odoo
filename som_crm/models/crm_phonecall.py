@@ -51,6 +51,8 @@ class CrmPhonecall(models.Model):
         pc_ids = self.env['crm.phonecall'].search([
             ('som_category_ids', 'in', [crm_category_id.id]),
             ('opportunity_id', '=', False),
+            ('som_phone', '!=', False),
+            ('direction', '=', 'in'),
         ])
         _logger.info(f"Phone calls to convert: {len(pc_ids)}")
         # We do it with a for because the function is ensure_one
@@ -72,24 +74,41 @@ class CrmPhonecall(models.Model):
         except Exception as e:
             return number
 
+    def action_button_convert2opportunity(self):
+        oppo_id = self._assign_to_opportunity()
+        return oppo_id.redirect_lead_opportunity_view()
+
     def _assign_to_opportunity(self):
-        for record in self.filtered(lambda x: not x.opportunity_id and x.som_phone):
-            oppo_id = record._find_matching_opportunity()
-            if oppo_id:
-                record.opportunity_id = oppo_id.id
-            else:
-                record.action_button_convert2opportunity()
+        self.ensure_one()
+        if self.opportunity_id:
+            return False
+        oppo_id = self._find_matching_opportunity()
+        if not oppo_id:
+            oppo_id = self.env["crm.lead"].create(self._prepare_opportunity_vals())
+        self.write({"opportunity_id": oppo_id.id, "state": "done"})
+        # add tag to opportunity
+        self.sudo().env.company.som_ff_call_to_opportunity = False
+        crm_category_id = self.env.company.som_crm_call_category_id
+        if crm_category_id and crm_category_id not in self.som_category_ids:
+            self.write({'som_category_ids': [(4, crm_category_id.id)]})
+
+        return oppo_id
 
     def _find_matching_opportunity(self):
         self.ensure_one()
         if not self.som_phone:
             return False
-        parsed_number = phonenumbers.parse(self.som_phone, "ES")
+        phone_sanitized = ""
+        try:
+            parsed_number = phonenumbers.parse(self.som_phone, "ES")
+            phone_sanitized = f"+{parsed_number.country_code}{parsed_number.national_number}"
+        except Exception as e:
+            pass
         domain = [
             ('type', '=', 'opportunity'),
             '|',
             ('phone', '=', parsed_number),
-            ('phone', '=', self.som_phone),
+            ('phone_sanitized', '=', phone_sanitized),
         ]
         opportunity_id = self.env['crm.lead'].search(domain, limit=1)
         return opportunity_id if len(opportunity_id) == 1 else False

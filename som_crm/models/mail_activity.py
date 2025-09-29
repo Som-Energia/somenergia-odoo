@@ -46,5 +46,6 @@ class MailActivity(models.Model):
                     'som_phone': lead.phone if self.res_model == 'crm.lead' else False,
                     'description': html2plaintext(self.note or ''),
                     'state': 'done',
+                    'som_operator': self.user_id.som_call_center_user,
                 })
         return super()._action_done(feedback=feedback, attachment_ids=attachment_ids)
