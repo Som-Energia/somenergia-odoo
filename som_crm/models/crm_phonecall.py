@@ -42,6 +42,7 @@ class CrmPhonecall(models.Model):
             'phone': self.som_phone,
             'vat': self.som_caller_vat,
             'user_id': user_id.id if user_id else False,
+            'lang_id': False,
         })
         return res
 
