@@ -288,15 +288,16 @@ class CRMLeadAPIController(http.Controller):
                     'contact_name': lead_id.contact_name,
                     'email_from': lead_id.email_from,
                     'phone': lead_id.phone,
-                    # 'stage': lead.stage_id.name if lead.stage_id else None,
-                    # 'team': lead.team_id.name if lead.team_id else None,
-                    # 'user': lead.user_id.name if lead.user_id else None,
                     'create_date': lead_id.create_date.isoformat() if lead_id.create_date else None
                 }
             }
 
             if attachments:
                 response_data['attachments'] = attachments
+
+            # Add tracking original body data
+            lead_id.message_post(
+                body=f"<pre>{json.dumps(data, ensure_ascii=False, indent=2)}</pre>")
 
             return self._json_response(response_data)
 
