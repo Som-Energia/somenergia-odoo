@@ -299,9 +299,12 @@ class CRMLeadAPIController(http.Controller):
             if attachments:
                 response_data['attachments'] = attachments
 
+            data_origin = data.copy()
+            data_origin['files_count'] = len(files)
+
             # Add tracking original body data
             lead_id.message_post(
-                body=f"<pre>{json.dumps(data, ensure_ascii=False, indent=2)}</pre>")
+                body=f"<pre>{json.dumps(data_origin, ensure_ascii=False, indent=2)}</pre>")
 
             return self._json_response(response_data)
 
