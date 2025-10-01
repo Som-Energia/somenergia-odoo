@@ -63,6 +63,19 @@ class CrmPhonecall(models.Model):
         _logger.info(f"{len(pc_ids)} Phone calls converted successfully")
 
     @api.model
+    def _assign_partner_with_opportunity(self):
+        pc_ids = self.env['crm.phonecall'].search([
+            ('opportunity_id', '!=', False),
+            ('partner_id', '=', False),
+            ('opportunity_id.partner_id', '!=', False),
+        ])
+
+        _logger.info(f"Phone calls to assign partner: {len(pc_ids)}")
+        for pc_id in pc_ids:
+            pc_id.partner_id = pc_id.opportunity_id.partner_id
+        _logger.info(f"{len(pc_ids)} Phone calls assigned partner successfully")
+
+    @api.model
     def _get_parsed_phone_number(self, number):
         try:
             p = phonenumbers.parse(number, "ES")
