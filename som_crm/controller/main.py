@@ -82,8 +82,11 @@ class CRMLeadAPIController(http.Controller):
         stage2_id = request.env.ref('crm.stage_lead2', raise_if_not_found=False) or False
         stage_id = stage2_id if files else stage1_id
 
+        lang_id = False
+        lang_codes_accepted = ['ca_ES', 'es_ES']
         lang_code = data.get('lang', False)
-        lang_id = get_lang(request.env, lang_code) if lang_code else False
+        if lang_code and lang_code in lang_codes_accepted:
+            lang_id = get_lang(request.env, lang_code) if lang_code else False
 
         lead_values = {
             'name': data.get('name', _('Web form opportunity')),
