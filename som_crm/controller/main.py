@@ -88,11 +88,15 @@ class CRMLeadAPIController(http.Controller):
         if lang_code and lang_code in lang_codes_accepted:
             lang_id = get_lang(request.env, lang_code) if lang_code else False
 
+        phone_casted = data.get('phone', False)
+        if phone_casted:
+            phone_casted = phone_casted.replace(' ','')
+
         lead_values = {
             'name': data.get('name', _('Web form opportunity')),
             'contact_name': data.get('contact_name', False),
             'email_from': data.get('email', False),
-            'phone': data.get('phone', False),
+            'phone': phone_casted,
             'description': data.get('url_origin', False),
             'medium_id': medium_id.id if medium_id else False,
             'lang_id': lang_id.id if lang_id else False,
