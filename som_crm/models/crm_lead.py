@@ -97,13 +97,12 @@ class Lead(models.Model):
         self.write({"user_id": self.env.user.id})
 
     def assign_partner(self):
-        for record in self:
-            if not record.partner_id:
-                partner = record._find_matching_partner_custom()
-                if partner:
-                    record.partner_id = partner.id
-                else:
-                    record._handle_partner_assignment(create_missing=True)
+        for record in self.filtered(lambda x: not x.partner_id):
+            partner = record._find_matching_partner_custom()
+            if partner:
+                record.partner_id = partner.id
+            else:
+                record._handle_partner_assignment(create_missing=True)
 
     @api.model
     def get_won_stage(self):
