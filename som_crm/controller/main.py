@@ -72,9 +72,9 @@ class CRMLeadAPIController(http.Controller):
         return tracking_data
 
     def _prepare_lead_values(self, data, files):
-        medium_form_id = request.env.ref('som_medium_webform', raise_if_not_found=False) or False
+        medium_form_id = request.env.ref('som_crm.som_medium_webform', raise_if_not_found=False) or False
         medium_form_attachment_id = (
-            request.env.ref('som_medium_webform_att', raise_if_not_found=False) or False
+            request.env.ref('som_crm.som_medium_webform_att', raise_if_not_found=False) or False
         )
         medium_id = medium_form_attachment_id if files else medium_form_id
 
