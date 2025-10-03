@@ -89,6 +89,20 @@ class CrmPhonecall(models.Model):
             return number
 
     def action_button_convert2opportunity(self):
+        self.ensure_one()
+        if self.env.user.som_call_center_user != self.som_operator:
+            return {
+                'name': 'Convertir llamada',
+                'type': 'ir.actions.act_window',
+                'res_model': 'convert.call.wizard',
+                'view_mode': 'form',
+                'target': 'new',
+                'context': {'default_phonecall_id': self.id}
+            }
+        res = self.do_action_button_convert2opportunity()
+        return res
+
+    def do_action_button_convert2opportunity(self):
         oppo_id = self._assign_to_opportunity()
         return oppo_id.redirect_lead_opportunity_view()
 
@@ -162,3 +176,14 @@ class CrmPhonecall(models.Model):
             "default_duration": 1.0,
         }
         return action
+
+
+class ConvertCallWizard(models.TransientModel):
+    _name = 'convert.call.wizard'
+    _description = 'Confirmar conversión de llamada a oportunidad'
+
+    phonecall_id = fields.Many2one('crm.phonecall', string="Call", required=True)
+
+    def action_confirm(self):
+        self.ensure_one()
+        return self.phonecall_id.do_action_button_convert2opportunity()
