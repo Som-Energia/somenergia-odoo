@@ -92,7 +92,7 @@ class CrmPhonecall(models.Model):
         self.ensure_one()
         if self.env.user.som_call_center_user != self.som_operator:
             return {
-                'name': 'Convertir llamada',
+                'name': 'Convert Call to Opportunity',
                 'type': 'ir.actions.act_window',
                 'res_model': 'convert.call.wizard',
                 'view_mode': 'form',
@@ -180,9 +180,14 @@ class CrmPhonecall(models.Model):
 
 class ConvertCallWizard(models.TransientModel):
     _name = 'convert.call.wizard'
-    _description = 'Confirmar conversión de llamada a oportunidad'
+    _description = 'Convert Call to Opportunity Wizard'
 
     phonecall_id = fields.Many2one('crm.phonecall', string="Call", required=True)
+    message = fields.Char(
+        string = "Confirm Message",
+        default = _("This call is not yours. Are you sure you want to convert it to opportunity? In that case, remember to assign it to yourself."),
+        required = True
+    )
 
     def action_confirm(self):
         self.ensure_one()
