@@ -129,4 +129,15 @@
         </field>
     </record>
 
+    <record id="som_crm_lead_view_tree_opportunity" model="ir.ui.view">
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_oppor" />
+        <field name="arch" type="xml">
+            <field name="create_date" position="after">
+                <field name="date_closed" optional="hide"/>
+                <field name="day_close" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
 </odoo>

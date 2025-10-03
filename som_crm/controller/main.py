@@ -9,6 +9,7 @@ from odoo.exceptions import ValidationError, AccessError
 from odoo.tools.misc import get_lang
 from urllib.parse import urlparse, parse_qs
 import werkzeug.wrappers
+from urllib.parse import urlparse, parse_qs
 
 _logger = logging.getLogger(__name__)
 
@@ -41,10 +42,39 @@ class CRMLeadAPIController(http.Controller):
         #     if not re.match(email_pattern, data['email']):
         #         raise ValidationError("Invalid email format")
 
+    def _get_utm_data_from_url(url):
+        """
+        Extrac params from URL.
+        Args:
+            url (str): URL to parse
+            sample:
+            https://www.somenergia.coop/ca/tarifes-llum/domestic-indexada/?mtm_cid=20251607&mtm_campaign=Indexada&mtm_medium=L&mtm_content=CA&mtm_source=xxss
+
+        Returns:
+            dict: dictionary with UTM and MTM params if found
+        """
+        parsed_url = urlparse(url)
+
+        params = parse_qs(parsed_url.query)
+
+        tracking_data = {}
+
+        tracking_params = [
+            'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+            'mtm_source', 'mtm_medium', 'mtm_campaign', 'mtm_keyword', 'mtm_content',
+            'mtm_cid', 'mtm_group'
+        ]
+
+        for param in tracking_params:
+            if param in params:
+                tracking_data[param] = params[param][0]
+
+        return tracking_data
+
     def _prepare_lead_values(self, data, files):
-        medium_form_id = request.env.ref('som_medium_webform', raise_if_not_found=False) or False
+        medium_form_id = request.env.ref('som_crm.som_medium_webform', raise_if_not_found=False) or False
         medium_form_attachment_id = (
-            request.env.ref('som_medium_webform_att', raise_if_not_found=False) or False
+            request.env.ref('som_crm.som_medium_webform_att', raise_if_not_found=False) or False
         )
         medium_id = medium_form_attachment_id if files else medium_form_id
 
@@ -52,32 +82,32 @@ class CRMLeadAPIController(http.Controller):
         stage2_id = request.env.ref('crm.stage_lead2', raise_if_not_found=False) or False
         stage_id = stage2_id if files else stage1_id
 
+        lang_id = False
+        lang_codes_accepted = ['ca_ES', 'es_ES']
         lang_code = data.get('lang', False)
-        lang_id = get_lang(request.env, lang_code) if lang_code else False
+        if lang_code and lang_code in lang_codes_accepted:
+            lang_id = get_lang(request.env, lang_code) if lang_code else False
+
+        phone_casted = data.get('phone', False)
+        if phone_casted:
+            phone_casted = phone_casted.replace(' ','')
 
         lead_values = {
             'name': data.get('name', _('Web form opportunity')),
-            'contact_name': data.get('contact_name', data.get('name')),
-            'email_from': data.get('email'),
-            'phone': data.get('phone'),
-            'description': data.get('description'),
+            'contact_name': data.get('contact_name', False),
+            'email_from': data.get('email', False),
+            'phone': phone_casted,
+            'description': data.get('url_origin', False),
             'medium_id': medium_id.id if medium_id else False,
             'lang_id': lang_id.id if lang_id else False,
             'type': 'opportunity',
             'user_id': False,
-            'stage_id': stage_id.id if stage_id else False,
-
-            # 'mobile': data.get('mobile'),
-            # 'website': data.get('website'),
-            # 'street': data.get('street'),
-            # 'street2': data.get('street2'),
-            # 'city': data.get('city'),
-            # 'zip': data.get('zip'),
-            # 'referred': data.get('referred'),
         }
+        if stage_id:
+            lead_values['stage_id'] = stage_id.id
+
         # return not none values
         return {k: v for k, v in lead_values.items() if v is not None}
-
 
     def _get_json_data(self):
         if hasattr(request, 'httprequest') and request.httprequest.data:
@@ -201,7 +231,6 @@ class CRMLeadAPIController(http.Controller):
             "contact_name": "Peter Samson",
             "email": "peter@company.com",
             "phone": "+34 123 456 789",
-            "description": "Call me please",
             "lang": "es_ES" / "ca_ES" (code Español / Català)
             "url_origin": "https://www.somenergia.coop/ca/tarifes-llum/domestic-indexada/?mtm_cid=20251607&mtm_campaign=Indexada&mtm_medium=L&mtm_content=CA&mtm_source=xxss",
             "files": [
@@ -263,15 +292,19 @@ class CRMLeadAPIController(http.Controller):
                     'contact_name': lead_id.contact_name,
                     'email_from': lead_id.email_from,
                     'phone': lead_id.phone,
-                    # 'stage': lead.stage_id.name if lead.stage_id else None,
-                    # 'team': lead.team_id.name if lead.team_id else None,
-                    # 'user': lead.user_id.name if lead.user_id else None,
                     'create_date': lead_id.create_date.isoformat() if lead_id.create_date else None
                 }
             }
 
             if attachments:
                 response_data['attachments'] = attachments
+
+            data_origin = data.copy()
+            data_origin['files_count'] = len(files)
+
+            # Add tracking original body data
+            lead_id.message_post(
+                body=f"<pre>{json.dumps(data_origin, ensure_ascii=False, indent=2)}</pre>")
 
             return self._json_response(response_data)
 
@@ -352,7 +385,7 @@ class CRMLeadAPIController(http.Controller):
                     "request_body": {
                         "required_fields": [],
                         "optional_fields": [
-                            "contact_name", "email", "phone", "description", "lang", "url_origin", "files"
+                            "contact_name", "email", "phone", "lang", "url_origin", "files"
                         ],
                         "field_restrictions":[
                             {
@@ -362,8 +395,7 @@ class CRMLeadAPIController(http.Controller):
                         "example": {
                             "contact_name": "Joana Pérez",
                             "email": "joana@empresa.com",
-                            "phone": "+34 123 456 789",
-                            "description": "Interesada en els vostres serveis",
+                            "phone": "625544777",
                             "lang": "ca_ES",
                             "url_origin" : "https://www.somenergia.coop/ca/tarifes-llum/domestic-indexada/?mtm_cid=20251607&mtm_campaign=Indexada&mtm_medium=L&mtm_content=CA&mtm_source=xxss",
                             "files": [

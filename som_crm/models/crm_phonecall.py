@@ -42,6 +42,7 @@ class CrmPhonecall(models.Model):
             'phone': self.som_phone,
             'vat': self.som_caller_vat,
             'user_id': user_id.id if user_id else False,
+            'lang_id': False,
         })
         return res
 
@@ -62,6 +63,19 @@ class CrmPhonecall(models.Model):
         _logger.info(f"{len(pc_ids)} Phone calls converted successfully")
 
     @api.model
+    def _assign_partner_with_opportunity(self):
+        pc_ids = self.env['crm.phonecall'].search([
+            ('opportunity_id', '!=', False),
+            ('partner_id', '=', False),
+            ('opportunity_id.partner_id', '!=', False),
+        ])
+
+        _logger.info(f"Phone calls to assign partner: {len(pc_ids)}")
+        for pc_id in pc_ids:
+            pc_id.partner_id = pc_id.opportunity_id.partner_id
+        _logger.info(f"{len(pc_ids)} Phone calls assigned partner successfully")
+
+    @api.model
     def _get_parsed_phone_number(self, number):
         try:
             p = phonenumbers.parse(number, "ES")
@@ -75,6 +89,20 @@ class CrmPhonecall(models.Model):
             return number
 
     def action_button_convert2opportunity(self):
+        self.ensure_one()
+        if self.env.user.som_call_center_user != self.som_operator:
+            return {
+                'name': 'Convert Call to Opportunity',
+                'type': 'ir.actions.act_window',
+                'res_model': 'convert.call.wizard',
+                'view_mode': 'form',
+                'target': 'new',
+                'context': {'default_phonecall_id': self.id}
+            }
+        res = self.do_action_button_convert2opportunity()
+        return res
+
+    def do_action_button_convert2opportunity(self):
         oppo_id = self._assign_to_opportunity()
         return oppo_id.redirect_lead_opportunity_view()
 
@@ -148,3 +176,19 @@ class CrmPhonecall(models.Model):
             "default_duration": 1.0,
         }
         return action
+
+
+class ConvertCallWizard(models.TransientModel):
+    _name = 'convert.call.wizard'
+    _description = 'Convert Call to Opportunity Wizard'
+
+    phonecall_id = fields.Many2one('crm.phonecall', string="Call", required=True)
+    message = fields.Char(
+        string = "Confirm Message",
+        default = _("This call is not yours. Are you sure you want to convert it to opportunity? In that case, remember to assign it to yourself."),
+        required = True
+    )
+
+    def action_confirm(self):
+        self.ensure_one()
+        return self.phonecall_id.do_action_button_convert2opportunity()

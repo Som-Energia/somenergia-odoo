@@ -93,17 +93,36 @@ class Lead(models.Model):
         store=True,
     )
 
+    def do_opportunity_from_fetchmail(self):
+        medium_form_id = self.env.ref('som_crm.som_medium_webform', raise_if_not_found=False) or False
+        team_id = self.env.ref(
+            'sales_team.team_sales_department', raise_if_not_found=False
+        ) or False
+        team_user_id = team_id.user_id if team_id else False
+        for record in self:
+            if medium_form_id and record.medium_id != medium_form_id:
+                record.medium_id = medium_form_id
+            if team_user_id and not record.user_id:
+                record.user_id = team_user_id
+
+    @api.model
+    def create(self, vals):
+        lead_id = super(Lead, self).create(vals)
+        if (self.env.context.get('fetchmail_cron_running', False) and
+                self.env.context.get('default_fetchmail_server_id', False)):
+            lead_id.do_opportunity_from_fetchmail()
+        return lead_id
+
     def assign_to_me(self):
         self.write({"user_id": self.env.user.id})
 
     def assign_partner(self):
-        for record in self:
-            if not record.partner_id:
-                partner = record._find_matching_partner_custom()
-                if partner:
-                    record.partner_id = partner.id
-                else:
-                    record._handle_partner_assignment(create_missing=True)
+        for record in self.filtered(lambda x: not x.partner_id):
+            partner = record._find_matching_partner_custom()
+            if partner:
+                record.partner_id = partner.id
+            else:
+                record._handle_partner_assignment(create_missing=True)
 
     @api.model
     def get_won_stage(self):

@@ -34,4 +34,27 @@
             </xpath>
         </field>
     </record>
+
+    <record id="view_convert_call_wizard_form" model="ir.ui.view">
+        <field name="name">convert.call.wizard.form</field>
+        <field name="model">convert.call.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Confirm">
+                <field name="phonecall_id" invisible="1"/>
+                <field name="message" readonly="1" />
+                <footer>
+                    <button name="action_confirm" type="object" string="Confirm" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_convert_call_wizard" model="ir.actions.act_window">
+        <field name="name">Covert call to opportunity</field>
+        <field name="res_model">convert.call.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
 </odoo>
