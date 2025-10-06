@@ -104,12 +104,15 @@ class CrmPhonecall(models.Model):
 
     def do_action_button_convert2opportunity(self):
         oppo_id = self._assign_to_opportunity()
-        return oppo_id.redirect_lead_opportunity_view()
+        if oppo_id:
+            return oppo_id.redirect_lead_opportunity_view()
+        else:
+            raise ValidationError(_("No opportunity found to open."))
 
     def _assign_to_opportunity(self):
         self.ensure_one()
         if self.opportunity_id:
-            return False
+            self.opportunity_id
         oppo_id = self._find_matching_opportunity()
         if not oppo_id:
             oppo_id = self.env["crm.lead"].create(self._prepare_opportunity_vals())
