@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import base64
+import markupsafe
 from odoo.tests.common import TransactionCase, HttpCase, tagged
 from odoo.exceptions import ValidationError
 from odoo import http
@@ -19,7 +20,6 @@ class TestCRMLeadAPIHttp(HttpCase):
             'contact_name': 'Test Contact',
             'email': 'test@example.com',
             'phone': '+34123456789',
-            'description': 'Test lead from API'
         }
 
         response = self.url_open(
@@ -122,3 +122,33 @@ class TestCRMLeadAPIHttp(HttpCase):
         self.assertIn('endpoints', response_data)
         self.assertIn('authentication', response_data)
         self.assertIn('testing', response_data)
+
+    def test_create_lead_success_tracking(self):
+        data = {
+            'contact_name': 'Test Contact',
+            'email': 'test@example.com',
+            'phone': '+34123456789',
+        }
+
+        response = self.url_open(
+            '/api/crm/lead',
+            data=json.dumps(data),
+            headers={
+                'Content-Type': 'application/json',
+                'X-API-Key': 'test_api_key_123'
+            }
+        )
+
+        self.assertEqual(response.status_code, 200)
+        response_data = json.loads(response.content.decode('utf-8'))
+        self.assertTrue(response_data['success'])
+        self.assertIn('lead_id', response_data)
+
+        id_created_lead = response_data['lead_id']
+        created_lead_id = self.env['crm.lead'].browse(id_created_lead)
+        message = created_lead_id.message_ids.sorted('date', reverse=True)[0]
+        expected_part = markupsafe.Markup('<pre>{\n  "contact_name": "Test Contact",\n  "email": "test@example.com",\n  "phone": "+34123456789",\n  "files_count": 0\n}</pre>')
+        self.assertIn(
+            expected_part, message.body,
+            "The tracking message does not contain the expected JSON data."
+        )
