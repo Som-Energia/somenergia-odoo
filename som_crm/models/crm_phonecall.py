@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import logging
 from odoo import api, fields, models, _, _lt
+from odoo.exceptions import ValidationError
+
 
 try:
     import phonenumbers
 except ImportError:
-    logger.debug("Cannot import phonenumbers")
+    pass
 
 _logger = logging.getLogger(__name__)
 
@@ -103,6 +105,11 @@ class CrmPhonecall(models.Model):
         return res
 
     def do_action_button_convert2opportunity(self):
+        self.ensure_one()
+        if not self.som_phone:
+            raise ValidationError(
+                _("The call must have a phone number to be converted to an opportunity.")
+            )
         oppo_id = self._assign_to_opportunity()
         if oppo_id:
             return oppo_id.redirect_lead_opportunity_view()
@@ -130,6 +137,7 @@ class CrmPhonecall(models.Model):
         if not self.som_phone:
             return False
         phone_sanitized = ""
+        parsed_number = ""
         try:
             parsed_number = phonenumbers.parse(self.som_phone, "ES")
             phone_sanitized = f"+{parsed_number.country_code}{parsed_number.national_number}"

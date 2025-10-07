@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 from odoo.tests.common import tagged, TransactionCase
+from odoo.exceptions import ValidationError
+
+try:
+    import phonenumbers
+except ImportError:
+    phonenumbers = None
 
 
 @tagged('som_phonecall_to_lead')
@@ -20,6 +26,17 @@ class TestCrmPhonecallToLead(TransactionCase):
             'name': 'Test User',
             'login': 'test_user',
             'email': 'testuser@example.com',
+            "groups_id": [
+                (6, 0, [cls.env.ref("sales_team.group_sale_salesman_all_leads").id])
+            ],
+        })
+
+        cls.other_user = cls.env['res.users'].create({
+            'name': 'Other User',
+            'login': 'other_user',
+            "groups_id": [
+                (6, 0, [cls.env.ref("sales_team.group_sale_salesman_all_leads").id])
+            ],
         })
 
         cls.crm_category = cls.env['product.category'].create({
@@ -31,6 +48,10 @@ class TestCrmPhonecallToLead(TransactionCase):
         cls.other_category = cls.env['product.category'].create({
             'name': 'Other Category'
         })
+
+        # --- Phone number for tests ---
+        cls.test_phone_number = "+34666777888"
+        cls.test_phone_number_unformatted = "666 777 888"
 
     def test_prepare_opportunity_vals(self):
         vals = self.phonecall._prepare_opportunity_vals()
@@ -65,89 +86,121 @@ class TestCrmPhonecallToLead(TransactionCase):
         vals = self.phonecall._prepare_opportunity_vals()
         self.assertFalse(vals.get('user_id'))
 
-    # # tests cron
-    # def test_convert_phonecalls_with_correct_category(self):
-    #     phonecalls = self.env['crm.phonecall'].create([
-    #         {
-    #             'name': 'Test Call 1',
-    #             'som_category_ids': [(6, 0, [self.crm_category.id])],
-    #             'state': 'open',
-    #         },
-    #         {
-    #             'name': 'Test Call 2',
-    #             'som_category_ids': [(6, 0, [self.crm_category.id])],
-    #             'state': 'open',
-    #         }
-    #     ])
 
-    #     self.assertFalse(phonecalls[0].opportunity_id)
-    #     self.assertFalse(phonecalls[1].opportunity_id)
+    def mock_phonenumbers_parse(self, number, region):
+        """
+        Mock for the phonenumbers.parse method to avoid dependency on the external library.
+        """
+        # Simulates a basic phonenumber object structure
+        class MockPhoneNumber:
+            country_code = 34
+            national_number = 666777888
 
-    #     self.env['crm.phonecall']._convert_to_opportunity_by_category()
+        if number in (self.test_phone_number, self.test_phone_number_unformatted):
+            return MockPhoneNumber()
+        raise Exception("Unexpected phone number in mock.")
 
-    #     self.assertTrue(phonecalls[0].opportunity_id)
-    #     self.assertTrue(phonecalls[1].opportunity_id)
+    def test_convert_to_new_opportunity(self):
+        """
+        Test the conversion of a phonecall to a NEW opportunity.
+        """
+        self.test_user.write({'som_call_center_user': 'operator test'})
+        # Create the phonecall
+        phonecall = self.env['crm.phonecall'].with_user(self.test_user).create({
+            'name': 'Test call for new opportunity',
+            'som_phone': self.test_phone_number,
+            'som_operator': self.test_user.som_call_center_user,
+        })
 
-    #     self.assertNotEqual(phonecalls[0].opportunity_id.id,
-    #                         phonecalls[1].opportunity_id.id)
+        # Execute the action
+        result = phonecall.action_button_convert2opportunity()
 
-    # def test_no_conversion_for_wrong_category(self):
-    #     phonecall = self.env['crm.phonecall'].create({
-    #         'name': 'Test Call Wrong Category',
-    #         'som_category_ids': [(6, 0, [self.other_category.id])],
-    #         'state': 'open',
-    #     })
+        # --- Asserts ---
+        self.assertTrue(
+            phonecall.opportunity_id, "The phonecall should be linked to an opportunity.")
+        self.assertEqual(phonecall.opportunity_id.phone_sanitized, self.test_phone_number,
+                         "The sanitized phone in the opportunity must be correct.")
+        self.assertIn(self.crm_category, phonecall.som_category_ids,
+                      "The crm tag should have been added to the phonecall.")
 
-    #     self.env['crm.phonecall']._convert_to_opportunity_by_category()
-    #     self.assertFalse(phonecall.opportunity_id)
+        # Check that the result is a redirect action
+        self.assertEqual(
+            result.get('type'), 'ir.actions.act_window', "It should return a window action.")
+        self.assertEqual(
+            result.get('res_model'), 'crm.lead', "The action should point to the crm.lead model.")
 
-    # def test_no_conversion_for_calls_with_existing_opportunity(self):
-    #     utm_medium_phone_id = self.env.ref('utm.utm_medium_phone', raise_if_not_found=False)
-    #     if not utm_medium_phone_id:
-    #         utm_medium_phone_id = self.env['utm.medium'].create({
-    #             'name': 'Phone',
-    #             'active': True
-    #         })
-    #         self.env['ir.model.data'].create({
-    #             'module': 'utm',
-    #             'name': 'utm_medium_phone',
-    #             'model': 'utm.medium',
-    #             'res_id': utm_medium_phone_id.id,
-    #         })
 
-    #     opportunity = self.env['crm.lead'].create({
-    #         'name': 'Existing Opportunity',
-    #         'medium_id': utm_medium_phone_id.id,
-    #     })
+    def test_assign_to_existing_opportunity(self):
+        """
+        Test that the call is assigned to an EXISTING opportunity if there is a match.
+        """
+        self.test_user.write({'som_call_center_user': 'operator test'})
+        # First, create an opportunity with the phone number
+        existing_opp = self.env['crm.lead'].create({
+            'name': 'Existing Opportunity',
+            'type': 'opportunity',
+            'phone': self.test_phone_number_unformatted,
+            'phone_sanitized': self.test_phone_number
+        })
+        opp_count_before = self.env['crm.lead'].search_count([])
 
-    #     phonecall = self.env['crm.phonecall'].create({
-    #         'name': 'Test Call With Opportunity',
-    #         'som_category_ids': [(6, 0, [self.crm_category.id])],
-    #         'opportunity_id': opportunity.id,
-    #         'state': 'open',
-    #     })
+        # Create the phonecall
+        phonecall = self.env['crm.phonecall'].with_user(self.test_user).create({
+            'name': 'Call for existing opportunity',
+            'som_phone': self.test_phone_number_unformatted,
+            'som_operator': self.test_user.som_call_center_user,
+        })
 
-    #     self.env['crm.phonecall']._convert_to_opportunity_by_category()
-    #     self.assertEqual(phonecall.opportunity_id.id, opportunity.id)
+        # Execute the action
+        phonecall.action_button_convert2opportunity()
 
-    # def test_no_category_configured_in_company(self):
-    #     self.env.company.som_crm_call_category_id = False
+        opp_count_after = self.env['crm.lead'].search_count([])
 
-    #     phonecall = self.env['crm.phonecall'].create({
-    #         'name': 'Test Call',
-    #         'som_category_ids': [(6, 0, [self.crm_category.id])],
-    #         'state': 'open',
-    #     })
-    #     self.env['crm.phonecall']._convert_to_opportunity_by_category()
+        # --- Asserts ---
+        self.assertEqual(
+            opp_count_before, opp_count_after, "A new opportunity should not have been created.")
+        self.assertEqual(
+            phonecall.opportunity_id, existing_opp,
+            "The phonecall must be linked to the existing opportunity.")
 
-    #     self.assertFalse(phonecall.opportunity_id)
 
-    # def test_multiple_categories_on_phonecall(self):
-    #     phonecall = self.env['crm.phonecall'].create({
-    #         'name': 'Test Call Multiple Categories',
-    #         'som_category_ids': [(6, 0, [self.crm_category.id, self.other_category.id])],
-    #         'state': 'open',
-    #     })
+    def test_validation_error_no_phone(self):
+        """
+        Test that a ValidationError is raised if the call has no phone number.
+        """
+        phonecall = self.env['crm.phonecall'].with_user(self.test_user).create({
+            'name': 'Call without phone',
+            'som_phone': False,
+        })
 
-    #     self.env['crm.phonecall']._convert_to_opportunity_by_category()
-    #     self.assertTrue(phonecall.opportunity_id)
+        # The function that fails is the internal 'do_', since the main one would open the wizard
+        with self.assertRaises(ValidationError, msg="An exception should be raised if there is no phone number."):
+            phonecall.do_action_button_convert2opportunity()
+
+    def test_action_opens_wizard_for_different_user(self):
+        """
+        Test that the action to open a wizard is returned if the user is not the operator.
+        """
+        self.test_user.write({'som_call_center_user': 'operator test'})
+        phonecall = self.env['crm.phonecall'].create({
+            'name': 'Call with another operator',
+            'som_operator': self.test_user.som_call_center_user,
+            'som_phone': self.test_phone_number,
+        })
+
+        # Execute the action with a different user
+        action = phonecall.with_user(self.other_user).action_button_convert2opportunity()
+
+        # --- Asserts ---
+        self.assertIsInstance(
+            action, dict, "The result must be an action dictionary.")
+        self.assertEqual(
+            action.get('type'), 'ir.actions.act_window')
+        self.assertEqual(
+            action.get('res_model'), 'convert.call.wizard', "It should open the conversion wizard.")
+        self.assertEqual(
+            action.get('target'), 'new', "The wizard should open in a new window (modal).")
+        self.assertIn(
+            'default_phonecall_id', action.get('context'), "The context must contain the phonecall ID.")
+        self.assertEqual(
+            action['context']['default_phonecall_id'], phonecall.id)
