@@ -164,7 +164,8 @@ class Lead(models.Model):
 
     def _erp_search_by_email(self, erp_lead_obj, domain, email_value):
         erp_field = 'titular_email'
-        domain += [(erp_field, '=', email_value)]
+        email_value_upper = email_value.upper()
+        domain += ["|",(erp_field, '=', email_value), (erp_field, '=', email_value_upper)]
         return erp_lead_obj.search(domain, limit=1)
 
     def _erp_search_by_phone(self, erp_lead_obj, domain, phone_value):
