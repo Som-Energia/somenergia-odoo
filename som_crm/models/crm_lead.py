@@ -122,6 +122,10 @@ class Lead(models.Model):
             if partner:
                 record.partner_id = partner.id
             else:
+                if not (record.contact_name) or not (record.email_from or record.phone):
+                    raise ValidationError(
+                        _("Cannot create partner without name and email or phone.")
+                    )
                 record._handle_partner_assignment(create_missing=True)
 
     @api.model
