@@ -102,17 +102,23 @@ class Lead(models.Model):
         required=False,
     )
 
-    def do_opportunity_from_fetchmail(self):
-        medium_form_id = self.env.ref('som_crm.som_medium_webform', raise_if_not_found=False) or False
+    def auto_assign_user(self):
         team_id = self.env.ref(
             'sales_team.team_sales_department', raise_if_not_found=False
         ) or False
         team_user_id = team_id.user_id if team_id else False
-        for record in self:
-            if medium_form_id and record.medium_id != medium_form_id:
-                record.medium_id = medium_form_id
-            if team_user_id and not record.user_id:
+        if team_user_id:
+            for record in self.filtered(lambda x: not x.user_id):
                 record.user_id = team_user_id
+
+    def do_opportunity_from_fetchmail(self):
+        self.auto_assign_user()
+        medium_form_id = self.env.ref(
+            'som_crm.som_medium_webform', raise_if_not_found=False
+        ) or False
+        if medium_form_id:
+            for record in self.filtered(lambda x: x.medium_id != medium_form_id):
+                record.medium_id = medium_form_id
 
     @api.model
     def create(self, vals):
