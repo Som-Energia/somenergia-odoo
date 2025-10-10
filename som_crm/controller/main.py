@@ -72,10 +72,10 @@ class CRMLeadAPIController(http.Controller):
         return tracking_data
 
     def _prepare_lead_values(self, data, files):
-        medium_form_id = request.env.ref('som_crm.som_medium_webform', raise_if_not_found=False) or False
-        medium_form_attachment_id = (
-            request.env.ref('som_crm.som_medium_webform_simulation', raise_if_not_found=False) or False
-        )
+        medium_form_id = request.env.ref(
+            'som_crm.som_medium_webform', raise_if_not_found=False) or False
+        medium_form_attachment_id = request.env.ref(
+            'som_crm.som_medium_webform_simulation', raise_if_not_found=False) or False
         medium_id = medium_form_attachment_id if files else medium_form_id
 
         stage1_id = request.env.ref('crm.stage_lead1', raise_if_not_found=False) or False
@@ -92,15 +92,6 @@ class CRMLeadAPIController(http.Controller):
         if phone_casted:
             phone_casted = phone_casted.replace(' ','')
 
-        team_id = request.env.ref(
-            'sales_team.team_sales_department', raise_if_not_found=False
-        )
-        team_user_id = False
-        if team_id:
-            team_sudo = team_id.sudo()
-            if team_sudo.user_id:
-                team_user_id = team_sudo.user_id.id
-
         lead_values = {
             'name': data.get('name', _('Web form opportunity')),
             'contact_name': data.get('contact_name', False),
@@ -110,7 +101,7 @@ class CRMLeadAPIController(http.Controller):
             'medium_id': medium_id.id if medium_id else False,
             'lang_id': lang_id.id if lang_id else False,
             'type': 'opportunity',
-            'user_id': team_user_id,
+            'user_id': False,
         }
         if stage_id:
             lead_values['stage_id'] = stage_id.id
@@ -280,6 +271,7 @@ class CRMLeadAPIController(http.Controller):
             # Create lead
             odoo_bot = request.env.ref('base.user_root')
             lead_id = request.env['crm.lead'].with_user(odoo_bot).create(lead_values)
+            lead_id.auto_assign_user()
 
             # Create attachments
             attachments = []
