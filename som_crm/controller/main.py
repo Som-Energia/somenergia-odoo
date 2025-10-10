@@ -92,6 +92,15 @@ class CRMLeadAPIController(http.Controller):
         if phone_casted:
             phone_casted = phone_casted.replace(' ','')
 
+        team_id = request.env.ref(
+            'sales_team.team_sales_department', raise_if_not_found=False
+        )
+        team_user_id = False
+        if team_id:
+            team_sudo = team_id.sudo()
+            if team_sudo.user_id:
+                team_user_id = team_sudo.user_id.id
+
         lead_values = {
             'name': data.get('name', _('Web form opportunity')),
             'contact_name': data.get('contact_name', False),
@@ -101,7 +110,7 @@ class CRMLeadAPIController(http.Controller):
             'medium_id': medium_id.id if medium_id else False,
             'lang_id': lang_id.id if lang_id else False,
             'type': 'opportunity',
-            'user_id': False,
+            'user_id': team_user_id,
         }
         if stage_id:
             lead_values['stage_id'] = stage_id.id
