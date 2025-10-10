@@ -142,6 +142,10 @@
                 <field name="date_closed" optional="hide"/>
                 <field name="day_close" optional="hide"/>
             </field>
+
+            <field name="source_id" position="after">
+                <field name="som_comparison_result" optional="show"/>
+            </field>
         </field>
     </record>
 
