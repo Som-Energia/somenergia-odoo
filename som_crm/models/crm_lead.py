@@ -93,6 +93,15 @@ class Lead(models.Model):
         store=True,
     )
 
+    som_comparison_result = fields.Selection(
+        selection=[
+            ("favourable", _("favourable")),
+            ("disfavourable", _("disfavourable")),
+        ],
+        string="Comparison Result",
+        required=False,
+    )
+
     def do_opportunity_from_fetchmail(self):
         medium_form_id = self.env.ref('som_crm.som_medium_webform', raise_if_not_found=False) or False
         team_id = self.env.ref(

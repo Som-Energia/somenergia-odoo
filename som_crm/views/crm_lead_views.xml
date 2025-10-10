@@ -27,6 +27,7 @@
                        options="{'color_field': 'color'}"/>
                 <field name="lang_id"
                     options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                <field name="som_comparison_result"/>
             </xpath>
 
 
@@ -44,6 +45,7 @@
                        options="{'color_field': 'color'}"/>
                 <field name="lang_id"
                     options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                <field name="som_comparison_result"/>
             </xpath>
 
             <xpath expr="//label[@for='contact_name_page_lead']"  position="attributes">
