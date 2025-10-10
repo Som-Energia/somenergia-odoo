@@ -72,10 +72,10 @@ class CRMLeadAPIController(http.Controller):
         return tracking_data
 
     def _prepare_lead_values(self, data, files):
-        medium_form_id = request.env.ref('som_crm.som_medium_webform', raise_if_not_found=False) or False
-        medium_form_attachment_id = (
-            request.env.ref('som_crm.som_medium_webform_att', raise_if_not_found=False) or False
-        )
+        medium_form_id = request.env.ref(
+            'som_crm.som_medium_webform', raise_if_not_found=False) or False
+        medium_form_attachment_id = request.env.ref(
+            'som_crm.som_medium_webform_simulation', raise_if_not_found=False) or False
         medium_id = medium_form_attachment_id if files else medium_form_id
 
         stage1_id = request.env.ref('crm.stage_lead1', raise_if_not_found=False) or False
@@ -271,6 +271,7 @@ class CRMLeadAPIController(http.Controller):
             # Create lead
             odoo_bot = request.env.ref('base.user_root')
             lead_id = request.env['crm.lead'].with_user(odoo_bot).create(lead_values)
+            lead_id.auto_assign_user()
 
             # Create attachments
             attachments = []

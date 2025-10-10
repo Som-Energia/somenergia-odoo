@@ -22,6 +22,9 @@
             <xpath expr="//field[@name='name']" position="after">
                 <field name="som_phone_call_result_id"/>
             </xpath>
+            <xpath expr="//button[@name='action_button_convert2opportunity']" position="attributes">
+                <attribute name="states"></attribute>
+            </xpath>
         </field>
     </record>
 

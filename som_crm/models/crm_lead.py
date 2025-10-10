@@ -93,17 +93,32 @@ class Lead(models.Model):
         store=True,
     )
 
-    def do_opportunity_from_fetchmail(self):
-        medium_form_id = self.env.ref('som_crm.som_medium_webform', raise_if_not_found=False) or False
+    som_comparison_result = fields.Selection(
+        selection=[
+            ("favourable", _("favourable")),
+            ("disfavourable", _("disfavourable")),
+        ],
+        string="Comparison Result",
+        required=False,
+    )
+
+    def auto_assign_user(self):
         team_id = self.env.ref(
             'sales_team.team_sales_department', raise_if_not_found=False
         ) or False
         team_user_id = team_id.user_id if team_id else False
-        for record in self:
-            if medium_form_id and record.medium_id != medium_form_id:
-                record.medium_id = medium_form_id
-            if team_user_id and not record.user_id:
+        if team_user_id:
+            for record in self.filtered(lambda x: not x.user_id):
                 record.user_id = team_user_id
+
+    def do_opportunity_from_fetchmail(self):
+        self.auto_assign_user()
+        medium_form_id = self.env.ref(
+            'som_crm.som_medium_webform', raise_if_not_found=False
+        ) or False
+        if medium_form_id:
+            for record in self.filtered(lambda x: x.medium_id != medium_form_id):
+                record.medium_id = medium_form_id
 
     @api.model
     def create(self, vals):
@@ -122,6 +137,10 @@ class Lead(models.Model):
             if partner:
                 record.partner_id = partner.id
             else:
+                if not (record.contact_name) or not (record.email_from or record.phone):
+                    raise ValidationError(
+                        _("Cannot create partner without name and email or phone.")
+                    )
                 record._handle_partner_assignment(create_missing=True)
 
     @api.model
@@ -160,7 +179,8 @@ class Lead(models.Model):
 
     def _erp_search_by_email(self, erp_lead_obj, domain, email_value):
         erp_field = 'titular_email'
-        domain += [(erp_field, '=', email_value)]
+        email_value_upper = email_value.upper()
+        domain += ["|",(erp_field, '=', email_value), (erp_field, '=', email_value_upper)]
         return erp_lead_obj.search(domain, limit=1)
 
     def _erp_search_by_phone(self, erp_lead_obj, domain, phone_value):

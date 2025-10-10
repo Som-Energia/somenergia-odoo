@@ -27,6 +27,7 @@
                        options="{'color_field': 'color'}"/>
                 <field name="lang_id"
                     options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                <field name="som_comparison_result"/>
             </xpath>
 
 
@@ -44,6 +45,7 @@
                        options="{'color_field': 'color'}"/>
                 <field name="lang_id"
                     options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                <field name="som_comparison_result"/>
             </xpath>
 
             <xpath expr="//label[@for='contact_name_page_lead']"  position="attributes">
@@ -109,6 +111,9 @@
                     <field name="som_last_call_date"/>
                 </div>
             </xpath>
+            <xpath expr="//progressbar[@field='activity_state']" position="attributes">
+                <attribute name="sum_field"></attribute>
+            </xpath>
         </field>
     </record>
 
@@ -136,6 +141,10 @@
             <field name="create_date" position="after">
                 <field name="date_closed" optional="hide"/>
                 <field name="day_close" optional="hide"/>
+            </field>
+
+            <field name="source_id" position="after">
+                <field name="som_comparison_result" optional="show"/>
             </field>
         </field>
     </record>
