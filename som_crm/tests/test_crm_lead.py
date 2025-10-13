@@ -24,6 +24,18 @@ class TestCrmLead(TransactionCase):
             'name': 'Another Partner',
         })
 
+        # UTM direct medium
+        cls.direct_medium = cls.env.ref(
+            'utm.utm_medium_direct', raise_if_not_found=False
+        ) or False
+        if not cls.direct_medium:
+            cls.direct_medium = cls.env['utm.medium'].create({'name': 'Direct'})
+            cls.env['ir.model.data'].create({
+                'name': 'utm_medium_direct',
+                'module': 'utm',
+                'model': 'utm.medium',
+                'res_id': cls.direct_medium.id,
+            })
 
     def test_assign_partner_by_email(self):
         """Test finding and assigning an existing partner by email."""
@@ -135,3 +147,25 @@ class TestCrmLead(TransactionCase):
                          "No new partner should be created.")
         self.assertEqual(lead.partner_id, self.another_partner,
                          "The original partner should remain unchanged.")
+
+    def test_default_medium(self):
+        lead = self.env['crm.lead'].create({
+            'name': 'Lead with matching email',
+            'type': 'opportunity',
+            'email_from': 'test.email@example.com',
+        })
+
+        self.assertEqual(lead.medium_id, self.direct_medium,
+                         "The opportunity medium should be 'Direct'.")
+
+        other_medium = self.env['utm.medium'].create({'name': 'Other medium'})
+        lead = self.env['crm.lead'].create({
+            'name': 'Lead with matching email',
+            'type': 'opportunity',
+            'email_from': 'test.email@example.com',
+            'medium_id': other_medium.id,
+        })
+        self.assertNotEqual(lead.medium_id, self.direct_medium,
+            "The opportunity medium should not be 'Direct'.")
+        self.assertEqual(lead.medium_id, other_medium,
+            "The opportunity medium should not be 'Other medium'.")
