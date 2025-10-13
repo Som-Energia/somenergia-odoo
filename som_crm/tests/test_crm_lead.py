@@ -3,6 +3,8 @@
 
 from odoo.tests.common import TransactionCase, tagged
 from odoo.exceptions import ValidationError
+from datetime import datetime, date, timedelta
+from odoo.fields import Datetime, Date
 
 @tagged('som_lead')
 class TestCrmLead(TransactionCase):
@@ -36,6 +38,35 @@ class TestCrmLead(TransactionCase):
                 'model': 'utm.medium',
                 'res_id': cls.direct_medium.id,
             })
+
+        # --- Last call date---
+        # Get necessary models
+        cls.Lead = cls.env['crm.lead']
+        cls.PhoneCall = cls.env['crm.phonecall']
+        cls.CallResult = cls.env['phone.call.result']  # Assuming your custom result model
+
+        # Create a mock call result for "Not Contacted"
+        cls.not_contacted_result = cls.CallResult.create({
+            'name': 'No Answer',
+            'not_contacted': True,
+        })
+
+        # Create a mock call result for "Contacted"
+        cls.contacted_result = cls.CallResult.create({
+            'name': 'Interested',
+            'not_contacted': False,
+        })
+
+        # Define base dates
+        cls.today_dt = Datetime.now()
+        cls.yesterday_dt = cls.today_dt - timedelta(days=1)
+        cls.two_days_ago_dt = cls.today_dt - timedelta(days=2)
+
+        # Create a test lead
+        cls.test_lead = cls.Lead.create({
+            'name': 'Test Lead for Last Call Date',
+            'type': 'lead',
+        })
 
     def test_assign_partner_by_email(self):
         """Test finding and assigning an existing partner by email."""
@@ -169,3 +200,125 @@ class TestCrmLead(TransactionCase):
             "The opportunity medium should not be 'Direct'.")
         self.assertEqual(lead.medium_id, other_medium,
             "The opportunity medium should not be 'Other medium'.")
+
+    # --- Last call date tests---
+    def test_last_call_date_no_phone_calls(self):
+        """ Lead with no associated phone calls should have False dates."""
+        self.assertFalse(self.test_lead.som_last_call_date,
+                         "The Last Call Date should be False when there are no phone calls.")
+        self.assertFalse(self.test_lead.som_last_call_date_only,
+                         "The Last Call Date Only should be False when there are no phone calls.")
+
+
+    def test_last_call_date_only_not_contacted_calls(self):
+        """Lead with only 'Not Contacted' phone calls should have False dates."""
+        # Create phone calls marked as 'not contacted'
+        self.PhoneCall.create({
+            'name': 'Call 1 - No Answer',
+            'opportunity_id': self.test_lead.id,
+            'date': self.today_dt,
+            'som_phone_call_result_id': self.not_contacted_result.id,
+        })
+        self.PhoneCall.create({
+            'name': 'Call 2 - No Answer',
+            'opportunity_id': self.test_lead.id,
+            'date': self.yesterday_dt,
+            'som_phone_call_result_id': self.not_contacted_result.id,
+        })
+
+        # # Re-read the lead to force computation (not always necessary with 'store=True', but good practice)
+        # self.test_lead.invalidate_cache(['som_last_call_date', 'som_last_call_date_only'])
+        self.assertFalse(self.test_lead.som_last_call_date,
+            "The Last Call Date should be False if all calls are 'Not Contacted'.")
+        self.assertFalse(self.test_lead.som_last_call_date_only,
+            "The Last Call Date Only should be False if all calls are 'Not Contacted'.")
+
+    def test_last_call_date_single_contacted_call(self):
+        """Lead with a single 'Contacted' call should reflect its date."""
+        # Create a single successful call (Contacted)
+        self.PhoneCall.create({
+            'name': 'Call 1 - Interested',
+            'opportunity_id': self.test_lead.id,
+            'date': self.yesterday_dt,
+            'som_phone_call_result_id': self.contacted_result.id,
+        })
+
+        # Check computed values
+        self.assertEqual(self.test_lead.som_last_call_date, self.yesterday_dt,
+                         "Last Call Date should match the date of the single contacted call.")
+        self.assertEqual(self.test_lead.som_last_call_date_only, self.yesterday_dt.date(),
+                         "Last Call Date Only should match the date part of the contacted call.")
+
+
+    def test_last_call_date_multiple_calls_mixed_results(self):
+        """Lead with multiple calls (contacted and not contacted),
+            checking for the latest contacted one."""
+
+        # 1. Oldest Contacted Call (should NOT be the result)
+        self.PhoneCall.create({
+            'opportunity_id': self.test_lead.id,
+            'date': self.two_days_ago_dt,
+            'som_phone_call_result_id': self.contacted_result.id,
+            'name': 'Old Contacted Call',
+        })
+
+        # 2. Latest Not Contacted Call (should NOT be the result, even if newer)
+        self.PhoneCall.create({
+            'opportunity_id': self.test_lead.id,
+            'date': self.today_dt,
+            'som_phone_call_result_id': self.not_contacted_result.id,
+            'name': 'Newest Not Contacted Call',
+        })
+
+        # 3. Last Contacted Call (should be the expected result)
+        expected_last_call_dt = self.yesterday_dt
+        self.PhoneCall.create({
+            'opportunity_id': self.test_lead.id,
+            'date': expected_last_call_dt,
+            'som_phone_call_result_id': self.contacted_result.id,
+            'name': 'Last Contacted Call',
+        })
+
+        self.assertEqual(self.test_lead.som_last_call_date, expected_last_call_dt,
+            "Last Call Date should be the datetime of the latest contacted call.")
+        self.assertEqual(
+            self.test_lead.som_last_call_date_only, Date.to_date(expected_last_call_dt),
+            "Last Call Date Only should be the date of the latest contacted call.")
+
+
+    def test_last_call_date_update_call_result(self):
+        """Changing the result of a phone call should trigger the computation."""
+        # Create a call marked as 'not contacted' today
+        call_to_update = self.PhoneCall.create({
+            'name': 'Call to Update',
+            'opportunity_id': self.test_lead.id,
+            'date': self.today_dt,
+            'som_phone_call_result_id': self.not_contacted_result.id,
+        })
+
+        # Initial check (should be False)
+        self.assertFalse(self.test_lead.som_last_call_date)
+
+        # Update the call result to 'contacted'
+        call_to_update.som_phone_call_result_id = self.contacted_result.id
+        self.assertEqual(self.test_lead.som_last_call_date, self.today_dt,
+            "The date should update after changing a call to 'contacted'.")
+
+    def test_last_call_date_update_call_date(self):
+        """Changing the result of a phone call should trigger the computation."""
+        # Create a call marked as 'not contacted' today
+        call_to_update = self.PhoneCall.create({
+            'name': 'Call to Update',
+            'opportunity_id': self.test_lead.id,
+            'date': self.yesterday_dt,
+            'som_phone_call_result_id': self.contacted_result.id,
+        })
+
+        # Initial check
+        self.assertEqual(self.test_lead.som_last_call_date, self.yesterday_dt,
+            "The date should be yesterday")
+
+        # Update the call result to 'contacted'
+        call_to_update.date = self.today_dt
+        self.assertEqual(self.test_lead.som_last_call_date, self.today_dt,
+            "The date should update after changing a call date.")
