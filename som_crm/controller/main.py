@@ -13,8 +13,8 @@ from urllib.parse import urlparse, parse_qs
 
 _logger = logging.getLogger(__name__)
 
-FILE_MAX_SIZE_MB = 5
-TOTAL_FILES_MAX_SIZE_MB = 20
+FILE_MAX_SIZE_MB = 10
+TOTAL_FILES_MAX_SIZE_MB = 50
 
 
 class CRMLeadAPIController(http.Controller):
@@ -92,10 +92,18 @@ class CRMLeadAPIController(http.Controller):
         if phone_casted:
             phone_casted = phone_casted.replace(' ','')
 
+        clean_mail = data.get('email', False)
+        if clean_mail:
+            clean_mail = clean_mail.lower().strip()
+
+        clean_contact_name = data.get('contact_name', False)
+        if clean_contact_name:
+            clean_contact_name = clean_contact_name.title()
+
         lead_values = {
             'name': data.get('name', _('Web form opportunity')),
-            'contact_name': data.get('contact_name', False),
-            'email_from': data.get('email', False),
+            'contact_name': clean_contact_name,
+            'email_from': clean_mail,
             'phone': phone_casted,
             'description': data.get('url_origin', False),
             'medium_id': medium_id.id if medium_id else False,
