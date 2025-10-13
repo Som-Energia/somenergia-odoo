@@ -102,8 +102,8 @@ class TestCRMLeadAPIHttp(HttpCase):
 
     def test_create_lead_success_without_file(self):
         data = {
-            'contact_name': 'Test Contact',
-            'email': 'test@example.com',
+            'contact_name': 'Test CONTACT ok',
+            'email': 'TEST@EXAMPLE.COM',
             'phone': '+34123456789',
         }
 
@@ -123,6 +123,8 @@ class TestCRMLeadAPIHttp(HttpCase):
 
         id_created_lead = response_data['lead_id']
         created_lead_id = self.env['crm.lead'].browse(id_created_lead)
+        self.assertEqual(created_lead_id.contact_name, "Test Contact Ok")
+        self.assertEqual(created_lead_id.email_from, "test@example.com")
         self.assertEqual(created_lead_id.stage_id, self.stage_lead1)
         self.assertEqual(created_lead_id.medium_id, self.webform_medium)
         self.assertEqual(created_lead_id.user_id, self.sales_user)
@@ -131,8 +133,8 @@ class TestCRMLeadAPIHttp(HttpCase):
         fake_pdf = base64.b64encode(b'%PDF fake content').decode('utf-8')
 
         data = {
-            'contact_name': 'Test Contact with File',
-            'email': 'test@example.com',
+            'contact_name': 'TEST Contact with File',
+            'email': 'TEST@EXAMPLE.COM',
             'files': [{
                 'filename': 'test_document.pdf',
                 'content': fake_pdf,
@@ -157,6 +159,8 @@ class TestCRMLeadAPIHttp(HttpCase):
 
         id_created_lead = response_data['lead_id']
         created_lead_id = self.env['crm.lead'].browse(id_created_lead)
+        self.assertEqual(created_lead_id.contact_name, "Test Contact With File")
+        self.assertEqual(created_lead_id.email_from, "test@example.com")
         self.assertEqual(created_lead_id.stage_id, self.stage_lead2)
         self.assertEqual(created_lead_id.medium_id, self.webform_simulation_medium)
         self.assertEqual(created_lead_id.user_id, self.sales_user)
