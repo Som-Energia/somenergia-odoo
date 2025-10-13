@@ -13,8 +13,8 @@ from urllib.parse import urlparse, parse_qs
 
 _logger = logging.getLogger(__name__)
 
-FILE_MAX_SIZE_MB = 5
-TOTAL_FILES_MAX_SIZE_MB = 20
+FILE_MAX_SIZE_MB = 10
+TOTAL_FILES_MAX_SIZE_MB = 50
 
 
 class CRMLeadAPIController(http.Controller):
