@@ -399,6 +399,7 @@ class CRMLeadAPIController(http.Controller):
                         "field_restrictions":[
                             {
                                "lang": ["ca_ES", "es_ES"],
+                               "files": "max file size 10MB, total max size 50MB",
                             }
                         ],
                         "example": {
@@ -431,7 +432,7 @@ class CRMLeadAPIController(http.Controller):
                             "example": {
                                 "success": False,
                                 "error": "Validation error",
-                                "message": "Required field:"
+                                "message": "The total file size exceeds:"
                             }
                         },
                         "401": {
