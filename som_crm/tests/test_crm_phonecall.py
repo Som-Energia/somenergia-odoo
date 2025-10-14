@@ -53,7 +53,7 @@ class TestPhonecal(TransactionCase):
 
         # Final check
         self.assertEqual(phonecall_to_assign.partner_id, self.test_partner,
-                         "The partner_id was not correctly assigned from the opportunity.")
+            "The partner_id was not correctly assigned from the opportunity.")
 
     def test_assign_partner_no_opportunity(self):
         """Phonecalls that do NOT meet criteria should NOT be modified."""
@@ -106,4 +106,4 @@ class TestPhonecal(TransactionCase):
 
         # Opp has no partner -> should remain False
         self.assertFalse(pc_opp_no_partner.partner_id,
-                         "Call whose opportunity has no partner should not be modified.")
+            "Call whose opportunity has no partner should not be modified.")
