@@ -125,6 +125,7 @@
                 <filter string="Not contacted last 2 Days" name="som_nct_last_2_days" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '&lt;', datetime.datetime.now() - relativedelta(days=2))]"/>
                 <filter string="Not contacted last 3 Days" name="som_nct_last_3_days" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '&lt;', datetime.datetime.now() - relativedelta(days=3))]"/>
                 <filter string="Not contacted last 4 Days" name="som_nct_last_4_days" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '&lt;', datetime.datetime.now() - relativedelta(days=4))]"/>
+                <filter string="Activity due today or before" name="som_activity_due_today_or_before" domain="[('activity_date_deadline', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
                 <separator/>
             </filter>
         </field>
