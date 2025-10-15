@@ -126,7 +126,7 @@ class TestCRMLeadAPIHttp(HttpCase):
         self.assertEqual(created_lead_id.contact_name, "Test Contact Ok")
         self.assertEqual(created_lead_id.email_from, "test@example.com")
         self.assertEqual(created_lead_id.stage_id, self.stage_lead1)
-        self.assertEqual(created_lead_id.medium_id, self.webform_medium)
+        self.assertEqual(created_lead_id.som_channel, self.webform_medium)
         self.assertEqual(created_lead_id.user_id, self.sales_user)
 
     def test_create_lead_success_with_file(self):
@@ -162,7 +162,7 @@ class TestCRMLeadAPIHttp(HttpCase):
         self.assertEqual(created_lead_id.contact_name, "Test Contact With File")
         self.assertEqual(created_lead_id.email_from, "test@example.com")
         self.assertEqual(created_lead_id.stage_id, self.stage_lead2)
-        self.assertEqual(created_lead_id.medium_id, self.webform_simulation_medium)
+        self.assertEqual(created_lead_id.som_channel, self.webform_simulation_medium)
         self.assertEqual(created_lead_id.user_id, self.sales_user)
 
     def test_create_lead_unauthorized(self):

@@ -102,6 +102,13 @@ class Lead(models.Model):
         required=False,
     )
 
+    som_channel = fields.Many2one(
+        'utm.medium',
+        string='Channel',
+        required=False,
+        help="Channel through which the lead was acquired",
+    )
+
     def auto_assign_user(self):
         team_id = self.env.ref(
             'sales_team.team_sales_department', raise_if_not_found=False

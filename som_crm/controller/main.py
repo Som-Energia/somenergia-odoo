@@ -106,7 +106,7 @@ class CRMLeadAPIController(http.Controller):
             'email_from': clean_mail,
             'phone': phone_casted,
             'description': data.get('url_origin', False),
-            'medium_id': medium_id.id if medium_id else False,
+            'som_channel': medium_id.id if medium_id else False,
             'lang_id': lang_id.id if lang_id else False,
             'type': 'opportunity',
             'user_id': False,

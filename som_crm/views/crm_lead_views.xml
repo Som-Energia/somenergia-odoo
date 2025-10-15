@@ -75,16 +75,12 @@
                     attrs="{'invisible' : [('partner_id', '!=', False)]}"
                 />
             </xpath>
-        </field>
-    </record>
 
-    <record id="crm_lead_view_form_add_utm_medium" model="ir.ui.view">
-        <field name="name">crm.lead.view.form.add.utm.medium</field>
-        <field name="model">crm.lead</field>
-        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
-        <field name="arch" type="xml">
-            <xpath expr="//group[@name='categorization']" position="inside">
-                <field name="medium_id" required="1"/>
+             <xpath expr="//page[@name='extra']//field[@name='source_id']" position="after">
+                <field name="som_channel" required="1"/>
+            </xpath>
+            <xpath expr="//page[@name='lead']//field[@name='source_id']" position="after">
+                <field name="som_channel" required="1"/>
             </xpath>
         </field>
     </record>
@@ -94,7 +90,7 @@
         <field name="model">crm.lead</field>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="after">
-                <field name="medium_id" required="1"/>
+                <field name="som_channel" required="1"/>
             </xpath>
         </field>
     </record>
