@@ -105,6 +105,7 @@ class TestCRMLeadAPIHttp(HttpCase):
             'contact_name': 'Test CONTACT ok',
             'email': 'TEST@EXAMPLE.COM',
             'phone': '+34123456789',
+            "comments": "Hola,\nAquest és un comentari de prova.\nGràcies!\tSalutacions.",
             'url_origin': 'https://uneixte.somenergia.coop/ca/landing/captacio-domestic/?mtm_cid=20250924&mtm_campaign=uneixte&mtm_medium=Especial&mtm_content=CA&mtm_source=instagram',
         }
 
@@ -134,6 +135,12 @@ class TestCRMLeadAPIHttp(HttpCase):
         self.assertEqual(created_lead_id.campaign_id.name, 'uneixte')
         self.assertEqual(created_lead_id.medium_id.name, 'Especial')
         self.assertEqual(created_lead_id.source_id.name, 'instagram')
+
+        # Check comments in chatter
+        message = created_lead_id.message_ids.sorted('date', reverse=True)[0]
+        expected_body = markupsafe.Markup(
+            '<p>Hola,<br>Aquest és un comentari de prova.<br>Gràcies!    Salutacions.</p>')
+        self.assertEqual(message.body, expected_body)
 
     def test_create_lead_success_with_file(self):
         fake_pdf = base64.b64encode(b'%PDF fake content').decode('utf-8')
