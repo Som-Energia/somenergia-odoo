@@ -286,6 +286,18 @@ class CRMLeadAPIController(http.Controller):
             lead_id.message_post(
                 body=f"<pre>{json.dumps(data_origin, ensure_ascii=False, indent=2)}</pre>")
 
+            # Add comments as note in chatter
+            if lead_data.get('comments', False):
+                comments_text = lead_data['comments']
+                formatted_text = comments_text.replace('\n', '<br/>')
+                formatted_text = formatted_text.replace('\t', '    ')
+                lead_id.message_post(
+                    body=formatted_text,
+                    subject="Customer form comments",
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_note',
+                )
+
             return self._json_response(response_data)
 
         except (json.JSONDecodeError, UnicodeDecodeError) as e:
@@ -365,7 +377,7 @@ class CRMLeadAPIController(http.Controller):
                     "request_body": {
                         "required_fields": [],
                         "optional_fields": [
-                            "contact_name", "email", "phone", "lang", "url_origin", "files"
+                            "contact_name", "email", "phone", "lang", "url_origin", "files", "comments"
                         ],
                         "field_restrictions":[
                             {
@@ -378,6 +390,7 @@ class CRMLeadAPIController(http.Controller):
                             "email": "joana@empresa.com",
                             "phone": "625544777",
                             "lang": "ca_ES",
+                            "comments": "Hola,\nAquest és un comentari de prova.\nGràcies!\tSalutacions.",
                             "url_origin" : "https://www.somenergia.coop/ca/tarifes-llum/domestic-indexada/?mtm_cid=20251607&mtm_campaign=Indexada&mtm_medium=L&mtm_content=CA&mtm_source=xxss",
                             "files": [
                                 {
