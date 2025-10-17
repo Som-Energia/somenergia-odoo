@@ -92,7 +92,7 @@
         <field name="model">crm.lead</field>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="after">
-                <field name="som_channel" widget="url" required="1"/>
+                <field name="som_channel" required="1"/>
             </xpath>
         </field>
     </record>
