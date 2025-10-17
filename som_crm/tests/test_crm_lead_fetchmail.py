@@ -80,7 +80,7 @@ class TestCrmLeadFetchmail(TransactionCase):
         # --- Asserts ---
         self.assertEqual(lead.user_id, self.sales_user,
                          "The lead should be assigned to the sales team's user.")
-        self.assertEqual(lead.medium_id, self.webform_medium,
+        self.assertEqual(lead.som_channel, self.webform_medium,
                          "The lead's medium should be set to 'Web Form'.")
 
     def test_lead_creation_without_fetchmail_context(self):
@@ -95,7 +95,7 @@ class TestCrmLeadFetchmail(TransactionCase):
         # --- Asserts ---
         self.assertNotEqual(lead.user_id, self.sales_user,
             "The lead should not have the team leader user assigned.")
-        self.assertNotEqual(lead.medium_id, self.webform_medium,
+        self.assertNotEqual(lead.som_channel, self.webform_medium,
             "The lead should not have the webform medium.")
 
     def test_fetchmail_context_respects_existing_user(self):
@@ -111,7 +111,7 @@ class TestCrmLeadFetchmail(TransactionCase):
         # --- Asserts ---
         self.assertEqual(lead.user_id, self.other_user,
                          "The existing user should not be overridden by the fetchmail logic.")
-        self.assertEqual(lead.medium_id, self.webform_medium,
+        self.assertEqual(lead.som_channel, self.webform_medium,
                          "The medium should still be assigned even if a user exists.")
 
     def test_missing_config_data_does_not_fail(self):
@@ -130,7 +130,7 @@ class TestCrmLeadFetchmail(TransactionCase):
         # --- Asserts ---
         self.assertFalse(lead.user_id,
                          "User should not be assigned if team leader is not set.")
-        self.assertEqual(lead.medium_id, self.webform_medium,
+        self.assertEqual(lead.som_channel, self.webform_medium,
                          "The medium should still be assigned even if no team leader.")
 
         self.env['crm.team'].write({'user_id': self.sales_user.id})
@@ -155,7 +155,7 @@ class TestCrmLeadFetchmail(TransactionCase):
             # --- Asserts ---
             self.assertFalse(
                 lead.user_id, "User should not be assigned if team is not found.")
-            self.assertEqual(lead.medium_id, self.webform_medium,
+            self.assertEqual(lead.som_channel, self.webform_medium,
                 "The medium should be the default one")
         finally:
             # Clean up: restore the XML IDs to not affect other tests

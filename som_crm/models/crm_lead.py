@@ -69,7 +69,7 @@ class Lead(models.Model):
         'utm.medium',
         required=False,
         ondelete='restrict',
-        default=lambda self: self._default_medium(),
+        # default=lambda self: self._default_medium(),
     )
 
     som_erp_lead_id = fields.Integer(
@@ -108,6 +108,7 @@ class Lead(models.Model):
         string='Channel',
         required=False,
         help="Channel through which the lead was acquired",
+        default=lambda self: self._default_medium(),
     )
 
     som_url_origin = fields.Char('URL Origin', help="URL from which the lead originated")
@@ -127,8 +128,8 @@ class Lead(models.Model):
             'som_crm.som_medium_webform', raise_if_not_found=False
         ) or False
         if medium_form_id:
-            for record in self.filtered(lambda x: x.medium_id != medium_form_id):
-                record.medium_id = medium_form_id
+            for record in self.filtered(lambda x: x.som_channel != medium_form_id):
+                record.som_channel = medium_form_id
 
     @api.model
     def create(self, vals):

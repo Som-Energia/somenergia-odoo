@@ -179,27 +179,27 @@ class TestCrmLead(TransactionCase):
         self.assertEqual(lead.partner_id, self.another_partner,
                          "The original partner should remain unchanged.")
 
-    def test_default_medium(self):
+    def test_default_channel(self):
         lead = self.env['crm.lead'].create({
             'name': 'Lead with matching email',
             'type': 'opportunity',
             'email_from': 'test.email@example.com',
         })
 
-        self.assertEqual(lead.medium_id, self.direct_medium,
-                         "The opportunity medium should be 'Direct'.")
+        self.assertEqual(lead.som_channel, self.direct_medium,
+                         "The opportunity channel should be 'Direct'.")
 
         other_medium = self.env['utm.medium'].create({'name': 'Other medium'})
         lead = self.env['crm.lead'].create({
             'name': 'Lead with matching email',
             'type': 'opportunity',
             'email_from': 'test.email@example.com',
-            'medium_id': other_medium.id,
+            'som_channel': other_medium.id,
         })
-        self.assertNotEqual(lead.medium_id, self.direct_medium,
-            "The opportunity medium should not be 'Direct'.")
-        self.assertEqual(lead.medium_id, other_medium,
-            "The opportunity medium should not be 'Other medium'.")
+        self.assertNotEqual(lead.som_channel, self.direct_medium,
+            "The opportunity channel should not be 'Direct'.")
+        self.assertEqual(lead.som_channel, other_medium,
+            "The opportunity channel should not be 'Other medium'.")
 
     # --- Last call date tests---
     def test_last_call_date_no_phone_calls(self):
