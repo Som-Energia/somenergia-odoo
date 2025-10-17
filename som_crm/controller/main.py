@@ -9,7 +9,6 @@ from odoo.exceptions import ValidationError, AccessError
 from odoo.tools.misc import get_lang
 from urllib.parse import urlparse, parse_qs
 import werkzeug.wrappers
-from urllib.parse import urlparse, parse_qs
 
 _logger = logging.getLogger(__name__)
 
@@ -41,35 +40,6 @@ class CRMLeadAPIController(http.Controller):
         #     email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         #     if not re.match(email_pattern, data['email']):
         #         raise ValidationError("Invalid email format")
-
-    def _get_utm_data_from_url(url):
-        """
-        Extrac params from URL.
-        Args:
-            url (str): URL to parse
-            sample:
-            https://www.somenergia.coop/ca/tarifes-llum/domestic-indexada/?mtm_cid=20251607&mtm_campaign=Indexada&mtm_medium=L&mtm_content=CA&mtm_source=xxss
-
-        Returns:
-            dict: dictionary with UTM and MTM params if found
-        """
-        parsed_url = urlparse(url)
-
-        params = parse_qs(parsed_url.query)
-
-        tracking_data = {}
-
-        tracking_params = [
-            'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
-            'mtm_source', 'mtm_medium', 'mtm_campaign', 'mtm_keyword', 'mtm_content',
-            'mtm_cid', 'mtm_group'
-        ]
-
-        for param in tracking_params:
-            if param in params:
-                tracking_data[param] = params[param][0]
-
-        return tracking_data
 
     def _prepare_lead_values(self, data, files):
         medium_form_id = request.env.ref(
@@ -105,8 +75,8 @@ class CRMLeadAPIController(http.Controller):
             'contact_name': clean_contact_name,
             'email_from': clean_mail,
             'phone': phone_casted,
-            'description': data.get('url_origin', False),
-            'medium_id': medium_id.id if medium_id else False,
+            'som_url_origin': data.get('url_origin', False),
+            'som_channel': medium_id.id if medium_id else False,
             'lang_id': lang_id.id if lang_id else False,
             'type': 'opportunity',
             'user_id': False,
@@ -280,6 +250,7 @@ class CRMLeadAPIController(http.Controller):
             odoo_bot = request.env.ref('base.user_root')
             lead_id = request.env['crm.lead'].with_user(odoo_bot).create(lead_values)
             lead_id.auto_assign_user()
+            lead_id.process_utm_data()
 
             # Create attachments
             attachments = []
@@ -314,6 +285,18 @@ class CRMLeadAPIController(http.Controller):
             # Add tracking original body data
             lead_id.message_post(
                 body=f"<pre>{json.dumps(data_origin, ensure_ascii=False, indent=2)}</pre>")
+
+            # Add comments as note in chatter
+            if lead_data.get('comments', False):
+                comments_text = lead_data['comments']
+                formatted_text = comments_text.replace('\n', '<br/>')
+                formatted_text = formatted_text.replace('\t', '    ')
+                lead_id.message_post(
+                    body=formatted_text,
+                    subject=_("Contact form comments"),
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_note',
+                )
 
             return self._json_response(response_data)
 
@@ -394,11 +377,12 @@ class CRMLeadAPIController(http.Controller):
                     "request_body": {
                         "required_fields": [],
                         "optional_fields": [
-                            "contact_name", "email", "phone", "lang", "url_origin", "files"
+                            "contact_name", "email", "phone", "lang", "url_origin", "files", "comments"
                         ],
                         "field_restrictions":[
                             {
                                "lang": ["ca_ES", "es_ES"],
+                               "files": "max file size 10MB, total max size 50MB",
                             }
                         ],
                         "example": {
@@ -406,6 +390,7 @@ class CRMLeadAPIController(http.Controller):
                             "email": "joana@empresa.com",
                             "phone": "625544777",
                             "lang": "ca_ES",
+                            "comments": "Hola,\nAquest és un comentari de prova.\nGràcies!\tSalutacions.",
                             "url_origin" : "https://www.somenergia.coop/ca/tarifes-llum/domestic-indexada/?mtm_cid=20251607&mtm_campaign=Indexada&mtm_medium=L&mtm_content=CA&mtm_source=xxss",
                             "files": [
                                 {
@@ -431,7 +416,7 @@ class CRMLeadAPIController(http.Controller):
                             "example": {
                                 "success": False,
                                 "error": "Validation error",
-                                "message": "Required field:"
+                                "message": "The total file size exceeds:"
                             }
                         },
                         "401": {

@@ -60,7 +60,7 @@ class TestCrmPhonecallToLead(TransactionCase):
         self.assertEqual(vals['phone'], '+34123456789')
         self.assertEqual(vals['vat'], 'ES12345678')
 
-    def test_prepare_opportunity_vals_with_medium(self):
+    def test_prepare_opportunity_vals_with_channel(self):
         utm_medium_phone_id = self.env.ref('utm.utm_medium_phone', raise_if_not_found=False)
         if not utm_medium_phone_id:
             utm_medium_phone_id = self.env['utm.medium'].create({
@@ -74,7 +74,7 @@ class TestCrmPhonecallToLead(TransactionCase):
                 'res_id': utm_medium_phone_id.id,
             })
         vals = self.phonecall._prepare_opportunity_vals()
-        self.assertEqual(vals['medium_id'], utm_medium_phone_id.id)
+        self.assertEqual(vals['som_channel'], utm_medium_phone_id.id)
 
     def test_prepare_opportunity_vals_autoassigned(self):
         self.test_user.write({'som_call_center_user': 'operator test'})

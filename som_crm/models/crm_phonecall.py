@@ -38,7 +38,7 @@ class CrmPhonecall(models.Model):
         res.update({'name': name})
 
         res.update({
-            'medium_id': utm_medium_phone_id.id if utm_medium_phone_id else False,
+            'som_channel': utm_medium_phone_id.id if utm_medium_phone_id else False,
             'contact_name': self.som_caller_name,
             'email_from': self.email_from,
             'phone': self.som_phone,
