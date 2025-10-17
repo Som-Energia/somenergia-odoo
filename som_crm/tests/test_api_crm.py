@@ -105,6 +105,7 @@ class TestCRMLeadAPIHttp(HttpCase):
             'contact_name': 'Test CONTACT ok',
             'email': 'TEST@EXAMPLE.COM',
             'phone': '+34123456789',
+            'url_origin': 'https://uneixte.somenergia.coop/ca/landing/captacio-domestic/?mtm_cid=20250924&mtm_campaign=uneixte&mtm_medium=Especial&mtm_content=CA&mtm_source=instagram',
         }
 
         response = self.url_open(
@@ -129,12 +130,18 @@ class TestCRMLeadAPIHttp(HttpCase):
         self.assertEqual(created_lead_id.som_channel, self.webform_medium)
         self.assertEqual(created_lead_id.user_id, self.sales_user)
 
+        # utm
+        self.assertEqual(created_lead_id.campaign_id.name, 'uneixte')
+        self.assertEqual(created_lead_id.medium_id.name, 'Especial')
+        self.assertEqual(created_lead_id.source_id.name, 'instagram')
+
     def test_create_lead_success_with_file(self):
         fake_pdf = base64.b64encode(b'%PDF fake content').decode('utf-8')
 
         data = {
             'contact_name': 'TEST Contact with File',
             'email': 'TEST@EXAMPLE.COM',
+            'url_origin': 'https://uneixte.somenergia.coop/ca/landing/captacio-domestic/?mtm_cid=20250924&mtm_campaign=uneixte&mtm_medium=Especial&mtm_content=CA&mtm_source=instagram',
             'files': [{
                 'filename': 'test_document.pdf',
                 'content': fake_pdf,
@@ -164,6 +171,10 @@ class TestCRMLeadAPIHttp(HttpCase):
         self.assertEqual(created_lead_id.stage_id, self.stage_lead2)
         self.assertEqual(created_lead_id.som_channel, self.webform_simulation_medium)
         self.assertEqual(created_lead_id.user_id, self.sales_user)
+        # utm
+        self.assertEqual(created_lead_id.campaign_id.name, 'uneixte')
+        self.assertEqual(created_lead_id.medium_id.name, 'Especial')
+        self.assertEqual(created_lead_id.source_id.name, 'instagram')
 
     def test_create_lead_unauthorized(self):
         data = {

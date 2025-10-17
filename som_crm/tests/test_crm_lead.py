@@ -322,3 +322,131 @@ class TestCrmLead(TransactionCase):
         call_to_update.date = self.today_dt
         self.assertEqual(self.test_lead.som_last_call_date, self.today_dt,
             "The date should update after changing a call date.")
+
+    # --- UTM processing tests---
+    def test_utm_data_creation_and_update(self):
+        """
+        Test the complete flow: lead creation, URL processing, and field update.
+        Verifies MTM priority and creation of new UTM records.
+        """
+        url = 'https://test.com/?mtm_campaign=NEW_CAMP_MTM&utm_campaign=OLD_CAMP&mtm_medium=EMAIL&utm_source=INSTA'
+
+        # Create a lead with the URL
+        lead = self.Lead.create({
+            'name': 'Test Lead for UTM',
+            'som_url_origin': url,
+        })
+
+        #Execute the processing function on the recordset
+        lead.process_utm_data()
+
+        # Verify Campaign (Should use MTM_CAMPAIGN)
+        self.assertTrue(lead.campaign_id, "Campaign should be set.")
+        self.assertEqual(lead.campaign_id.name, 'NEW_CAMP_MTM',
+            "MTM parameter should take precedence and be created.")
+
+        # Verify Medium (Should use MTM_MEDIUM)
+        self.assertTrue(lead.medium_id, "Medium should be set.")
+        self.assertEqual(lead.medium_id.name, 'EMAIL',
+            "Medium should be created.")
+
+        # Verify Source (Should use UTM_SOURCE)
+        self.assertTrue(lead.source_id, "Source should be set.")
+        self.assertEqual(lead.source_id.name, 'INSTA',
+            "UTM parameter should be used as fall-back for Source.")
+
+
+    def test_utm_data_reuse_existing_records(self):
+        """
+        Test that the function reuses existing UTM records.
+        """
+        campaign_name = 'Existing_Advert'
+        medium_name = 'Existing_Web'
+        source_name = 'Existing_Social'
+
+        # Pre-create the records
+        existing_campaign = self.env['utm.campaign'].create({'name': campaign_name})
+        existing_medium = self.env['utm.medium'].create({'name': medium_name})
+        existing_source = self.env['utm.source'].create({'name': source_name})
+
+        # reate lead with URL referencing existing records
+        url = f'https://test.com/?utm_campaign={campaign_name}&mtm_medium={medium_name}&utm_source={source_name}'
+        lead = self.Lead.create({
+            'name': 'Reuse Test',
+            'som_url_origin': url,
+        })
+
+        # 3. Execute processing
+        lead.process_utm_data()
+
+        # 4. VERIFICATIONS
+
+        # Verify Campaign ID matches the existing one
+        self.assertEqual(lead.campaign_id.id, existing_campaign.id,
+            "Should reuse the existing Campaign record.")
+
+        # Verify Medium ID matches the existing one
+        self.assertEqual(lead.medium_id.id, existing_medium.id,
+            "Should reuse the existing Medium record.")
+
+        # Verify Source ID matches the existing one
+        self.assertEqual(lead.source_id.id, existing_source.id,
+            "Should reuse the existing Source record.")
+
+        # Verify no duplicate was created for Campaign
+        self.assertEqual(self.env['utm.campaign'].search_count([('name', '=', campaign_name)]), 1,
+            "A duplicate Campaign record should not be created.")
+
+        # Verify no duplicate was created for Medium
+        self.assertEqual(self.env['utm.medium'].search_count([('name', '=', medium_name)]), 1,
+            "A duplicate Medium record should not be created.")
+
+        # Verify no duplicate was created for Source
+        self.assertEqual(self.env['utm.source'].search_count([('name', '=', source_name)]), 1,
+            "A duplicate Source record should not be created.")
+
+    def test_utm_data_partial_data(self):
+        """
+        Test with a URL that only contains data for Campaign. Source and Medium must be empty.
+        """
+        url = 'https://test.com/?utm_campaign=ONLY_CAMP'
+
+        # 1. Create lead
+        lead = self.Lead.create({
+            'name': 'Partial Test',
+            'som_url_origin': url,
+        })
+
+        # 2. Execute processing
+        lead.process_utm_data()
+
+        # 3. VERIFICATIONS
+        self.assertTrue(lead.campaign_id, "Campaign ID should be set.")
+        self.assertFalse(lead.medium_id, "Medium ID should be False/empty.")
+        self.assertFalse(lead.source_id, "Source ID should be False/empty.")
+
+        self.assertEqual(lead.campaign_id.name, 'ONLY_CAMP')
+
+    def test_utm_data_no_url_origin_skip(self):
+        """
+        Test that leads with no som_url_origin are skipped by the filtered call.
+        """
+        # 1. Create a lead without URL
+        lead = self.Lead.create({
+            'name': 'No URL Test',
+            'som_url_origin': False,
+        })
+
+        # Set initial UTMs (should not be overwritten or changed)
+        pre_existing_campaign_id = self.env['utm.campaign'].create({'name': 'Pre-existing'})
+        lead.write({
+            'campaign_id': pre_existing_campaign_id.id,
+        })
+        initial_campaign_id = lead.campaign_id
+
+        # Execute processing
+        lead.process_utm_data()
+
+        # The campaign_id should remain unchanged
+        self.assertEqual(lead.campaign_id, initial_campaign_id,
+            "The lead should have been skipped and its campaign_id unchanged.")

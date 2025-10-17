@@ -4,6 +4,7 @@ from odoo import fields, models, api, _
 from erppeek import Client
 from odoo.tools import config
 from odoo.exceptions import ValidationError
+from urllib.parse import urlparse, parse_qs
 
 _logger = logging.getLogger(__name__)
 
@@ -108,6 +109,8 @@ class Lead(models.Model):
         required=False,
         help="Channel through which the lead was acquired",
     )
+
+    som_url_origin = fields.Char('URL Origin', help="URL from which the lead originated")
 
     def auto_assign_user(self):
         team_id = self.env.ref(
@@ -291,3 +294,76 @@ class Lead(models.Model):
             partner = self.env['res.partner'].search([('phone', '=', self.phone)], limit=1)
 
         return partner
+
+    @api.model
+    def _get_utm_data_from_url(self, url):
+        """
+        Extrac params from URL.
+        Args:
+            url (str): URL to parse
+            sample:
+            https://uneixte.somenergia.coop/ca/landing/captacio-domestic/?mtm_cid=20250924&mtm_campaign=uneixte&mtm_medium=Especial&mtm_content=CA&mtm_source=instagram
+
+        Returns:
+            dict: dictionary with UTM and MTM params if found
+            {'mtm_source': 'instagram',
+             'mtm_medium': 'Especial',
+             'mtm_campaign': 'uneixte',
+             'mtm_content': 'CA',
+             'mtm_cid': '20250924'
+             }
+        """
+        parsed_url = urlparse(url)
+
+        params = parse_qs(parsed_url.query)
+
+        tracking_data = {}
+
+        tracking_params = [
+            'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+            'mtm_source', 'mtm_medium', 'mtm_campaign', 'mtm_keyword', 'mtm_content',
+            'mtm_cid', 'mtm_group'
+        ]
+
+        for param in tracking_params:
+            if param in params:
+                tracking_data[param] = params[param][0]
+
+        return tracking_data
+
+    @api.model
+    def _find_or_create_utm_record(self, model_name, name):
+        record_id = self.env[model_name].sudo().search([('name', '=', name)], limit=1)
+        if not record_id:
+            record_id = self.env[model_name].sudo().create({'name': name})
+        return record_id
+
+    def process_utm_data(self):
+        """
+        Processes UTM parameters from a URL, searching or creating the corresponding
+        records for campaign, medium, and source.
+        """
+        # Define the field mappings (Result key: (Model Name, Priority Key 1, Priority Key 2))
+        utm_mappings = {
+            'campaign_id': ('utm.campaign', 'mtm_campaign', 'utm_campaign'),
+            'medium_id': ('utm.medium', 'mtm_medium', 'utm_medium'),
+            'source_id': ('utm.source', 'mtm_source', 'utm_source'),
+        }
+
+        for record in self.filtered(lambda x: x.som_url_origin):
+            dict_update = {}
+            # Get the UTM data
+            utm_data = self._get_utm_data_from_url(record.som_url_origin)
+
+            # Process each UTM type
+            for res_key, (model_name, key1, key2) in utm_mappings.items():
+                # Get the UTM name, prioritizing the 'mtm' version
+                name = utm_data.get(key1) or utm_data.get(key2)
+                if name:
+                    # Call the helper function to find or create the record
+                    record_id = self._find_or_create_utm_record(model_name, name)
+                    dict_update[res_key] = record_id.id
+                else:
+                    dict_update[res_key] = False
+
+            record.write(dict_update)
