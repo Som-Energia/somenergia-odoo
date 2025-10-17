@@ -293,7 +293,7 @@ class CRMLeadAPIController(http.Controller):
                 formatted_text = formatted_text.replace('\t', '    ')
                 lead_id.message_post(
                     body=formatted_text,
-                    subject="Customer form comments",
+                    subject=_("Contact form comments"),
                     message_type='comment',
                     subtype_xmlid='mail.mt_note',
                 )
