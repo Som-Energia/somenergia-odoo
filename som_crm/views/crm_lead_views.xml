@@ -9,6 +9,7 @@
                 <field name="som_cups"/>
                 <field name="som_erp_lead_id" readonly="1"/>
                 <field name="som_last_call_date"/>
+                <field name="som_last_act_done_mail_date"/>
             </xpath>
 
             <xpath expr="//group[@name='lead_partner']//field[@name='lang_id']" position="attributes">
@@ -35,6 +36,7 @@
                 <field name="som_cups"/>
                 <field name="som_erp_lead_id" readonly="1"/>
                 <field name="som_last_call_date"/>
+                <field name="som_last_act_done_mail_date"/>
             </xpath>
 
             <xpath expr="//group[@name='lead_info']" position="inside">
