@@ -199,6 +199,17 @@ class Lead(models.Model):
                 record._handle_partner_assignment(create_missing=True)
 
     @api.model
+    def _assign_partner_cron(self):
+        lead_without_partner_ids = self.env['crm.lead'].search([
+            ('partner_id', '=', False),
+        ])
+        for record in lead_without_partner_ids:
+            try:
+                record.assign_partner()
+            except ValidationError as e:
+                _logger.warning(f"Couldn't assign partner to Opportunity ID {record.id}: {e}")
+
+    @api.model
     def get_won_stage(self):
         stage_domain = [
             ('is_won', '=', True),
