@@ -68,6 +68,44 @@ class TestCrmLead(TransactionCase):
             'type': 'lead',
         })
 
+        # Get the activity types we will use
+        cls.email_activity_type = cls.env.ref('mail.mail_activity_data_email')
+        cls.todo_activity_type = cls.env.ref('mail.mail_activity_data_todo')
+
+        # Get the message subtype for "Activity"
+        # Messages for completed activities use this subtype
+        cls.activity_subtype = cls.env.ref('mail.mt_activities')
+
+        # We need a user to be the author of the messages
+        cls.test_user = cls.env['res.users'].create({
+            'name': 'Test Call Center User',
+            'login': 'test_cc_user',
+            'email': 'test@ccuser.com',
+            'som_call_center_user': 'call_center_1',
+            "groups_id": [
+                (6, 0, [cls.env.ref("sales_team.group_sale_salesman_all_leads").id])
+            ],
+        })
+
+    def _create_done_activity_message(self, lead, activity_type, date_str):
+        """
+        Helper function to simulate a "completed activity" message.
+
+        This is what your `_get_last_activity_done_by_type` function
+        searches for in the lead's `message_ids`.
+        """
+        test_date = Datetime.from_string(date_str)
+        return self.env['mail.message'].create({
+            'model': 'crm.lead',
+            'res_id': lead.id,
+            'body': f'Simulation of completed activity {activity_type.name}.',
+            'message_type': 'notification',
+            'subtype_id': self.activity_subtype.id,
+            'mail_activity_type_id': activity_type.id,
+            'date': test_date,
+            'author_id': self.test_user.partner_id.id,
+        })
+
     def test_assign_partner_by_email(self):
         """Test finding and assigning an existing partner by email."""
         lead = self.env['crm.lead'].create({
@@ -450,3 +488,132 @@ class TestCrmLead(TransactionCase):
         # The campaign_id should remain unchanged
         self.assertEqual(lead.campaign_id, initial_campaign_id,
             "The lead should have been skipped and its campaign_id unchanged.")
+
+    # --- Last activity mail done date ---
+    def test_lead_with_no_activities(self):
+        """
+        Test that a new lead with no activities has False in the fields.
+        """
+        # 1. Create a test lead
+        lead = self.env['crm.lead'].create({'name': 'Lead with no activities'})
+
+        # 2. Check the values
+        self.assertFalse(
+            lead.som_last_act_done_mail_date,
+            "The Datetime field should be False if there are no activities."
+        )
+        self.assertFalse(
+            lead.som_last_act_done_mail_date_only,
+            "The Date field should be False if there are no activities."
+        )
+
+    def test_lead_with_other_activity_type(self):
+        """
+        Test that a lead with activities of ANOTHER type (e.g., Call)
+        does not fill the 'Email' fields.
+        """
+        # 1. Create a test lead
+        lead = self.env['crm.lead'].create({'name': 'Lead with call'})
+
+        # 2. Create a "Call" completed activity message
+        self._create_done_activity_message(
+            lead,
+            self.todo_activity_type,
+            '2025-10-10 10:00:00'
+        )
+
+        # 3. Check the values
+        self.assertFalse(
+            lead.som_last_act_done_mail_date,
+            "The Datetime field should be False if there are only calls."
+        )
+        self.assertFalse(
+            lead.som_last_act_done_mail_date_only,
+            "The Date field should be False if there are only calls."
+        )
+
+    def test_lead_with_one_email_activity(self):
+        """
+        Test that a lead with ONE 'Email' activity
+        populates the fields correctly.
+        """
+        # 1. Create a test lead
+        lead = self.env['crm.lead'].create({'name': 'Lead with 1 Email'})
+
+        # 2. Define dates and create the message
+        test_datetime_str = '2025-10-15 14:30:00'
+        test_datetime = Datetime.from_string(test_datetime_str)
+        test_date = test_datetime.date()
+
+        self._create_done_activity_message(
+            lead,
+            self.email_activity_type,
+            test_datetime_str
+        )
+
+        # 3. Check the values
+        self.assertEqual(
+            lead.som_last_act_done_mail_date,
+            test_datetime,
+            "The Datetime field must match the activity's date."
+        )
+        self.assertEqual(
+            lead.som_last_act_done_mail_date_only,
+            test_date,
+            "The Date field must match the activity's date."
+        )
+
+    def test_lead_with_multiple_mixed_activities(self):
+        """
+        Test that a lead with multiple activities (Emails and Calls)
+        finds the date of the LAST 'Email'.
+        """
+        # 1. Create a test lead
+        lead = self.env['crm.lead'].create({'name': 'Lead with mixed activities'})
+
+        # 2. Create several activity messages
+
+        # Old Email
+        self._create_done_activity_message(
+            lead,
+            self.email_activity_type,
+            '2025-10-01 12:00:00'
+        )
+
+        # Old Call
+        self._create_done_activity_message(
+            lead,
+            self.todo_activity_type,
+            '2025-10-05 12:00:00'
+        )
+
+        # The most recent email (the one it should find)
+        latest_email_str = '2025-10-10 18:00:00'
+        self._create_done_activity_message(
+            lead,
+            self.email_activity_type,
+            latest_email_str
+        )
+
+        # A call that is more recent than the last email (to test the filter)
+        self._create_done_activity_message(
+            lead,
+            self.todo_activity_type,
+            '2025-10-15 09:00:00'
+        )
+
+        # 3. Define the expected values
+        expected_datetime = Datetime.from_string(latest_email_str)
+        expected_date = expected_datetime.date()
+
+        # 4. Check the values
+        self.assertEqual(
+            lead.som_last_act_done_mail_date,
+            expected_datetime,
+            "The Datetime field must be from the *last* email."
+        )
+        self.assertEqual(
+            lead.som_last_act_done_mail_date_only,
+            expected_date,
+            "The Date field must be from the *last* email."
+        )
