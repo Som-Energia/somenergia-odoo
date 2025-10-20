@@ -532,7 +532,8 @@ class TestCrmLead(TransactionCase):
             "The Date field should be False if there are only calls."
         )
 
-    def test_03_lead_with_one_email_activity(self):
+
+    def test_lead_with_one_email_activity(self):
         """
         Test that a lead with ONE 'Email' activity
         populates the fields correctly.
@@ -542,7 +543,7 @@ class TestCrmLead(TransactionCase):
 
         # 2. Define dates and create the message
         test_datetime_str = '2025-10-15 14:30:00'
-        test_datetime = fields.Datetime.from_string(test_datetime_str)
+        test_datetime = Datetime.from_string(test_datetime_str)
         test_date = test_datetime.date()
 
         self._create_done_activity_message(
@@ -550,8 +551,6 @@ class TestCrmLead(TransactionCase):
             self.email_activity_type,
             test_datetime_str
         )
-
-        lead.refresh()
 
         # 3. Check the values
         self.assertEqual(
@@ -565,9 +564,9 @@ class TestCrmLead(TransactionCase):
             "The Date field must match the activity's date."
         )
 
-    def test_04_lead_with_multiple_mixed_activities(self):
+    def test_lead_with_multiple_mixed_activities(self):
         """
-        Test that a lead with multiple activities (Emails and Calls)
+        Test that a lead with multiple activities (Emails and Tasks)
         finds the date of the LAST 'Email'.
         """
         # 1. Create a test lead
@@ -575,21 +574,21 @@ class TestCrmLead(TransactionCase):
 
         # 2. Create several activity messages
 
-        # Old Email
+        # Old Email activity
         self._create_done_activity_message(
             lead,
             self.email_activity_type,
             '2025-10-01 12:00:00'
         )
 
-        # Intermediate Call
+        # Old TODO activity
         self._create_done_activity_message(
             lead,
             self.todo_activity_type,
             '2025-10-05 12:00:00'
         )
 
-        # The most recent email (the one it should find)
+        # The most recent activity email (the one it should find)
         latest_email_str = '2025-10-10 18:00:00'
         self._create_done_activity_message(
             lead,
@@ -597,17 +596,15 @@ class TestCrmLead(TransactionCase):
             latest_email_str
         )
 
-        # A call that is more recent than the last email (to test the filter)
+        # A task that is more recent than the last email (to test the filter)
         self._create_done_activity_message(
             lead,
             self.todo_activity_type,
             '2025-10-15 09:00:00'
         )
 
-        lead.refresh()
-
         # 3. Define the expected values
-        expected_datetime = fields.Datetime.from_string(latest_email_str)
+        expected_datetime = Datetime.from_string(latest_email_str)
         expected_date = expected_datetime.date()
 
         # 4. Check the values
