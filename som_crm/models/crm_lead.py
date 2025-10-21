@@ -17,6 +17,34 @@ class Lead(models.Model):
         medium_id = self.env.ref('utm.utm_medium_direct', raise_if_not_found=False) or False
         return medium_id
 
+    def _get_last_activity_done_by_type(self, mail_activity_type_xmlid):
+        self.ensure_one()
+        mail_activity_type_id = (
+            self.env.ref(mail_activity_type_xmlid, raise_if_not_found=False)
+            or False)
+        if not mail_activity_type_id:
+            return False
+
+        activity_id = self.message_ids.filtered(
+            lambda a: a.mail_activity_type_id == mail_activity_type_id
+        ).sorted(key=lambda x: x.date, reverse=True)
+
+        if activity_id:
+            return activity_id[0].date
+        return False
+
+    @api.depends('message_ids', 'message_ids.date')
+    def _compute_last_activity_mail_done_date(self):
+        activity_type_xml_id = 'mail.mail_activity_data_email'
+        for record in self:
+            last_activity_mail_date = record._get_last_activity_done_by_type(activity_type_xml_id)
+            if last_activity_mail_date:
+                record.som_last_act_done_mail_date = last_activity_mail_date
+                record.som_last_act_done_mail_date_only = last_activity_mail_date.date()
+            else:
+                record.som_last_act_done_mail_date = False
+                record.som_last_act_done_mail_date_only = False
+
     @api.depends('phonecall_ids', 'phonecall_ids.date', 'phonecall_ids.som_phone_call_result_id')
     def _compute_last_call_date(self):
         for record in self:
@@ -111,16 +139,33 @@ class Lead(models.Model):
         default=lambda self: self._default_medium(),
     )
 
+    som_last_act_done_mail_date = fields.Datetime(
+        string='Last Mail Activity Done Date',
+        required=False,
+        compute='_compute_last_activity_mail_done_date',
+        help="Date of the last mail activity done in this lead",
+        store=True,
+    )
+
+    som_last_act_done_mail_date_only = fields.Date(
+        string='Last Mail Activity Done Date Only',
+        required=False,
+        compute='_compute_last_activity_mail_done_date',
+        help="Date of the last mail activity done in this lead",
+        store=True,
+    )
+
     som_url_origin = fields.Char('URL Origin', help="URL from which the lead originated")
 
     def auto_assign_user(self):
         team_id = self.env.ref(
             'sales_team.team_sales_department', raise_if_not_found=False
         ) or False
-        team_user_id = team_id.user_id if team_id else False
-        if team_user_id:
-            for record in self.filtered(lambda x: not x.user_id):
-                record.user_id = team_user_id
+        if not team_id:
+            return
+        user_id = team_id.get_random_member(exclude_team_leader=True)
+        for record in self.filtered(lambda x: not x.user_id):
+            record.user_id = user_id
 
     def do_opportunity_from_fetchmail(self):
         self.auto_assign_user()
@@ -153,6 +198,17 @@ class Lead(models.Model):
                         _("Cannot create partner without name and email or phone.")
                     )
                 record._handle_partner_assignment(create_missing=True)
+
+    @api.model
+    def _assign_partner_cron(self):
+        lead_without_partner_ids = self.env['crm.lead'].search([
+            ('partner_id', '=', False),
+        ])
+        for record in lead_without_partner_ids:
+            try:
+                record.assign_partner()
+            except ValidationError as e:
+                _logger.warning(f"Couldn't assign partner to Opportunity ID {record.id}: {e}")
 
     @api.model
     def get_won_stage(self):

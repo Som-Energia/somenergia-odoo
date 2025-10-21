@@ -9,6 +9,7 @@
                 <field name="som_cups"/>
                 <field name="som_erp_lead_id" readonly="1"/>
                 <field name="som_last_call_date"/>
+                <field name="som_last_act_done_mail_date"/>
             </xpath>
 
             <xpath expr="//group[@name='lead_partner']//field[@name='lang_id']" position="attributes">
@@ -35,6 +36,7 @@
                 <field name="som_cups"/>
                 <field name="som_erp_lead_id" readonly="1"/>
                 <field name="som_last_call_date"/>
+                <field name="som_last_act_done_mail_date"/>
             </xpath>
 
             <xpath expr="//group[@name='lead_info']" position="inside">
@@ -122,11 +124,16 @@
             <filter name="open_opportunities" position="after">
                 <separator/>
                 <filter string="Contacted today" name="som_ct" domain="[('som_last_call_date_only', '=', context_today().strftime('%Y-%m-%d'))]"/>
-                <filter string="Not contacted today" name="som_nct" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '!=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Not contacted today phone" name="som_nct" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '!=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter string="Not contacted yesterday" name="som_nct_last_1_days" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '&lt;', datetime.datetime.now() - relativedelta(days=1))]"/>
                 <filter string="Not contacted last 2 Days" name="som_nct_last_2_days" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '&lt;', datetime.datetime.now() - relativedelta(days=2))]"/>
                 <filter string="Not contacted last 3 Days" name="som_nct_last_3_days" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '&lt;', datetime.datetime.now() - relativedelta(days=3))]"/>
                 <filter string="Not contacted last 4 Days" name="som_nct_last_4_days" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '&lt;', datetime.datetime.now() - relativedelta(days=4))]"/>
+                <separator/>
+                <filter string="Without phone" name="som_no_phone" domain="[('phone', '=', False)]"/>
+                <separator/>
+                <filter string="Not contacted today mail" name="som_nctm" domain="['|',('som_last_act_done_mail_date','=', False), ('som_last_act_done_mail_date_only', '!=', context_today().strftime('%Y-%m-%d'))]"/>
+                <separator/>
                 <filter string="Activity due today or before" name="som_activity_due_today_or_before" domain="[('activity_date_deadline', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
                 <separator/>
             </filter>

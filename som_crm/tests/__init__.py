@@ -6,3 +6,4 @@ from . import test_crm_lead_fetchmail
 from . import test_crm_lead
 from . import test_crm_phonecall
 from . import test_crm_lead_sync
+from . import test_crm_team

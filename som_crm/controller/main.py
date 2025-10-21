@@ -71,7 +71,7 @@ class CRMLeadAPIController(http.Controller):
             clean_contact_name = clean_contact_name.title()
 
         lead_values = {
-            'name': data.get('name', _('Web form opportunity')),
+            'name': data.get('name', clean_contact_name),
             'contact_name': clean_contact_name,
             'email_from': clean_mail,
             'phone': phone_casted,
