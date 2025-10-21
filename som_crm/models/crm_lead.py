@@ -5,6 +5,7 @@ from erppeek import Client
 from odoo.tools import config
 from odoo.exceptions import ValidationError
 from urllib.parse import urlparse, parse_qs
+from datetime import datetime, date, timedelta
 
 _logger = logging.getLogger(__name__)
 
@@ -424,3 +425,42 @@ class Lead(models.Model):
                     dict_update[res_key] = False
 
             record.write(dict_update)
+
+    def _get_next_activity_date(self):
+        self.ensure_one()
+        today = fields.Date.today()
+        next_activity_date = False
+        if self.stage_id:
+            next_activity_date = today + timedelta(days=self.stage_id.som_upcoming_activity_days)
+        return next_activity_date
+
+    @api.model
+    def _create_upcoming_activities(self):
+        activity_type_id = self.env.ref(
+            'som_crm.som_upcoming_activity', raise_if_not_found=False
+        ) or False
+        if not activity_type_id:
+            return
+
+        won_stage_id = self.get_won_stage()
+
+        ids_lead_with_activity = self.env['mail.activity'].search([
+            ('res_model', '=', 'crm.lead'),
+        ]).mapped('res_id')
+
+        lead_to_plan_ids =  self.search([
+            ('stage_id', '!=', won_stage_id.id),
+            ('id', 'not in', ids_lead_with_activity),
+            ('user_id', '!=', False),
+        ])
+
+        for lead_to_plan_id in lead_to_plan_ids:
+            date_activity = lead_to_plan_id._get_next_activity_date()
+            self.env['mail.activity'].create({
+                'res_model_id' : self.env['ir.model']._get('crm.lead').id,
+                'res_model' : 'crm.lead',
+                'res_id' : lead_to_plan_id.id,
+                'activity_type_id' : activity_type_id.id,
+                'date_deadline' : date_activity,
+                'user_id' : lead_to_plan_id.user_id.id,
+            })
