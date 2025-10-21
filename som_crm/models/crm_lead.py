@@ -161,10 +161,11 @@ class Lead(models.Model):
         team_id = self.env.ref(
             'sales_team.team_sales_department', raise_if_not_found=False
         ) or False
-        team_user_id = team_id.user_id if team_id else False
-        if team_user_id:
-            for record in self.filtered(lambda x: not x.user_id):
-                record.user_id = team_user_id
+        if not team_id:
+            return
+        user_id = team_id.get_random_member(exclude_team_leader=True)
+        for record in self.filtered(lambda x: not x.user_id):
+            record.user_id = user_id
 
     def do_opportunity_from_fetchmail(self):
         self.auto_assign_user()
