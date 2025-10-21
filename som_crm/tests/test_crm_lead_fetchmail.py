@@ -52,12 +52,28 @@ class TestCrmLeadFetchmail(TransactionCase):
                 'res_id': cls.webform_medium.id,
             })
 
-        # 4. Another user for testing edge cases
+        # 4. Another users for testing edge cases
         cls.other_user = cls.env['res.users'].create({
             'name': 'Other Test User',
             'login': 'other_user',
             "groups_id": [
                 (6, 0, [cls.env.ref("sales_team.group_sale_salesman_all_leads").id])
+            ],
+        })
+
+        cls.team_user = cls.env['res.users'].create({
+            'name': 'team User',
+            'login': 'team_user',
+            "groups_id": [
+                (6, 0, [cls.env.ref("sales_team.group_sale_salesman_all_leads").id])
+            ],
+        })
+
+        # Team with members
+        cls.sales_team.write({
+            'crm_team_member_ids': [
+                (0, 0, {'user_id': cls.sales_user.id}),
+                (0, 0, {'user_id': cls.team_user.id}),
             ],
         })
 
@@ -67,7 +83,7 @@ class TestCrmLeadFetchmail(TransactionCase):
             'default_fetchmail_server_id': 1,  # The ID can be any truthy value
         }
 
-    def test_lead_creation_with_fetchmail_context(self):
+    def test_lead_creation_with_fetchmail_context_team_leader(self):
         """
         Test that a lead created with the fetchmail context gets the correct user and medium.
         """
@@ -78,8 +94,37 @@ class TestCrmLeadFetchmail(TransactionCase):
         })
 
         # --- Asserts ---
+        self.assertNotEqual(lead.user_id, self.sales_user,
+                         "The lead should not have the team leader user assigned.")
+        self.assertEqual(lead.som_channel, self.webform_medium,
+                         "The lead's medium should be set to 'Web Form'.")
+
+    def test_lead_creation_with_fetchmail_context_no_team_leader(self):
+        """
+        Test that a lead created with the fetchmail context gets the correct user and medium.
+        """
+        self.sales_team.write({
+            'crm_team_member_ids': [(5, 0, 0)],  # Remove all members
+            'user_id': False,  # Remove team leader
+        })
+
+        self.sales_team.write({
+            'crm_team_member_ids': [
+                (0, 0, {'user_id': self.sales_user.id}),
+            ],
+        })  # Add only the sales_user as member
+
+        lead = self.env['crm.lead'].with_context(**self.fetchmail_context).create({
+            'name': 'Lead from Fetchmail',
+            'type': 'opportunity',
+            'user_id': False,
+        })
+
+        # --- Asserts ---
         self.assertEqual(lead.user_id, self.sales_user,
-                         "The lead should be assigned to the sales team's user.")
+                         "The lead should have the sales user assigned.")
+        self.assertNotEqual(lead.user_id, self.team_user,
+                         "The lead should not have the team user assigned.")
         self.assertEqual(lead.som_channel, self.webform_medium,
                          "The lead's medium should be set to 'Web Form'.")
 
@@ -117,49 +162,15 @@ class TestCrmLeadFetchmail(TransactionCase):
     def test_missing_config_data_does_not_fail(self):
         """
         Test that the creation process does not raise an error if the ref'd records are not found.
-        (by using raise_if_not_found=False).
         """
-        # Check no sales team user
-        self.sales_team.write({'user_id': False})
+        self.sales_team.unlink()
         lead = self.env['crm.lead'].with_context(**self.fetchmail_context).create({
-            'name': 'Lead with missing config 2',
+            'name': 'Lead with missing config',
             'type': 'opportunity',
             'user_id': False,
         })
-
         # --- Asserts ---
-        self.assertFalse(lead.user_id,
-                         "User should not be assigned if team leader is not set.")
+        self.assertFalse(
+            lead.user_id, "User should not be assigned if team is not found.")
         self.assertEqual(lead.som_channel, self.webform_medium,
-                         "The medium should still be assigned even if no team leader.")
-
-        self.env['crm.team'].write({'user_id': self.sales_user.id})
-        # We simulate this by temporarily renaming the XML IDs
-        # This is a bit advanced, but shows how to test missing data scenarios
-        webform_ref = self.env.ref('som_crm.som_medium_webform', raise_if_not_found=False)
-        team_ref = self.env.ref('sales_team.team_sales_department', raise_if_not_found=False)
-
-        # Temporarily "break" the references
-        if webform_ref:
-            webform_ref.write({'name':'som_medium_webform_disabled'})
-        if team_ref:
-            team_ref.write({'name': 'team_sales_department_disabled'})
-
-        # This should now run without finding the records, and not raise an error
-        try:
-            lead = self.env['crm.lead'].with_context(**self.fetchmail_context).create({
-                'name': 'Lead with missing config',
-                'type': 'opportunity',
-                'user_id': False,
-            })
-            # --- Asserts ---
-            self.assertFalse(
-                lead.user_id, "User should not be assigned if team is not found.")
-            self.assertEqual(lead.som_channel, self.webform_medium,
-                "The medium should be the default one")
-        finally:
-            # Clean up: restore the XML IDs to not affect other tests
-            if webform_ref:
-                webform_ref.name = 'som_medium_webform'
-            if team_ref:
-                team_ref.name = 'team_sales_department'
+            "The medium should be the default one")

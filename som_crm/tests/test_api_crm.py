@@ -129,7 +129,7 @@ class TestCRMLeadAPIHttp(HttpCase):
         self.assertEqual(created_lead_id.email_from, "test@example.com")
         self.assertEqual(created_lead_id.stage_id, self.stage_lead1)
         self.assertEqual(created_lead_id.som_channel, self.webform_medium)
-        self.assertEqual(created_lead_id.user_id, self.sales_user)
+        self.assertNotEqual(created_lead_id.user_id, self.sales_user)
 
         # utm
         self.assertEqual(created_lead_id.campaign_id.name, 'uneixte')
@@ -177,7 +177,7 @@ class TestCRMLeadAPIHttp(HttpCase):
         self.assertEqual(created_lead_id.email_from, "test@example.com")
         self.assertEqual(created_lead_id.stage_id, self.stage_lead2)
         self.assertEqual(created_lead_id.som_channel, self.webform_simulation_medium)
-        self.assertEqual(created_lead_id.user_id, self.sales_user)
+        self.assertNotEqual(created_lead_id.user_id, self.sales_user)
         # utm
         self.assertEqual(created_lead_id.campaign_id.name, 'uneixte')
         self.assertEqual(created_lead_id.medium_id.name, 'Especial')
