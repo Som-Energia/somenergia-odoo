@@ -126,6 +126,7 @@ class TestCRMLeadAPIHttp(HttpCase):
         id_created_lead = response_data['lead_id']
         created_lead_id = self.env['crm.lead'].browse(id_created_lead)
         self.assertEqual(created_lead_id.contact_name, "Test Contact Ok")
+        self.assertEqual(created_lead_id.contact_name, created_lead_id.name)
         self.assertEqual(created_lead_id.email_from, "test@example.com")
         self.assertEqual(created_lead_id.stage_id, self.stage_lead1)
         self.assertEqual(created_lead_id.som_channel, self.webform_medium)
@@ -174,6 +175,7 @@ class TestCRMLeadAPIHttp(HttpCase):
         id_created_lead = response_data['lead_id']
         created_lead_id = self.env['crm.lead'].browse(id_created_lead)
         self.assertEqual(created_lead_id.contact_name, "Test Contact With File")
+        self.assertEqual(created_lead_id.contact_name, created_lead_id.name)
         self.assertEqual(created_lead_id.email_from, "test@example.com")
         self.assertEqual(created_lead_id.stage_id, self.stage_lead2)
         self.assertEqual(created_lead_id.som_channel, self.webform_simulation_medium)
