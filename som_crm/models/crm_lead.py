@@ -456,7 +456,7 @@ class Lead(models.Model):
 
         for lead_to_plan_id in lead_to_plan_ids:
             date_activity = lead_to_plan_id._get_next_activity_date()
-            self.env['mail.activity'].create({
+            self.env['mail.activity'].with_user(lead_to_plan_id.user_id.id).create({
                 'res_model_id' : self.env['ir.model']._get('crm.lead').id,
                 'res_model' : 'crm.lead',
                 'res_id' : lead_to_plan_id.id,
