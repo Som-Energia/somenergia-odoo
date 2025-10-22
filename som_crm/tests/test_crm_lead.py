@@ -618,3 +618,230 @@ class TestCrmLead(TransactionCase):
             expected_date,
             "The Date field must be from the *last* email."
         )
+
+
+@tagged('som_lead_upcoming_activities')
+class TestCrmLeadUpcomingActivities(TransactionCase):
+    """
+    Test class for automatic activity creation in crm.lead.
+    Tests both the date calculation and the batch creation logic.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Get necessary environments and today's date
+        cls.Lead = cls.env['crm.lead']
+        cls.Activity = cls.env['mail.activity']
+        cls.today = Date.today()
+
+        # 1. Prepare external data (Mocks/References)
+
+        # Assuming the XML ID exists in your module.
+        # We need to simulate the activity type and the 'won' stage.
+        cls.activity_type = cls.env.ref(
+            'som_crm.som_upcoming_activity', raise_if_not_found=False
+        )
+        if not cls.activity_type:
+            # Create a dummy one if it doesn't exist for testing environment
+            cls.activity_type = cls.env['mail.activity.type'].create({
+                'name': 'Upcoming Activity Test',
+                'res_model_id': cls.env.ref('crm.model_crm_lead').id,
+                'category': 'default',
+                'xml_id': 'som_crm.som_upcoming_activity'
+            })
+
+        # Get the 'Won' stage (assuming get_won_stage uses the standard Odoo XML ID)
+        cls.won_stage = cls.env['crm.lead'].get_won_stage()
+
+        # We need a user to be the author of the messages
+        cls.test_user = cls.env['res.users'].create({
+            'name': 'Test Call Center User',
+            'login': 'test_cc_user',
+            'email': 'test@ccuser.com',
+            "groups_id": [
+                (6, 0, [cls.env.ref("sales_team.group_sale_salesman_all_leads").id])
+            ],
+        })
+
+        # 2. Prepare Stages for date calculation tests
+        # Stage A: No activity days configured
+        cls.stage_a = cls.env['crm.stage'].create({
+            'name': 'Stage A (No Days)',
+            'sequence': 1,
+            'som_upcoming_activity_days': 0, # Should return today
+        })
+
+        # Stage B: Activity scheduled 7 days out
+        cls.stage_b = cls.env['crm.stage'].create({
+            'name': 'Stage B (7 Days)',
+            'sequence': 2,
+            'som_upcoming_activity_days': 7,
+        })
+
+        # 3. Prepare Leads (Data for testing _create_upcoming_activities)
+
+        # Lead 1: Candidate for activity creation (Stage A, No existing activity)
+        cls.lead_1 = cls.Lead.create({
+            'name': 'Candidate Lead',
+            'stage_id': cls.stage_a.id,
+            'user_id': cls.test_user.id,
+        })
+
+        # Lead 2: Excluded (Already has an activity)
+        cls.lead_2 = cls.Lead.create({
+            'name': 'Lead with Existing Activity',
+            'stage_id': cls.stage_b.id,
+            'user_id': cls.test_user.id,
+        })
+        # Create an existing activity to exclude Lead 2
+        cls.Activity.create({
+            'res_model_id': cls.env.ref('crm.model_crm_lead').id,
+            'res_model': 'crm.lead',
+            'res_id': cls.lead_2.id,
+            'activity_type_id': cls.activity_type.id,
+            'date_deadline': cls.today + timedelta(days=1),
+            'user_id': cls.test_user.id,
+        })
+
+        # Lead 3: Excluded (Won stage)
+        cls.lead_3 = cls.Lead.create({
+            'name': 'Won Lead',
+            'stage_id': cls.won_stage.id,
+            'user_id': cls.test_user.id,
+        })
+
+        # Lead 4: Excluded (No assigned user)
+        cls.lead_4 = cls.Lead.create({
+            'name': 'Unassigned Lead',
+            'stage_id': cls.stage_b.id,
+            'user_id': False,
+        })
+
+        # Lead 5: Candidate for activity creation (Stage B, No existing activity)
+        cls.lead_5 = cls.Lead.create({
+            'name': 'Candidate Lead 2',
+            'stage_id': cls.stage_b.id,
+            'user_id': cls.test_user.id,
+        })
+
+    # -------------------------------------------------------------------------
+    # Test for _get_next_activity_date
+    # -------------------------------------------------------------------------
+
+    def test_get_next_activity_date_no_days(self):
+        """
+        Test date calculation when stage days is 0 (should return today).
+        """
+        # Change lead stage to Stage A (0 days)
+        self.lead_1.stage_id = self.stage_a
+
+        expected_date = self.today + timedelta(days=0)
+        calculated_date = self.lead_1._get_next_activity_date()
+
+        self.assertEqual(calculated_date, expected_date,
+                         "Date should be today if stage days is 0.")
+
+    def test_get_next_activity_date_seven_days(self):
+        """
+        Test date calculation when stage days is 7.
+        """
+        # Change lead stage to Stage B (7 days)
+        self.lead_1.stage_id = self.stage_b
+
+        expected_date = self.today + timedelta(days=7)
+        calculated_date = self.lead_1._get_next_activity_date()
+
+        self.assertEqual(calculated_date, expected_date,
+                         "Date should be 7 days from today.")
+
+    def test_get_next_activity_date_no_stage(self):
+        """
+        Test date calculation when the lead has no stage (should return False).
+        """
+        # Remove stage from lead (should be rare, but good to test)
+        self.lead_1.stage_id = False
+
+        calculated_date = self.lead_1._get_next_activity_date()
+
+        self.assertFalse(calculated_date,
+                         "Date should be False if the lead has no stage.")
+
+    # -------------------------------------------------------------------------
+    # Test for _create_upcoming_activities
+    # -------------------------------------------------------------------------
+
+    def test_create_upcoming_activities_success(self):
+        """
+        Test the batch creation process: should create activities only for
+        Lead 1 and Lead 5, and use the correct deadline.
+        """
+        initial_activity_count = self.Activity.search_count([('res_model', '=', 'crm.lead'),])
+
+        #Initial check: Only Lead 2 has an activity
+        initial_lead2_activity_count = self.Activity.search_count([
+            ('res_model', '=', 'crm.lead'),
+            ('res_id', '=', self.lead_2.id),
+        ])
+        self.assertEqual(initial_lead2_activity_count, 1,
+                         "Initial setup error: Only 1 activity should exist for Lead 2.")
+
+        # 2. Run the activity creation method (called on the crm.lead model)
+        self.Lead._create_upcoming_activities()
+
+        # 3. Final check: Two new activities should have been created (Lead 1 and Lead 5)
+        final_activity_count = self.Activity.search_count([('res_model', '=', 'crm.lead')])
+        self.assertEqual(final_activity_count, initial_activity_count + 2,
+                         "Should have created 2 new activities.")
+
+        # 4. Verify activities for Lead 1 (Stage A -> 0 days)
+        activity_lead_1 = self.Activity.search([
+            ('res_model', '=', 'crm.lead'),
+            ('res_id', '=', self.lead_1.id),
+        ])
+        self.assertTrue(activity_lead_1, "Activity must be created for Lead 1.")
+        self.assertEqual(activity_lead_1.date_deadline, self.today,
+                         "Lead 1 activity date should be today (0 days).")
+
+        # 5. Verify activities for Lead 5 (Stage B -> 7 days)
+        activity_lead_5 = self.Activity.search([
+            ('res_model', '=', 'crm.lead'),
+            ('res_id', '=', self.lead_5.id),
+        ])
+        self.assertTrue(activity_lead_5, "Activity must be created for Lead 5.")
+        self.assertEqual(activity_lead_5.date_deadline, self.today + timedelta(days=7),
+                         "Lead 5 activity date should be 7 days from today.")
+
+    def test_create_upcoming_activities_exclusion(self):
+        """
+        Test that excluded leads (Won, Assigned, or without user) do NOT get an activity.
+        """
+        initial_lead2_activity_count = self.Activity.search_count([
+            ('res_model', '=', 'crm.lead'),
+            ('res_id', '=', self.lead_2.id),
+        ])
+
+        # Run the creation method
+        self.Lead._create_upcoming_activities()
+
+        # Check exclusion: Lead 2 (Has activity)
+        final_lead2_activity_count = self.Activity.search_count([
+            ('res_model', '=', 'crm.lead'),
+            ('res_id', '=', self.lead_2.id),
+        ])
+        self.assertEqual(initial_lead2_activity_count, final_lead2_activity_count,
+            "Lead 2 should not get a new activity (already has one).")
+
+        # Check exclusion: Lead 3 (Won stage)
+        activity_lead_3 = self.Activity.search([
+            ('res_model', '=', 'crm.lead'),
+            ('res_id', '=', self.lead_3.id),
+        ])
+        self.assertFalse(activity_lead_3, "Lead 3 should not get an activity (Won stage).")
+
+        # Check exclusion: Lead 4 (No assigned user)
+        activity_lead_4 = self.Activity.search([
+            ('res_model', '=', 'crm.lead'),
+            ('res_id', '=', self.lead_4.id),
+        ])
+        self.assertFalse(activity_lead_4, "Lead 4 should not get an activity (No assigned user).")
