@@ -464,3 +464,41 @@ class Lead(models.Model):
                 'date_deadline' : date_activity,
                 'user_id' : lead_to_plan_id.user_id.id,
             })
+
+    def action_send_email_confirmation(self):
+        self.ensure_one()
+
+        if not self.partner_id:
+            _logger.error(
+                "Lead ID %s: no partner associated, cannot send confirmation email", self.id)
+            return False
+
+        template_id = self.env.ref(
+            'som_crm.som_email_template_lead_confirmation', raise_if_not_found=False)
+        if not template_id:
+            _logger.error(
+            "Lead ID %s: email template 'som_crm.som_email_template_lead_confirmation' not found",
+            self.id)
+            return False
+
+        try:
+            email_values = {'email_from': 'info@somenergia.coop'}
+            # 'reply_to':  # Opcional: También puedes fijar el "Reply-To"
+            template_id.send_mail(
+                self.id,
+                force_send=True,
+                email_values= email_values,
+            )
+        except Exception as e:
+            _logger.error("Lead ID %s: error sending confirmation email: %s", self.id, e)
+            return False
+
+        try:
+            self.message_post(body=_(
+                "Mail confirmation sent to partner: %s with mail %s"
+            ) % (self.partner_id.name, self.partner_id.email))
+        except Exception as e:
+            _logger.warning(
+                "Lead ID %s: email sent but failed to post message in chatter: %s", self.id, e)
+
+        return True
