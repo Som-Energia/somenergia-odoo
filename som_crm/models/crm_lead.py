@@ -468,27 +468,39 @@ class Lead(models.Model):
     def action_send_email_confirmation(self):
         self.ensure_one()
 
+        if not self.env.company.som_ff_send_lead_confirmation_email:
+            _logger.warning(
+                "Lead ID %s: company setting to send lead confirmation email is disabled",
+                self.id)
+            return False
+
         if not self.partner_id:
-            _logger.error(
+            _logger.warning(
                 "Lead ID %s: no partner associated, cannot send confirmation email", self.id)
             return False
 
         if not self.partner_id.email:
-            _logger.error(
+            _logger.warning(
                 "Lead ID %s: partner has no email, cannot send confirmation email", self.id)
+            return False
+
+        if not self.env.company.som_ff_send_lead_confirmation_email_from:
+            _logger.warning(
+                "Lead ID %s: company setting 'email_from' is not set",
+                self.id)
             return False
 
         template_id = self.env.ref(
             'som_crm.som_email_template_lead_confirmation', raise_if_not_found=False)
         if not template_id:
-            _logger.error(
+            _logger.warning(
             "Lead ID %s: email template 'som_crm.som_email_template_lead_confirmation' not found",
             self.id)
             return False
 
         try:
-            email_values = {'email_from': 'info@somenergia.coop'}
-            # 'reply_to':  # Opcional: También puedes fijar el "Reply-To"
+            email_from = self.env.company.som_ff_send_lead_confirmation_email_from
+            email_values = {'email_from': email_from}
             template_id.send_mail(
                 self.id,
                 force_send=True,
