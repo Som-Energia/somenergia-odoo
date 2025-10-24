@@ -3,10 +3,11 @@
     <data noupdate="0">
 
         <record id="som_email_template_lead_confirmation" model="mail.template">
-            <field name="name">Lead reception mail</field>
+            <field name="name">Som - Opportunity confirmation mail</field>
             <field name="model_id" ref="crm.model_crm_lead"/>
             <field name="subject">Missatge rebut, et contactarem en breu!</field>
-            <field name="partner_to">${object.partner_id.id}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
             <field name="auto_delete" eval="False"/>
             <field name="body_html" type="html">
 <div style="background:#F0F0F0;color:#515166;padding:10px 0px;font-family:Arial,Helvetica,sans-serif;font-size:14px;">
@@ -16,7 +17,6 @@
                 <p>Hola, <span t-out="object.partner_id.name or ''"></span></p>
                 <p>
                     Hem rebut la teva sol·licitud, en breu ens posarem en contacte amb tu!
-
                 </p>
                 <p>Gràcies pel teu interès en Som Energia, una cooperativa d'energia 100% renovable, sense ànim de lucre i amb voluntat transformadora.</p>
                 <p>Fins ben aviat!</p>
@@ -26,24 +26,6 @@
     </table>
 </div>
             </field>
-            <!-- <field name="body_html" type="html"><![CDATA[
-<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
-    <p>Hola ${object.partner_id.name},</p>
-    <p>
-        Received your request
-    </p>
-    <p>
-        <strong>Lead:</strong> ${object.name}<br/>
-        <strong>Partner:</strong> ${object.partner_name or 'Not specified'}<br/>
-        <strong>Email:</strong> ${object.email_from or 'Not specified'}<br/>
-        <strong>Phone:</strong> ${object.phone or 'Not specified'}<br/>
-    </p>
-    <p>
-        Thanks,<br/>
-        ${user.company_id.name}
-    </p>
-</div>
-            ]]></field> -->
         </record>
     </data>
 </odoo>

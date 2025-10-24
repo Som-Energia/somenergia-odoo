@@ -473,6 +473,11 @@ class Lead(models.Model):
                 "Lead ID %s: no partner associated, cannot send confirmation email", self.id)
             return False
 
+        if not self.partner_id.email:
+            _logger.error(
+                "Lead ID %s: partner has no email, cannot send confirmation email", self.id)
+            return False
+
         template_id = self.env.ref(
             'som_crm.som_email_template_lead_confirmation', raise_if_not_found=False)
         if not template_id:
