@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-24 10:43+0000\n"
-"PO-Revision-Date: 2025-10-24 10:43+0000\n"
+"POT-Creation-Date: 2025-10-24 10:45+0000\n"
+"PO-Revision-Date: 2025-10-24 10:45+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -39,18 +39,18 @@ msgstr ""
 "    <table style=\"width:600px;margin:0px auto;background:white;border:1px solid #e1e1e1;\">\n"
 "        <tbody>\n"
 "            <tr><td style=\"padding:15px 20px 10px 20px;\">\n"
-"                <p>Hola, <span t-out=\"object.partner_id.name or ''\"></span></p>\n"
+"                <p>Holaaaa, <span t-out=\"object.partner_id.name or ''\"></span></p>\n"
 "                <p>\n"
-"                    Hem rebut la teva sol·licitud, en breu ens posarem en contacte amb tu!\n"
+"                    We have received your application, we will contact you shortly!\n"
 "                </p>\n"
-"                <p>Gràcies pel teu interès en Som Energia, una cooperativa d'energia 100% renovable, sense ànim de lucre i amb voluntat transformadora.</p>\n"
-"                <p>Fins ben aviat!</p>\n"
+"                <p>Thank you for your interest in Som Energia, a 100% renewable energy cooperative, non-profit and with a transformative will.</p>\n"
+"                <p>See you soon!</p>\n"
 "                <p>Som Energia.</p>\n"
 "            </td></tr>\n"
 "        </tbody>\n"
 "    </table>\n"
 "</div>\n"
-"            "
+"         "
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.res_config_settings_view_form
@@ -80,7 +80,7 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model,name:som_crm.model_mail_activity
 msgid "Activity"
-msgstr "Activitat"
+msgstr "Actividad"
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.som_view_crm_case_opportunities_filter
@@ -90,12 +90,12 @@ msgstr ""
 #. module: som_crm
 #: model:phone.call.result,name:som_crm.phone_call_result_answered_interested
 msgid "Answered - Interested"
-msgstr "Respost - Interessat/da"
+msgstr ""
 
 #. module: som_crm
 #: model:phone.call.result,name:som_crm.phone_call_result_answered_not_interested
 msgid "Answered - Not Interested"
-msgstr "Respost - No m'interessa"
+msgstr ""
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.som_crm_lead_view_form
@@ -105,17 +105,17 @@ msgstr ""
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.som_crm_lead_view_form
 msgid "Assign to me"
-msgstr "Assignar-me-la"
+msgstr ""
 
 #. module: som_crm
 #: model:crm.lost.reason,name:som_crm.som_lost_reason_no_bo_social
 msgid "Bo social isn't offered"
-msgstr "No s'ofereix Bo social"
+msgstr "No se ofrece Bono social"
 
 #. module: som_crm
 #: model:phone.call.result,name:som_crm.phone_call_result_busy
 msgid "Busy"
-msgstr "Ocupat/da"
+msgstr ""
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.view_users_form
@@ -131,7 +131,7 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model,name:som_crm.model_crm_stage
 msgid "CRM Stages"
-msgstr "Etapes CRM"
+msgstr "Etapas del CRM"
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_cups
@@ -146,12 +146,12 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_res_users__som_call_center_user
 msgid "Call center user"
-msgstr "Usuari centraleta telefònica"
+msgstr ""
 
 #. module: som_crm
 #: model:phone.call.result,name:som_crm.phone_call_result_callback_requested
 msgid "Callback Requested"
-msgstr "Sol·licitud de devolució de trucada"
+msgstr ""
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.view_convert_call_wizard_form
@@ -194,7 +194,7 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model,name:som_crm.model_res_company
 msgid "Companies"
-msgstr "Empreses"
+msgstr "Compañías"
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_comparison_result
@@ -204,7 +204,7 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model,name:som_crm.model_res_config_settings
 msgid "Config Settings"
-msgstr "Ajustos de configuració"
+msgstr "Ajustes de configuración"
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.view_convert_call_wizard_form
@@ -219,7 +219,7 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model,name:som_crm.model_contact_time_slot
 msgid "Contact Time Slot"
-msgstr "Interval d'horari de contacte"
+msgstr ""
 
 #. module: som_crm
 #: model:phone.call.result,description:som_crm.phone_call_result_answered_interested
@@ -246,14 +246,14 @@ msgstr ""
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.contact_time_slot_form_view
 msgid "Contact time slot"
-msgstr "Interval d'horari de contacte"
+msgstr ""
 
 #. module: som_crm
 #: model:ir.actions.act_window,name:som_crm.contact_time_slot_action
 #: model:ir.ui.menu,name:som_crm.contact_time_slot_menu
 #: model_terms:ir.ui.view,arch_db:som_crm.contact_time_slot_tree_view
 msgid "Contact time slots"
-msgstr "Intervals d'horari de contacte"
+msgstr ""
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.som_view_crm_case_opportunities_filter
@@ -263,7 +263,7 @@ msgstr ""
 #. module: som_crm
 #: model:crm.stage,name:som_crm.som_stage_lead6
 msgid "Contracted"
-msgstr "Contractat"
+msgstr ""
 
 #. module: som_crm
 #: model:ir.model,name:som_crm.model_convert_call_wizard
@@ -278,7 +278,7 @@ msgstr ""
 #. module: som_crm
 #: model_terms:ir.actions.act_window,help:som_crm.contact_time_slot_action
 msgid "Create your first contact time slot!"
-msgstr "Crea el teu primer interval d'horari de contacte!"
+msgstr ""
 
 #. module: som_crm
 #: model_terms:ir.actions.act_window,help:som_crm.phone_call_result_action
@@ -344,7 +344,7 @@ msgstr ""
 #. module: som_crm
 #: model:crm.lost.reason,name:som_crm.som_lost_reason_no_membership
 msgid "Doesn't want to become a member"
-msgstr "No vol fer-se membre"
+msgstr "No quiere convertirse en miembro"
 
 #. module: som_crm
 #: model:ir.model.fields,help:som_crm.field_mail_activity__som_phone_call_duration
@@ -370,7 +370,7 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model,name:som_crm.model_crm_lead_lost
 msgid "Get Lost Reason"
-msgstr "Posa la raó de la pèrdua"
+msgstr "Obtener razón de la pérdida"
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__id
@@ -390,12 +390,12 @@ msgstr ""
 #: model:ir.model.fields.selection,name:som_crm.selection__crm_lead__som_pricelist__indexed
 #, python-format
 msgid "Indexed"
-msgstr "Indexada"
+msgstr ""
 
 #. module: som_crm
 #: model:crm.stage,name:som_crm.som_stage_lead5
 msgid "Interested and will contract"
-msgstr "Interès i diu que contractarà"
+msgstr ""
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_last_call_date
@@ -441,12 +441,12 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model,name:som_crm.model_crm_lead
 msgid "Lead/Opportunity"
-msgstr "Iniciativa/oportunitat"
+msgstr "Iniciativa/Oportunidad"
 
 #. module: som_crm
 #: model:phone.call.result,name:som_crm.phone_call_result_voicemail
 msgid "Left Voicemail"
-msgstr "Deixem missatge a la bústia de veu"
+msgstr ""
 
 #. module: som_crm
 #: model:phone.call.result,description:som_crm.phone_call_result_voicemail
@@ -489,17 +489,17 @@ msgstr ""
 #. module: som_crm
 #: model:phone.call.result,name:som_crm.phone_call_result_meeting_scheduled
 msgid "Meeting Scheduled"
-msgstr "Reunió programada"
+msgstr ""
 
 #. module: som_crm
 #: model:mail.template,subject:som_crm.som_email_template_lead_confirmation
 msgid "Message received, we will contact you shortly!"
-msgstr "Missatge rebut, et contactarem en breu!"
+msgstr "Mensaje recibido, ¡te contactaremos en breve!"
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__name
 msgid "Name"
-msgstr "Nom"
+msgstr ""
 
 #. module: som_crm
 #: model:ir.model.fields.selection,name:som_crm.selection__phone_call_result__result_type__negative
@@ -522,7 +522,7 @@ msgstr ""
 #. module: som_crm
 #: model:phone.call.result,name:som_crm.phone_call_result_no_answer
 msgid "No Answer"
-msgstr "Sense resposta"
+msgstr ""
 
 #. module: som_crm
 #: model:phone.call.result,description:som_crm.phone_call_result_no_answer
@@ -582,7 +582,7 @@ msgstr ""
 #: model:ir.model.fields.selection,name:som_crm.selection__crm_lead__som_pricelist__periods
 #, python-format
 msgid "Periods"
-msgstr "Períodes"
+msgstr ""
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_mail_activity__som_phone_call_duration
@@ -612,7 +612,7 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model,name:som_crm.model_crm_phonecall
 msgid "Phonecall"
-msgstr "Trucada"
+msgstr "Llamada telefónica"
 
 #. module: som_crm
 #: model:ir.model.fields.selection,name:som_crm.selection__phone_call_result__result_type__positive
@@ -622,12 +622,12 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_preferred_contact_time_ids
 msgid "Preferred contact time"
-msgstr "Preferència d'horari de contacte"
+msgstr ""
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_pricelist
 msgid "Pricelist"
-msgstr "Tarifa"
+msgstr ""
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_phone_call_result__name
@@ -652,7 +652,7 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model,name:som_crm.model_crm_team
 msgid "Sales Team"
-msgstr "Equip de vendes"
+msgstr "Equipo de ventas"
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.mail_activity_view_form_popup
@@ -662,7 +662,7 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_self_consumption
 msgid "Self consumption"
-msgstr "Autoconsum"
+msgstr ""
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_res_company__som_ff_send_lead_confirmation_email
@@ -674,7 +674,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__sequence
 #: model:ir.model.fields,field_description:som_crm.field_phone_call_result__sequence
 msgid "Sequence"
-msgstr "Seqüència"
+msgstr ""
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.res_config_settings_view_form
@@ -741,7 +741,7 @@ msgstr ""
 #. module: som_crm
 #: model:crm.lost.reason,name:som_crm.som_lost_reason_contracting_process_too_complicated
 msgid "The contracting process is too complicated"
-msgstr "El procés de contractació és massa complicat"
+msgstr "El proceso de contratación es demasiado complicado"
 
 #. module: som_crm
 #. odoo-python
@@ -749,7 +749,6 @@ msgstr "El procés de contractació és massa complicat"
 #, python-format
 msgid "The field 'Call center user' must be unique."
 msgstr ""
-"Ja hi ha una altra usuària amb aquesta configuració de centraleta telefònica"
 
 #. module: som_crm
 #: model_terms:ir.actions.act_window,help:som_crm.contact_time_slot_action
@@ -757,8 +756,6 @@ msgid ""
 "The hourly time slots allow you to define when clients prefer to be "
 "contacted."
 msgstr ""
-"Els intervals horaris et permeten definir quan els clients prefereixen ser "
-"contactats."
 
 #. module: som_crm
 #: model:phone.call.result,description:som_crm.phone_call_result_wrong_number
@@ -807,7 +804,7 @@ msgstr ""
 #. module: som_crm
 #: model:ir.model,name:som_crm.model_res_users
 msgid "User"
-msgstr "Usuari"
+msgstr "Usuario"
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.som_view_crm_case_opportunities_filter
@@ -817,7 +814,7 @@ msgstr ""
 #. module: som_crm
 #: model:phone.call.result,name:som_crm.phone_call_result_wrong_number
 msgid "Wrong Number"
-msgstr "Número incorrecte"
+msgstr ""
 
 #. module: som_crm
 #. odoo-python
@@ -825,7 +822,7 @@ msgstr "Número incorrecte"
 #: model:ir.model.fields.selection,name:som_crm.selection__crm_lead__som_self_consumption__yes
 #, python-format
 msgid "Yes"
-msgstr "Sí"
+msgstr ""
 
 #. module: som_crm
 #. odoo-python

@@ -5,6 +5,21 @@
         <field name="inherit_id" ref="crm_phonecall.res_config_settings_view_form" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='group_show_form_view']/../../.." position="inside">
+
+                <div class="col-12 col-lg-6 o_setting_box">
+                    <div class="o_setting_left_pane">
+                        <field name="som_ff_send_lead_confirmation_email" />
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="som_ff_send_lead_confirmation_email" />
+                        <div class="text-muted">Enable email confirmation for opportunity</div>
+                        <span attrs="{'invisible': [('som_ff_send_lead_confirmation_email', '=', False)]}">Email from</span>
+                        <field name="som_ff_send_lead_confirmation_email_from"
+                                attrs="{'invisible': [('som_ff_send_lead_confirmation_email', '=', False)]}"
+                                class="text-center"/>
+                    </div>
+                </div>
+
                 <div class="col-12 col-lg-6 o_setting_box" id="default_company_schedule_setting">
                     <div class="o_setting_right_pane">
                         <label for="som_crm_call_category_id"/>
@@ -32,6 +47,7 @@
                         <field name="som_ff_call_to_opportunity" class="text-center"/><span>Enable convert to opportunity automation</span>
                     </div>
                 </div>
+
             </xpath>
         </field>
     </record>

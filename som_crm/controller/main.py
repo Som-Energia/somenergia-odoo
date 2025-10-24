@@ -298,6 +298,11 @@ class CRMLeadAPIController(http.Controller):
                     subtype_xmlid='mail.mt_note',
                 )
 
+            lead_id.assign_partner()
+
+            # Send confirmation email if enabled
+            lead_id.action_send_email_confirmation()
+
             return self._json_response(response_data)
 
         except (json.JSONDecodeError, UnicodeDecodeError) as e:
