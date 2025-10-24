@@ -7,6 +7,7 @@ from datetime import datetime, date, timedelta
 from odoo.fields import Datetime, Date
 from unittest.mock import patch
 
+
 @tagged('som_lead')
 class TestCrmLead(TransactionCase):
 
@@ -771,7 +772,6 @@ class TestCrmLeadUpcomingActivities(TransactionCase):
     # -------------------------------------------------------------------------
     # Test for _create_upcoming_activities
     # -------------------------------------------------------------------------
-
     def test_create_upcoming_activities_success(self):
         """
         Test the batch creation process: should create activities only for
@@ -791,9 +791,20 @@ class TestCrmLeadUpcomingActivities(TransactionCase):
         self.Lead._create_upcoming_activities()
 
         # 3. Final check: Two new activities should have been created (Lead 1 and Lead 5)
-        final_activity_count = self.Activity.search_count([('res_model', '=', 'crm.lead')])
-        self.assertEqual(final_activity_count, initial_activity_count + 2,
-                         "Should have created 2 new activities.")
+        final_lead1_activity_count = self.Activity.search_count([
+            ('res_model', '=', 'crm.lead'),
+            ('res_id', '=', self.lead_1.id),
+        ])
+
+        final_lead5_activity_count = self.Activity.search_count([
+            ('res_model', '=', 'crm.lead'),
+            ('res_id', '=', self.lead_5.id),
+        ])
+
+        self.assertEqual(final_lead1_activity_count, 1,
+                         "Activity must be created for Lead 1.")
+        self.assertEqual(final_lead5_activity_count, 1,
+                         "Activity must be created for Lead 5.")
 
         # 4. Verify activities for Lead 1 (Stage A -> 0 days)
         activity_lead_1 = self.Activity.search([
