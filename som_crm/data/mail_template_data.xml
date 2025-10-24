@@ -14,12 +14,12 @@
     <table style="width:600px;margin:0px auto;background:white;border:1px solid #e1e1e1;">
         <tbody>
             <tr><td style="padding:15px 20px 10px 20px;">
-                <p>Hola, <span t-out="object.partner_id.name or ''"></span></p>
+                <p>Hello, <span t-out="object.partner_id.name or ''"></span></p>
                 <p>
-                    Hem rebut la teva sol·licitud, en breu ens posarem en contacte amb tu!
+                    We have received your application, we will contact you shortly!
                 </p>
-                <p>Gràcies pel teu interès en Som Energia, una cooperativa d'energia 100% renovable, sense ànim de lucre i amb voluntat transformadora.</p>
-                <p>Fins ben aviat!</p>
+                <p>Thank you for your interest in Som Energia, a 100% renewable energy cooperative, non-profit and with a transformative will.</p>
+                <p>See you soon!</p>
                 <p>Som Energia.</p>
             </td></tr>
         </tbody>
