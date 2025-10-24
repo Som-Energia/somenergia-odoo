@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-24 08:20+0000\n"
-"PO-Revision-Date: 2025-10-24 08:20+0000\n"
+"POT-Creation-Date: 2025-10-24 10:43+0000\n"
+"PO-Revision-Date: 2025-10-24 10:43+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -51,6 +51,13 @@ msgstr ""
 "    </table>\n"
 "</div>\n"
 "            "
+
+#. module: som_crm
+#: model_terms:ir.ui.view,arch_db:som_crm.res_config_settings_view_form
+msgid ""
+"<span attrs=\"{'invisible': [('som_ff_send_lead_confirmation_email', '=', "
+"False)]}\">Email from</span>"
+msgstr ""
 
 #. module: som_crm
 #: model_terms:ir.ui.view,arch_db:som_crm.res_config_settings_view_form
@@ -350,6 +357,11 @@ msgid "ERP Lead ID"
 msgstr ""
 
 #. module: som_crm
+#: model_terms:ir.ui.view,arch_db:som_crm.res_config_settings_view_form
+msgid "Enable email confirmation for opportunity"
+msgstr ""
+
+#. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_res_company__som_ff_call_to_opportunity
 #: model:ir.model.fields,field_description:som_crm.field_res_config_settings__som_ff_call_to_opportunity
 msgid "Feature flag: Automatic Call to Opportunity conversion by Category"
@@ -452,6 +464,12 @@ msgid "Lost Reason"
 msgstr ""
 
 #. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_res_company__som_ff_send_lead_confirmation_email_from
+#: model:ir.model.fields,field_description:som_crm.field_res_config_settings__som_ff_send_lead_confirmation_email_from
+msgid "Mail From for lead confirmation email"
+msgstr ""
+
+#. module: som_crm
 #. odoo-python
 #: code:addons/som_crm/models/crm_lead.py:0
 #, python-format
@@ -475,8 +493,8 @@ msgstr "Reunió programada"
 
 #. module: som_crm
 #: model:mail.template,subject:som_crm.som_email_template_lead_confirmation
-msgid "Missatge rebut, et contactarem en breu!"
-msgstr ""
+msgid "Message received, we will contact you shortly!"
+msgstr "Missatge rebut, et contactarem en breu!"
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__name
@@ -645,6 +663,12 @@ msgstr ""
 #: model:ir.model.fields,field_description:som_crm.field_crm_lead__som_self_consumption
 msgid "Self consumption"
 msgstr "Autoconsum"
+
+#. module: som_crm
+#: model:ir.model.fields,field_description:som_crm.field_res_company__som_ff_send_lead_confirmation_email
+#: model:ir.model.fields,field_description:som_crm.field_res_config_settings__som_ff_send_lead_confirmation_email
+msgid "Send confirmation email when a lead is created through API"
+msgstr ""
 
 #. module: som_crm
 #: model:ir.model.fields,field_description:som_crm.field_contact_time_slot__sequence
