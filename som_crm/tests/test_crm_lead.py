@@ -5,6 +5,7 @@ from odoo.tests.common import TransactionCase, tagged
 from odoo.exceptions import ValidationError
 from datetime import datetime, date, timedelta
 from odoo.fields import Datetime, Date
+from unittest.mock import patch
 
 @tagged('som_lead')
 class TestCrmLead(TransactionCase):
@@ -845,3 +846,181 @@ class TestCrmLeadUpcomingActivities(TransactionCase):
             ('res_id', '=', self.lead_4.id),
         ])
         self.assertFalse(activity_lead_4, "Lead 4 should not get an activity (No assigned user).")
+
+
+@tagged('som_lead_email_confirmation')
+class TestCrmLeadEmailConfirmation(TransactionCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        cls.company = cls.env.ref('base.main_company')
+        cls.company.write({
+            'som_ff_send_lead_confirmation_email': True,
+            'som_ff_send_lead_confirmation_email_from': 'company-sender@test.com',
+        })
+
+        # 2. Try to reuse existing Email Template (preferred) otherwise create it
+        cls.template = cls.env.ref(
+            'som_crm.som_email_template_lead_confirmation', raise_if_not_found=False
+        ) or False
+        if not cls.template:
+            cls.template = cls.env['mail.template'].create({
+                'name': 'Test Lead Confirmation Template',
+                'model_id': cls.env.ref('crm.model_crm_lead').id,
+                'subject': 'Lead Confirmation: ${object.name}',
+                'body_html': '<p>Hello ${object.partner_id.name}, your lead ${object.name} is confirmed.</p>',
+                'email_from': 'fallback@test.com',
+            })
+            cls.env['ir.model.data'].create({
+            'name': 'som_email_template_lead_confirmation',
+            'module': 'som_crm',
+            'model': 'mail.template',
+            'res_id': cls.template.id,
+            })
+
+        # Test Data (Partners and Lead)
+        cls.partner_ok = cls.env['res.partner'].create({
+            'name': 'Partner with Email',
+            'email': 'partner.ok@test.com',
+        })
+
+        cls.partner_no_email = cls.env['res.partner'].create({
+            'name': 'Partner without Email',
+            'email': False, # Empty email
+        })
+
+        cls.lead_base = cls.env['crm.lead'].create({
+            'name': 'Test Lead',
+            'partner_id': cls.partner_ok.id,
+            'company_id': cls.company.id,
+        })
+
+    @patch('odoo.addons.mail.models.mail_template.MailTemplate.send_mail')
+    def test_happy_path(self, mock_send_mail):
+        """
+        Test the "happy path": all conditions are met.
+        The email is sent and a message is logged in the chatter.
+        """
+        # Execute the action
+        result = self.lead_base.action_send_email_confirmation()
+
+        # 1. Check that the method returns True
+        self.assertTrue(result, "The method should return True on success.")
+
+        # 2. Check that send_mail was called ONCE
+        mock_send_mail.assert_called_once()
+
+        # 3. Check that send_mail was called with the correct arguments
+        expected_email_values = {
+            'email_from': 'company-sender@test.com'
+        }
+        mock_send_mail.assert_called_with(
+            self.lead_base.id,
+            force_send=True,
+            email_values=expected_email_values
+        )
+
+        # 4. Check that the message was posted in the chatter
+        chatter_msg = self.lead_base.message_ids.filtered(
+            lambda m: 'Mail confirmation sent' in m.body
+        )
+        self.assertEqual(
+            len(chatter_msg), 1, "There should be one confirmation message in the chatter.")
+        self.assertIn(self.partner_ok.name, chatter_msg.body)
+        self.assertIn(self.partner_ok.email, chatter_msg.body)
+
+    @patch('odoo.addons.mail.models.mail_template.MailTemplate.send_mail')
+    def test_fail_company_setting_disabled(self, mock_send_mail):
+        """
+        Test failure if the company setting is disabled.
+        """
+        self.company.som_ff_send_lead_confirmation_email = False
+
+        result = self.lead_base.action_send_email_confirmation()
+
+        self.assertFalse(result, "The method should return False.")
+        mock_send_mail.assert_not_called()
+        self.company.som_ff_send_lead_confirmation_email = True
+
+    @patch('odoo.addons.mail.models.mail_template.MailTemplate.send_mail')
+    def test_fail_no_partner(self, mock_send_mail):
+        """
+        Test failure if the lead has no associated partner.
+        """
+        self.lead_base.partner_id = False
+
+        result = self.lead_base.action_send_email_confirmation()
+
+        self.assertFalse(result, "The method should return False.")
+        mock_send_mail.assert_not_called()
+        self.lead_base.partner_id = self.partner_ok.id
+
+
+    @patch('odoo.addons.mail.models.mail_template.MailTemplate.send_mail')
+    def test_fail_partner_no_email(self, mock_send_mail):
+        """
+        Test failure if the partner has no email.
+        """
+        self.lead_base.partner_id = self.partner_no_email
+
+        result = self.lead_base.action_send_email_confirmation()
+
+        self.assertFalse(result, "The method should return False.")
+        mock_send_mail.assert_not_called()
+        self.lead_base.partner_id = self.partner_ok.id
+
+
+    @patch('odoo.addons.mail.models.mail_template.MailTemplate.send_mail')
+    def test_fail_no_email_from(self, mock_send_mail):
+        """
+        Test failure if the company 'email_from' is not set.
+        """
+        self.company.som_ff_send_lead_confirmation_email_from = False
+
+        result = self.lead_base.action_send_email_confirmation()
+
+        self.assertFalse(result, "The method should return False.")
+        mock_send_mail.assert_not_called()
+        self.company.som_ff_send_lead_confirmation_email_from = 'company-sender@test.com'
+
+    @patch('odoo.addons.mail.models.mail_template.MailTemplate.send_mail')
+    def test_fail_template_not_found(self, mock_send_mail):
+        """
+        Test failure if the template is not found (by deleting its XML ID).
+        """
+        # Find and delete the ir.model.data record
+        xml_id = self.env.ref(
+            'som_crm.som_email_template_lead_confirmation', raise_if_not_found=False)
+        self.assertTrue(xml_id, "The template's XML ID should exist for the test.")
+        xml_id.unlink()
+
+        # Check that env.ref now fails (returns Falsy)
+        self.assertFalse(
+            self.env.ref('som_crm.som_email_template_lead_confirmation', raise_if_not_found=False),
+            "The template's XML ID should have been deleted.")
+
+        # Execute the action
+        result = self.lead_base.action_send_email_confirmation()
+
+        self.assertFalse(result, "The method should return False.")
+
+    @patch('odoo.addons.mail.models.mail_thread.MailThread.message_post',
+            side_effect=Exception("Simulated Chatter Error"))
+    @patch('odoo.addons.mail.models.mail_template.MailTemplate.send_mail')
+    def test_success_email_sent_chatter_fails(self, mock_send_mail, mock_message_post):
+        """
+        Test that the method returns True even if posting to chatter fails,
+        as long as the email was sent.
+        """
+        result = self.lead_base.action_send_email_confirmation()
+
+        # The method should return True because the email was sent
+        self.assertTrue(result, "The method should return True even if chatter fails.")
+
+        # The email send MUST have been called
+        mock_send_mail.assert_called_once()
+
+        # The chatter post MUST have been attempted
+        mock_message_post.assert_called_once()
