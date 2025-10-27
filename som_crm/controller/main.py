@@ -300,8 +300,8 @@ class CRMLeadAPIController(http.Controller):
 
             lead_id.assign_partner()
 
-            # Send confirmation email if enabled
-            lead_id.action_send_email_confirmation()
+            # Send confirmation email
+            lead_id.action_send_email_confirmation(invoice_received=bool(attachments))
 
             return self._json_response(response_data)
 

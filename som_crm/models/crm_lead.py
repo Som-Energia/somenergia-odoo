@@ -465,7 +465,7 @@ class Lead(models.Model):
                 'user_id' : lead_to_plan_id.user_id.id,
             })
 
-    def action_send_email_confirmation(self):
+    def action_send_email_confirmation(self, invoice_received=False):
         self.ensure_one()
 
         if not self.env.company.som_ff_send_lead_confirmation_email:
@@ -491,16 +491,25 @@ class Lead(models.Model):
             return False
 
         template_id = self.env.ref(
-            'som_crm.som_email_template_lead_confirmation', raise_if_not_found=False)
+            'som_crm.som_email_template_lead_confirmation', raise_if_not_found=False) or False
+        if invoice_received:
+            template_id = self.env.ref(
+                'som_crm.som_email_template_lead_confirmation_invoice',
+                raise_if_not_found=False) or False
         if not template_id:
             _logger.warning(
-            "Lead ID %s: email template 'som_crm.som_email_template_lead_confirmation' not found",
-            self.id)
+                "Lead ID %s: email template not found", self.id)
             return False
 
         try:
             email_from = self.env.company.som_ff_send_lead_confirmation_email_from
             email_values = {'email_from': email_from}
+            team_id = self.env.ref(
+                'sales_team.team_sales_department', raise_if_not_found=False
+            ) or False
+            if team_id and team_id.alias_name and team_id.alias_domain:
+                reply_to = f'{team_id.alias_name}@{team_id.alias_domain}'
+                email_values['reply_to'] = reply_to
             template_id.send_mail(
                 self.id,
                 force_send=True,
