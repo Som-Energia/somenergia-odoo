@@ -14,3 +14,11 @@ class ResCompany(models.Model):
     som_ff_call_to_opportunity = fields.Boolean(
         string="Feature flag: Automatic Call to Opportunity conversion by Category",
     )
+
+    som_ff_send_lead_confirmation_email = fields.Boolean(
+        string="Send confirmation email when a lead is created through API",
+    )
+
+    som_ff_send_lead_confirmation_email_from = fields.Char(
+        string="Mail From for lead confirmation email",
+    )

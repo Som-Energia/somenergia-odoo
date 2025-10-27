@@ -138,7 +138,9 @@ class TestCRMLeadAPIHttp(HttpCase):
         self.assertEqual(created_lead_id.source_id.name, 'instagram')
 
         # Check comments in chatter
-        message = created_lead_id.message_ids.sorted('date', reverse=True)[0]
+        message = created_lead_id.message_ids.filtered(
+            lambda m: '<br>Aquest és un' in m.body
+        )[0]
         expected_body = markupsafe.Markup(
             '<p>Hola,<br>Aquest és un comentari de prova.<br>Gràcies!    Salutacions.</p>')
         self.assertEqual(message.body, expected_body)
@@ -267,7 +269,9 @@ class TestCRMLeadAPIHttp(HttpCase):
 
         id_created_lead = response_data['lead_id']
         created_lead_id = self.env['crm.lead'].browse(id_created_lead)
-        message = created_lead_id.message_ids.sorted('date', reverse=True)[0]
+        message = created_lead_id.message_ids.filtered(
+            lambda m: '<pre>' in m.body
+        )
         expected_part = markupsafe.Markup('<pre>{\n  "contact_name": "Test Contact",\n  "email": "test@example.com",\n  "phone": "+34123456789",\n  "files_count": 0\n}</pre>')
         self.assertIn(
             expected_part, message.body,
@@ -304,7 +308,9 @@ class TestCRMLeadAPIHttp(HttpCase):
 
         id_created_lead = response_data['lead_id']
         created_lead_id = self.env['crm.lead'].browse(id_created_lead)
-        message = created_lead_id.message_ids.sorted('date', reverse=True)[0]
+        message = created_lead_id.message_ids.filtered(
+            lambda m: '<pre>' in m.body
+        )
         expected_part = markupsafe.Markup('<pre>{\n  "contact_name": "Test Contact with File",\n  "email": "test@example.com",\n  "files_count": 1\n}</pre>')
         self.assertIn(
             expected_part, message.body,

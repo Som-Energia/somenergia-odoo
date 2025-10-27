@@ -464,3 +464,70 @@ class Lead(models.Model):
                 'date_deadline' : date_activity,
                 'user_id' : lead_to_plan_id.user_id.id,
             })
+
+    def _get_confirmation_template(self, invoice_received=False):
+        template_id = self.env.ref(
+            'som_crm.som_email_template_lead_confirmation', raise_if_not_found=False) or False
+        if invoice_received:
+            template_id = self.env.ref(
+                'som_crm.som_email_template_lead_confirmation_invoice',
+                raise_if_not_found=False) or False
+        return template_id
+
+    def action_send_email_confirmation(self, invoice_received=False):
+        self.ensure_one()
+
+        if not self.env.company.som_ff_send_lead_confirmation_email:
+            _logger.warning(
+                "Lead ID %s: company setting to send lead confirmation email is disabled",
+                self.id)
+            return False
+
+        if not self.partner_id:
+            _logger.warning(
+                "Lead ID %s: no partner associated, cannot send confirmation email", self.id)
+            return False
+
+        if not self.partner_id.email:
+            _logger.warning(
+                "Lead ID %s: partner has no email, cannot send confirmation email", self.id)
+            return False
+
+        if not self.env.company.som_ff_send_lead_confirmation_email_from:
+            _logger.warning(
+                "Lead ID %s: company setting 'email_from' is not set",
+                self.id)
+            return False
+
+        template_id = self._get_confirmation_template(invoice_received)
+        if not template_id:
+            _logger.warning("Lead ID %s: email template not found", self.id)
+            return False
+
+        try:
+            email_from = self.env.company.som_ff_send_lead_confirmation_email_from
+            email_values = {'email_from': email_from}
+            team_id = self.env.ref(
+                'sales_team.team_sales_department', raise_if_not_found=False
+            ) or False
+            if team_id and team_id.alias_name and team_id.alias_domain:
+                reply_to = f'{team_id.alias_name}@{team_id.alias_domain}'
+                email_values['reply_to'] = reply_to
+            template_id.send_mail(
+                self.id,
+                force_send=True,
+                email_values= email_values,
+            )
+        except Exception as e:
+            _logger.error("Lead ID %s: error sending confirmation email: %s", self.id, e)
+            return False
+
+        try:
+            self.message_post(body=_(
+                "Mail confirmation sent to partner: %s with mail %s"
+            ) % (self.partner_id.name, self.partner_id.email))
+        except Exception as e:
+            _logger.warning(
+                "Lead ID %s: email sent but failed to post message in chatter: %s", self.id, e)
+
+        return True

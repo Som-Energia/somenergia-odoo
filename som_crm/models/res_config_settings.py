@@ -14,3 +14,13 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.som_ff_call_to_opportunity',
         readonly=False,
     )
+
+    som_ff_send_lead_confirmation_email = fields.Boolean(
+        related='company_id.som_ff_send_lead_confirmation_email',
+        readonly=False,
+    )
+
+    som_ff_send_lead_confirmation_email_from = fields.Char(
+        related='company_id.som_ff_send_lead_confirmation_email_from',
+        readonly=False,
+    )

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="som_email_template_lead_confirmation" model="mail.template">
+            <field name="name">Som - Opportunity confirmation mail</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="subject">Message received, we will contact you shortly!</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html" type="html">
+<div style="background:#F0F0F0;color:#515166;padding:10px 0px;font-family:Arial,Helvetica,sans-serif;font-size:14px;">
+    <table style="width:600px;margin:0px auto;background:white;border:1px solid #e1e1e1;">
+        <tbody>
+            <tr><td style="padding:15px 20px 10px 20px;">
+                <p>Hello, <span t-out="object.partner_id.name or ''"></span></p>
+                <p>
+                    We have received your application, we will contact you shortly!
+                </p>
+                <p>Thank you for your interest in Som Energia, a 100% renewable energy cooperative, non-profit and with a transformative will.</p>
+                <p>See you soon!</p>
+                <p>Som Energia.</p>
+            </td></tr>
+        </tbody>
+    </table>
+</div>
+            </field>
+        </record>
+
+        <record id="som_email_template_lead_confirmation_invoice" model="mail.template">
+            <field name="name">Som - Opportunity confirmation mail invoice</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="subject">Invoice, received! We will contact you shortly 🙂</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html" type="html">
+<div style="background:#F0F0F0;color:#515166;padding:10px 0px;font-family:Arial,Helvetica,sans-serif;font-size:14px;">
+    <table style="width:600px;margin:0px auto;background:white;border:1px solid #e1e1e1;">
+        <tbody>
+            <tr><td style="padding:15px 20px 10px 20px;">
+                <p>Hello, <span t-out="object.partner_id.name or ''"></span></p>
+                <p>
+                    We have just received your bill! We will shortly analyze it and simulate how much it would have cost you if you had been with Som Energia.
+                </p>
+                <p>We expect to have the comparison completed within a week at most. We will then contact you to explain the results.</p>
+                <p>Thank you for your interest in Som Energia, a 100% renewable energy cooperative, non-profit and with a transformative will.</p>
+                <p>See you soon!</p>
+                <p>Som Energia.</p>
+            </td></tr>
+        </tbody>
+    </table>
+</div>
+            </field>
+        </record>
+
+    </data>
+</odoo>
