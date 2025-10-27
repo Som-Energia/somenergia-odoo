@@ -873,11 +873,11 @@ class TestCrmLeadEmailConfirmation(TransactionCase):
         })
 
         # 2. Try to reuse existing Email Template (preferred) otherwise create it
-        cls.template = cls.env.ref(
+        cls.template_std = cls.env.ref(
             'som_crm.som_email_template_lead_confirmation', raise_if_not_found=False
         ) or False
-        if not cls.template:
-            cls.template = cls.env['mail.template'].create({
+        if not cls.template_std:
+            cls.template_std = cls.env['mail.template'].create({
                 'name': 'Test Lead Confirmation Template',
                 'model_id': cls.env.ref('crm.model_crm_lead').id,
                 'subject': 'Lead Confirmation: ${object.name}',
@@ -888,7 +888,25 @@ class TestCrmLeadEmailConfirmation(TransactionCase):
             'name': 'som_email_template_lead_confirmation',
             'module': 'som_crm',
             'model': 'mail.template',
-            'res_id': cls.template.id,
+            'res_id': cls.template_std.id,
+            })
+
+        cls.template_invoice = cls.env.ref(
+            'som_crm.som_email_template_lead_confirmation_invoice', raise_if_not_found=False
+        ) or False
+        if not cls.template_invoice:
+            cls.template_invoice = cls.env['mail.template'].create({
+                'name': 'Test Lead Confirmation Template (Invoice)',
+                'model_id': cls.env.ref('crm.model_crm_lead').id,
+                'subject': 'Lead Confirmation: ${object.name}',
+                'body_html': '<p>Invoice confirmation.</p>',
+                'email_from': 'fallback@test.com',
+            })
+            cls.env['ir.model.data'].create({
+            'name': 'som_email_template_lead_confirmation_invoice',
+            'module': 'som_crm',
+            'model': 'mail.template',
+            'res_id': cls.template_invoice.id,
             })
 
         # Test Data (Partners and Lead)
@@ -908,8 +926,25 @@ class TestCrmLeadEmailConfirmation(TransactionCase):
             'company_id': cls.company.id,
         })
 
+        # Configure Sales Team for Reply-To
+        cls.sales_team = cls.env.ref('sales_team.team_sales_department', raise_if_not_found=False)
+        if not cls.sales_team:
+            cls.sales_team = cls.env['crm.team'].create({'name': 'Sales Department'})
+            cls.env['ir.model.data'].create({
+                'name': 'team_sales_department',
+                'module': 'sales_team',
+                'model': 'crm.team',
+                'res_id': cls.sales_team.id,
+            })
+
+        cls.sales_team.write({
+            'alias_name': 'sales-test-alias',
+            'alias_domain': 'test.com',
+        })
+        cls.expected_reply_to = f'{cls.sales_team.alias_name}@{cls.sales_team.alias_domain}'
+
     @patch('odoo.addons.mail.models.mail_template.MailTemplate.send_mail')
-    def test_happy_path(self, mock_send_mail):
+    def test_happy_path_without_invoice(self, mock_send_mail):
         """
         Test the "happy path": all conditions are met.
         The email is sent and a message is logged in the chatter.
@@ -925,7 +960,43 @@ class TestCrmLeadEmailConfirmation(TransactionCase):
 
         # 3. Check that send_mail was called with the correct arguments
         expected_email_values = {
-            'email_from': 'company-sender@test.com'
+            'email_from': 'company-sender@test.com',
+            'reply_to': 'sales-test-alias@somenergia.coop',
+        }
+        mock_send_mail.assert_called_with(
+            self.lead_base.id,
+            force_send=True,
+            email_values=expected_email_values
+        )
+
+        # 4. Check that the message was posted in the chatter
+        chatter_msg = self.lead_base.message_ids.filtered(
+            lambda m: 'Mail confirmation sent' in m.body
+        )
+        self.assertEqual(
+            len(chatter_msg), 1, "There should be one confirmation message in the chatter.")
+        self.assertIn(self.partner_ok.name, chatter_msg.body)
+        self.assertIn(self.partner_ok.email, chatter_msg.body)
+
+    @patch('odoo.addons.mail.models.mail_template.MailTemplate.send_mail')
+    def test_happy_path_with_invoice(self, mock_send_mail):
+        """
+        Test the "happy path": all conditions are met.
+        The email is sent and a message is logged in the chatter.
+        """
+        # Execute the action
+        result = self.lead_base.action_send_email_confirmation(invoice_received=True)
+
+        # 1. Check that the method returns True
+        self.assertTrue(result, "The method should return True on success.")
+
+        # 2. Check that send_mail was called ONCE
+        mock_send_mail.assert_called_once()
+
+        # 3. Check that send_mail was called with the correct arguments
+        expected_email_values = {
+            'email_from': 'company-sender@test.com',
+            'reply_to': 'sales-test-alias@somenergia.coop',
         }
         mock_send_mail.assert_called_with(
             self.lead_base.id,
@@ -1007,7 +1078,7 @@ class TestCrmLeadEmailConfirmation(TransactionCase):
         self.assertTrue(xml_id, "The template's XML ID should exist for the test.")
         xml_id.unlink()
 
-        # Check that env.ref now fails (returns Falsy)
+        # Check that env.ref now fails (returns False)
         self.assertFalse(
             self.env.ref('som_crm.som_email_template_lead_confirmation', raise_if_not_found=False),
             "The template's XML ID should have been deleted.")
@@ -1017,21 +1088,30 @@ class TestCrmLeadEmailConfirmation(TransactionCase):
 
         self.assertFalse(result, "The method should return False.")
 
-    @patch('odoo.addons.mail.models.mail_thread.MailThread.message_post',
-            side_effect=Exception("Simulated Chatter Error"))
-    @patch('odoo.addons.mail.models.mail_template.MailTemplate.send_mail')
-    def test_success_email_sent_chatter_fails(self, mock_send_mail, mock_message_post):
+    def test_get_template_logic(self):
         """
-        Test that the method returns True even if posting to chatter fails,
-        as long as the email was sent.
+        Test the _get_confirmation_template method logic directly.
         """
-        result = self.lead_base.action_send_email_confirmation()
+        # 1. Test standard call
+        template = self.lead_base._get_confirmation_template(invoice_received=False)
+        self.assertEqual(template, self.template_std, "Should get standard template.")
 
-        # The method should return True because the email was sent
-        self.assertTrue(result, "The method should return True even if chatter fails.")
+        # 2. Test invoice call
+        template_inv = self.lead_base._get_confirmation_template(invoice_received=True)
+        self.assertEqual(template_inv, self.template_invoice, "Should get invoice template.")
 
-        # The email send MUST have been called
-        mock_send_mail.assert_called_once()
+        # 3. Test standard missing
+        xml_id_std = self.env.ref(
+            'som_crm.som_email_template_lead_confirmation', raise_if_not_found=False)
+        xml_id_std.unlink()
+        template_std_missing = self.lead_base._get_confirmation_template(invoice_received=False)
+        self.assertFalse(
+            template_std_missing, "Should return False if standard template is missing.")
 
-        # The chatter post MUST have been attempted
-        mock_message_post.assert_called_once()
+        # 4. Test invoice missing
+        xml_id_inv = self.env.ref(
+            'som_crm.som_email_template_lead_confirmation_invoice', raise_if_not_found=False)
+        xml_id_inv.unlink()
+        template_inv_missing = self.lead_base._get_confirmation_template(invoice_received=True)
+        self.assertFalse(
+            template_inv_missing, "Should return False if invoice template is missing.")

@@ -465,6 +465,15 @@ class Lead(models.Model):
                 'user_id' : lead_to_plan_id.user_id.id,
             })
 
+    def _get_confirmation_template(self, invoice_received=False):
+        template_id = self.env.ref(
+            'som_crm.som_email_template_lead_confirmation', raise_if_not_found=False) or False
+        if invoice_received:
+            template_id = self.env.ref(
+                'som_crm.som_email_template_lead_confirmation_invoice',
+                raise_if_not_found=False) or False
+        return template_id
+
     def action_send_email_confirmation(self, invoice_received=False):
         self.ensure_one()
 
@@ -490,15 +499,9 @@ class Lead(models.Model):
                 self.id)
             return False
 
-        template_id = self.env.ref(
-            'som_crm.som_email_template_lead_confirmation', raise_if_not_found=False) or False
-        if invoice_received:
-            template_id = self.env.ref(
-                'som_crm.som_email_template_lead_confirmation_invoice',
-                raise_if_not_found=False) or False
+        template_id = self._get_confirmation_template(invoice_received)
         if not template_id:
-            _logger.warning(
-                "Lead ID %s: email template not found", self.id)
+            _logger.warning("Lead ID %s: email template not found", self.id)
             return False
 
         try:
