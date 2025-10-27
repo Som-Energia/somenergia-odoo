@@ -122,7 +122,7 @@ class CrmPhonecall(models.Model):
             self.opportunity_id
         oppo_id = self._find_matching_opportunity()
         if not oppo_id:
-            oppo_id = self.env["crm.lead"].create(self._prepare_opportunity_vals())
+            oppo_id = self.env["crm.lead"].with_context(from_phonecall=True).create(self._prepare_opportunity_vals())
         self.write({"opportunity_id": oppo_id.id, "state": "done"})
         # add tag to opportunity
         self.sudo().env.company.som_ff_call_to_opportunity = False

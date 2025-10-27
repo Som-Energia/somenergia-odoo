@@ -20,6 +20,16 @@
                     </div>
                 </div>
 
+                <div class="col-12 col-lg-6 o_setting_box">
+                    <div class="o_setting_left_pane">
+                        <field name="som_ff_auto_upcomming_activity" />
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="som_ff_auto_upcomming_activity" />
+                        <div class="text-muted">Automatic Upcoming Activity creation on Lead creation</div>
+                    </div>
+                </div>
+
                 <div class="col-12 col-lg-6 o_setting_box" id="default_company_schedule_setting">
                     <div class="o_setting_right_pane">
                         <label for="som_crm_call_category_id"/>

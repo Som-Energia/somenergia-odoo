@@ -250,6 +250,7 @@ class CRMLeadAPIController(http.Controller):
             odoo_bot = request.env.ref('base.user_root')
             lead_id = request.env['crm.lead'].with_user(odoo_bot).create(lead_values)
             lead_id.auto_assign_user()
+            lead_id.create_upcomming_activity(force_today=True)
             lead_id.process_utm_data()
 
             # Create attachments

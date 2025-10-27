@@ -83,6 +83,12 @@ class TestCrmLeadFetchmail(TransactionCase):
             'default_fetchmail_server_id': 1,  # The ID can be any truthy value
         }
 
+        cls.company = cls.env.ref('base.main_company')
+        cls.company.write({
+            'som_ff_auto_upcomming_activity': True,
+        })
+
+
     def test_lead_creation_with_fetchmail_context_team_leader(self):
         """
         Test that a lead created with the fetchmail context gets the correct user and medium.
@@ -94,10 +100,13 @@ class TestCrmLeadFetchmail(TransactionCase):
         })
 
         # --- Asserts ---
+        self.assertTrue(lead.user_id, "The lead should have a user assigned.")
         self.assertNotEqual(lead.user_id, self.sales_user,
                          "The lead should not have the team leader user assigned.")
         self.assertEqual(lead.som_channel, self.webform_medium,
                          "The lead's medium should be set to 'Web Form'.")
+        self.assertEqual(len(lead.activity_ids), 1,
+                         "The lead should have one activity scheduled.")
 
     def test_lead_creation_with_fetchmail_context_no_team_leader(self):
         """
@@ -121,12 +130,15 @@ class TestCrmLeadFetchmail(TransactionCase):
         })
 
         # --- Asserts ---
+        self.assertTrue(lead.user_id, "The lead should have a user assigned.")
         self.assertEqual(lead.user_id, self.sales_user,
                          "The lead should have the sales user assigned.")
         self.assertNotEqual(lead.user_id, self.team_user,
                          "The lead should not have the team user assigned.")
         self.assertEqual(lead.som_channel, self.webform_medium,
                          "The lead's medium should be set to 'Web Form'.")
+        self.assertEqual(len(lead.activity_ids), 1,
+                         "The lead should have one activity scheduled.")
 
     def test_lead_creation_without_fetchmail_context(self):
         """

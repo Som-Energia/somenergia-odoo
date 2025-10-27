@@ -100,6 +100,12 @@ class TestCRMLeadAPIHttp(HttpCase):
                 'res_id': cls.webform_simulation_medium.id,
             })
 
+        cls.company = cls.env.ref('base.main_company')
+        cls.company.write({
+            'som_ff_auto_upcomming_activity': True,
+        })
+
+
     def test_create_lead_success_without_file(self):
         data = {
             'contact_name': 'Test CONTACT ok',
@@ -131,6 +137,7 @@ class TestCRMLeadAPIHttp(HttpCase):
         self.assertEqual(created_lead_id.stage_id, self.stage_lead1)
         self.assertEqual(created_lead_id.som_channel, self.webform_medium)
         self.assertNotEqual(created_lead_id.user_id, self.sales_user)
+        self.assertEqual(len(created_lead_id.activity_ids), 1)
 
         # utm
         self.assertEqual(created_lead_id.campaign_id.name, 'uneixte')
@@ -182,6 +189,7 @@ class TestCRMLeadAPIHttp(HttpCase):
         self.assertEqual(created_lead_id.stage_id, self.stage_lead2)
         self.assertEqual(created_lead_id.som_channel, self.webform_simulation_medium)
         self.assertNotEqual(created_lead_id.user_id, self.sales_user)
+        self.assertEqual(len(created_lead_id.activity_ids), 1)
         # utm
         self.assertEqual(created_lead_id.campaign_id.name, 'uneixte')
         self.assertEqual(created_lead_id.medium_id.name, 'Especial')
