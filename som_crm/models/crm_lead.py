@@ -183,6 +183,9 @@ class Lead(models.Model):
         if (self.env.context.get('fetchmail_cron_running', False) and
                 self.env.context.get('default_fetchmail_server_id', False)):
             lead_id.do_opportunity_from_fetchmail()
+        if (not (self.env.context.get('default_phonecall_id', False))
+                and self.env.company.som_ff_auto_upcomming_activity):
+            lead_id.create_upcomming_activity(force_today=True)
         return lead_id
 
     def assign_to_me(self):
@@ -426,13 +429,44 @@ class Lead(models.Model):
 
             record.write(dict_update)
 
-    def _get_next_activity_date(self):
+    def _get_next_activity_date(self, force_today=False):
         self.ensure_one()
         today = fields.Date.today()
         next_activity_date = False
-        if self.stage_id:
+        if force_today:
+            next_activity_date = today
+        elif self.stage_id:
             next_activity_date = today + timedelta(days=self.stage_id.som_upcoming_activity_days)
         return next_activity_date
+
+    def create_upcomming_activity(self, activity_type_id = False, force_today=False):
+        self.ensure_one()
+        won_stage_id = self.get_won_stage()
+        if self.stage_id == won_stage_id:
+            _logger.info(
+                "Lead ID %s: in 'won' stage, skipping upcoming activity creation", self.id)
+            return False
+        if not self.user_id:
+            _logger.info(
+                "Lead ID %s: opportunity without user assigned", self.id)
+            return False
+        if not activity_type_id:
+            activity_type_id = self.env.ref(
+                'som_crm.som_upcoming_activity', raise_if_not_found=False
+            ) or False
+            if not activity_type_id:
+                return False
+        date_activity = self._get_next_activity_date(
+            force_today= force_today)
+        mail_activity_id = self.env['mail.activity'].with_user(self.user_id.id).create({
+            'res_model_id' : self.env['ir.model']._get('crm.lead').id,
+            'res_model' : 'crm.lead',
+            'res_id' : self.id,
+            'activity_type_id' : activity_type_id.id,
+            'date_deadline' : date_activity,
+            'user_id' : self.user_id.id,
+        })
+        return mail_activity_id
 
     @api.model
     def _create_upcoming_activities(self):
@@ -455,15 +489,8 @@ class Lead(models.Model):
         ])
 
         for lead_to_plan_id in lead_to_plan_ids:
-            date_activity = lead_to_plan_id._get_next_activity_date()
-            self.env['mail.activity'].with_user(lead_to_plan_id.user_id.id).create({
-                'res_model_id' : self.env['ir.model']._get('crm.lead').id,
-                'res_model' : 'crm.lead',
-                'res_id' : lead_to_plan_id.id,
-                'activity_type_id' : activity_type_id.id,
-                'date_deadline' : date_activity,
-                'user_id' : lead_to_plan_id.user_id.id,
-            })
+            lead_to_plan_id.create_upcomming_activity(
+                activity_type_id=activity_type_id, force_today=False)
 
     def _get_confirmation_template(self, invoice_received=False):
         template_id = self.env.ref(

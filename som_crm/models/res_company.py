@@ -12,7 +12,7 @@ class ResCompany(models.Model):
     )
 
     som_ff_call_to_opportunity = fields.Boolean(
-        string="Feature flag: Automatic Call to Opportunity conversion by Category",
+        string="Automatic Call to Opportunity conversion by Category",
     )
 
     som_ff_send_lead_confirmation_email = fields.Boolean(
@@ -21,4 +21,8 @@ class ResCompany(models.Model):
 
     som_ff_send_lead_confirmation_email_from = fields.Char(
         string="Mail From for lead confirmation email",
+    )
+
+    som_ff_auto_upcomming_activity = fields.Boolean(
+        string="Automatic Upcoming Activity creation on Lead creation",
     )

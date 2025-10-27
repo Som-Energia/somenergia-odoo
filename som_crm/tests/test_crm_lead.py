@@ -636,6 +636,10 @@ class TestCrmLeadUpcomingActivities(TransactionCase):
         cls.Lead = cls.env['crm.lead']
         cls.Activity = cls.env['mail.activity']
         cls.today = Date.today()
+        cls.company = cls.env.ref('base.main_company')
+        cls.company.write({
+            'som_ff_auto_upcomming_activity': False,
+        })
 
         # 1. Prepare external data (Mocks/References)
 
@@ -688,6 +692,7 @@ class TestCrmLeadUpcomingActivities(TransactionCase):
             'name': 'Candidate Lead',
             'stage_id': cls.stage_a.id,
             'user_id': cls.test_user.id,
+            'company_id': cls.company.id,
         })
 
         # Lead 2: Excluded (Already has an activity)
@@ -695,6 +700,7 @@ class TestCrmLeadUpcomingActivities(TransactionCase):
             'name': 'Lead with Existing Activity',
             'stage_id': cls.stage_b.id,
             'user_id': cls.test_user.id,
+            'company_id': cls.company.id,
         })
         # Create an existing activity to exclude Lead 2
         cls.Activity.create({
@@ -711,6 +717,7 @@ class TestCrmLeadUpcomingActivities(TransactionCase):
             'name': 'Won Lead',
             'stage_id': cls.won_stage.id,
             'user_id': cls.test_user.id,
+            'company_id': cls.company.id,
         })
 
         # Lead 4: Excluded (No assigned user)
@@ -718,6 +725,7 @@ class TestCrmLeadUpcomingActivities(TransactionCase):
             'name': 'Unassigned Lead',
             'stage_id': cls.stage_b.id,
             'user_id': False,
+            'company_id': cls.company.id,
         })
 
         # Lead 5: Candidate for activity creation (Stage B, No existing activity)
@@ -725,6 +733,7 @@ class TestCrmLeadUpcomingActivities(TransactionCase):
             'name': 'Candidate Lead 2',
             'stage_id': cls.stage_b.id,
             'user_id': cls.test_user.id,
+            'company_id': cls.company.id,
         })
 
     # -------------------------------------------------------------------------
@@ -777,9 +786,8 @@ class TestCrmLeadUpcomingActivities(TransactionCase):
         Test the batch creation process: should create activities only for
         Lead 1 and Lead 5, and use the correct deadline.
         """
-        initial_activity_count = self.Activity.search_count([('res_model', '=', 'crm.lead'),])
 
-        #Initial check: Only Lead 2 has an activity
+        #Initial check: Only Lead 2 has 2 activities
         initial_lead2_activity_count = self.Activity.search_count([
             ('res_model', '=', 'crm.lead'),
             ('res_id', '=', self.lead_2.id),
@@ -857,6 +865,37 @@ class TestCrmLeadUpcomingActivities(TransactionCase):
             ('res_id', '=', self.lead_4.id),
         ])
         self.assertFalse(activity_lead_4, "Lead 4 should not get an activity (No assigned user).")
+
+    def test_create_upcoming_activity_on_create_success(self):
+        self.company.write({
+            'som_ff_auto_upcomming_activity': True,
+        })
+        lead_6 = self.Lead.create({
+            'name': 'Candidate Lad 2',
+            'stage_id': self.stage_b.id,
+            'user_id': self.test_user.id,
+            'company_id': self.company.id,
+        })
+
+        initial_lead6_activity_count = self.Activity.search_count([
+            ('res_model', '=', 'crm.lead'),
+            ('res_id', '=', lead_6.id),
+        ])
+        self.assertEqual(initial_lead6_activity_count, 1,
+                         "Initial setup error: Only 1 activity should exist for Lead 6.")
+
+        # 2. Run the activity creation method (called on the crm.lead model)
+        self.Lead._create_upcoming_activities()
+
+        final_lead6_activity_count = self.Activity.search_count([
+            ('res_model', '=', 'crm.lead'),
+            ('res_id', '=', lead_6.id),
+        ])
+        self.assertEqual(final_lead6_activity_count, initial_lead6_activity_count,
+                         "Activity must not be created for Lead 6.")
+        activity_id = lead_6.activity_ids.sorted('date_deadline', reverse=True)[0]
+        self.assertEqual(activity_id.date_deadline, self.today,
+                         "Lead 6 activity date should be today.")
 
 
 @tagged('som_lead_email_confirmation')

@@ -24,3 +24,8 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.som_ff_send_lead_confirmation_email_from',
         readonly=False,
     )
+
+    som_ff_auto_upcomming_activity = fields.Boolean(
+        related='company_id.som_ff_auto_upcomming_activity',
+        readonly=False,
+    )
