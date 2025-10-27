@@ -138,9 +138,9 @@ class TestCRMLeadAPIHttp(HttpCase):
         self.assertEqual(created_lead_id.source_id.name, 'instagram')
 
         # Check comments in chatter
-        message = message = created_lead_id.message_ids.filtered(
-            lambda m: '<br>Aquest' in m.body
-        )
+        message = created_lead_id.message_ids.filtered(
+            lambda m: '<br>Aquest és un' in m.body
+        )[0]
         expected_body = markupsafe.Markup(
             '<p>Hola,<br>Aquest és un comentari de prova.<br>Gràcies!    Salutacions.</p>')
         self.assertEqual(message.body, expected_body)
