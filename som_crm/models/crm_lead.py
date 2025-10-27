@@ -183,7 +183,7 @@ class Lead(models.Model):
         if (self.env.context.get('fetchmail_cron_running', False) and
                 self.env.context.get('default_fetchmail_server_id', False)):
             lead_id.do_opportunity_from_fetchmail()
-        if (not (self.env.context.get('default_phonecall_id', False))
+        if (not (self.env.context.get('from_phonecall', False))
                 and self.env.company.som_ff_auto_upcomming_activity):
             lead_id.create_upcomming_activity(force_today=True)
         return lead_id

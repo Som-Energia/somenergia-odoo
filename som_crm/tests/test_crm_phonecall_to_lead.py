@@ -53,6 +53,11 @@ class TestCrmPhonecallToLead(TransactionCase):
         cls.test_phone_number = "+34666777888"
         cls.test_phone_number_unformatted = "666 777 888"
 
+        cls.company = cls.env.ref('base.main_company')
+        cls.company.write({
+            'som_ff_auto_upcomming_activity': True,
+        })
+
     def test_prepare_opportunity_vals(self):
         vals = self.phonecall._prepare_opportunity_vals()
         self.assertEqual(vals['contact_name'], 'John Doe')
@@ -123,12 +128,26 @@ class TestCrmPhonecallToLead(TransactionCase):
         self.assertIn(self.crm_category, phonecall.som_category_ids,
                       "The crm tag should have been added to the phonecall.")
 
+        self.assertEqual(len(phonecall.opportunity_id.activity_ids), 0,
+                         "No activity should be scheduled for the new opportunity.")
+
         # Check that the result is a redirect action
         self.assertEqual(
             result.get('type'), 'ir.actions.act_window', "It should return a window action.")
         self.assertEqual(
             result.get('res_model'), 'crm.lead', "The action should point to the crm.lead model.")
 
+
+        self.company.write({
+            'som_ff_auto_upcomming_activity': False,
+        })
+        phonecall2 = self.env['crm.phonecall'].with_user(self.test_user).create({
+            'name': 'Test call for new opportunity 2',
+            'som_phone': self.test_phone_number,
+            'som_operator': self.test_user.som_call_center_user,
+        })
+        self.assertEqual(len(phonecall.opportunity_id.activity_ids), 0,
+                         "No activity should be scheduled for the new opportunity.")
 
     def test_assign_to_existing_opportunity(self):
         """
