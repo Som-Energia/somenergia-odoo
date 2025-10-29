@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Pivot per leads guanyats -->
+    <record id="crm_lead_view_pivot_daily_target" model="ir.ui.view">
+        <field name="name">crm.lead.pivot.daily.target</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <pivot string="Objectius de Leads Guanyats" sample="1">
+                <field name="date_closed" interval="day" type="col"/>
+                <field name="user_id" type="row"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vista Graph complementària -->
+    <record id="crm_lead_view_graph_daily_target" model="ir.ui.view">
+        <field name="name">crm.lead.graph.daily.target</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <graph string="Evolució Objectius Diaris" type="line" sample="1">
+                <field name="date_closed" interval="day"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Acció de menú -->
+    <record id="crm_lead_action_daily_target_analysis" model="ir.actions.act_window">
+        <field name="name">Anàlisi Objectius Diaris</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">pivot,graph</field>
+    </record>
+
+    <!-- Item de menú -->
+    <menuitem id="crm_menu_daily_target_analysis"
+              name="Objectius Diaris"
+              parent="crm.crm_menu_report"
+              action="crm_lead_action_daily_target_analysis"
+              sequence="99"/>
+</odoo>

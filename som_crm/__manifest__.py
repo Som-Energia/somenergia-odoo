@@ -44,6 +44,7 @@
         'views/utm_menus.xml',
         'views/crm_stage_views.xml',
         'views/mail_message.xml',
+        'views/crm_pivot_views.xml',
     ],
     'post_init_hook': 'post_init_hook',
     # only loaded in demonstration mode

@@ -29,3 +29,9 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.som_ff_auto_upcomming_activity',
         readonly=False,
     )
+
+    som_crm_daily_won_leads_target = fields.Integer(
+        string="Objectiu Diari de Leads Guanyats",
+        config_parameter='som_crm_daily_won_leads_target',
+        default=0
+    )
