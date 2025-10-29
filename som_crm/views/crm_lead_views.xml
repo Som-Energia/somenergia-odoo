@@ -86,6 +86,14 @@
                 <field name="som_channel" required="1"/>
                 <field name="som_url_origin" widget="url" required="0"/>
             </xpath>
+
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button class="oe_stat_button" icon="fa-envelope" name="button_open_activities_by_type" type="object"
+                        context="{'activity_type':'mail.mail_activity_data_email'}" attrs="{'invisible': [('type', '=', 'lead')]}">
+                    <field name="som_mail_activity_count" string="Emails" widget="statinfo"/>
+                </button>
+            </xpath>
+
         </field>
     </record>
 

@@ -34,6 +34,31 @@ class Lead(models.Model):
             return activity_id[0].date
         return False
 
+    @api.depends('message_ids', 'message_ids.subtype_id', 'message_ids.mail_activity_type_id')
+    def _compute_activities_counters(self):
+        activity_subtype_id = self.env.ref('mail.mt_activities', raise_if_not_found=False) or False
+        activity_type_xml_ids = {
+            'som_mail_activity_count': 'mail.mail_activity_data_email',
+            'som_task_activity_count': 'mail.mail_activity_data_todo',
+            'som_call_activity_count': 'mail.mail_activity_data_call',
+            'som_upcomming_activity_count': 'som_crm.som_upcoming_activity',
+            'som_meeting_activity_count': 'mail.mail_activity_data_meeting',
+        }
+        for record in self:
+            for field_name, activity_type_xml_id in activity_type_xml_ids.items():
+                activity_type_id = (
+                    self.env.ref(activity_type_xml_id, raise_if_not_found=False) or False
+                )
+                if not activity_type_id or not activity_subtype_id:
+                    record[field_name] = 0
+                    continue
+
+                activities = record.message_ids.filtered(
+                    lambda x: x.subtype_id == activity_subtype_id
+                        and x.mail_activity_type_id == activity_type_id
+                )
+                record[field_name] = len(activities)
+
     @api.depends('message_ids', 'message_ids.date')
     def _compute_last_activity_mail_done_date(self):
         activity_type_xml_id = 'mail.mail_activity_data_email'
@@ -157,6 +182,37 @@ class Lead(models.Model):
     )
 
     som_url_origin = fields.Char('URL Origin', help="URL from which the lead originated")
+
+    # Activity counters
+    som_mail_activity_count = fields.Integer(
+        string='Mail Activities Count',
+        compute='_compute_activities_counters',
+        store=True,
+    )
+
+    som_task_activity_count = fields.Integer(
+        string='Task Activities Count',
+        compute='_compute_activities_counters',
+        store=True,
+    )
+
+    som_call_activity_count = fields.Integer(
+        string='Call Activities Count',
+        compute='_compute_activities_counters',
+        store=True,
+    )
+
+    som_upcomming_activity_count = fields.Integer(
+        string='Upcoming Activities Count',
+        compute='_compute_activities_counters',
+        store=True,
+    )
+
+    som_meeting_activity_count = fields.Integer(
+        string='Meeting Activities Count',
+        compute='_compute_activities_counters',
+        store=True,
+    )
 
     def auto_assign_user(self):
         team_id = self.env.ref(
@@ -342,6 +398,19 @@ class Lead(models.Model):
             "default_partner_id": self.partner_id.id,
             "default_duration": 1.0,
         }
+        return action
+
+    def button_open_activities_by_type(self):
+        self.ensure_one()
+        activity_subtype_id = self.env.ref('mail.mt_activities', raise_if_not_found=False) or False
+        action = self.env["ir.actions.actions"]._for_xml_id(
+            "mail.action_view_mail_message"
+        )
+        action['domain'] = [
+            ("res_id", "=", self.id),
+            ("model", "=", 'crm.lead'),
+            ("subtype_id", "=", activity_subtype_id.id),
+        ]
         return action
 
     def _find_matching_partner_custom(self):
