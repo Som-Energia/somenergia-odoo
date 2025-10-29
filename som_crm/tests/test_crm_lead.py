@@ -1154,3 +1154,183 @@ class TestCrmLeadEmailConfirmation(TransactionCase):
         template_inv_missing = self.lead_base._get_confirmation_template(invoice_received=True)
         self.assertFalse(
             template_inv_missing, "Should return False if invoice template is missing.")
+
+
+@tagged('som_lead_activity_counters')
+class TestCrmLeadActivityCounters(TransactionCase):
+    """
+    Test suite for the computed stored fields som_*_activity_count on crm.lead.
+    These tests verify that counters are correctly initialized and incremented
+    only when a relevant mail.activity is marked as 'done'.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        """
+        Set up the test environment once for all test methods in this class.
+        This is more efficient than setUp for creating records.
+        """
+        super().setUpClass()
+
+        # --- Get Model References ---
+        cls.Lead = cls.env['crm.lead']
+        cls.Activity = cls.env['mail.activity']
+        cls.User = cls.env['res.users']
+        cls.ModelCrmLead = cls.env.ref('crm.model_crm_lead')
+
+        # --- Get Data References ---
+
+        # Get a test user (e.g., demo user)
+        cls.test_user = cls.env['res.users'].create({
+            'name': 'Test User',
+            'login': 'test_user',
+            'email': 'test@user.com',
+            "groups_id": [
+                (6, 0, [cls.env.ref("sales_team.group_sale_salesman_all_leads").id])
+            ],
+        })
+
+        # Get references to the standard activity types
+        cls.activity_type_email = cls.env.ref('mail.mail_activity_data_email')
+        cls.activity_type_todo = cls.env.ref('mail.mail_activity_data_todo')
+        cls.activity_type_call = cls.env.ref('mail.mail_activity_data_call')
+        cls.activity_type_meeting = cls.env.ref('mail.mail_activity_data_meeting')
+
+        cls.activity_type_upcoming = cls.env.ref(
+            'som_crm.som_upcoming_activity', raise_if_not_found=False
+        ) or False
+        if not cls.activity_type_upcoming:
+            cls.activity_type_upcoming = cls.env['mail.activity.type'].create({
+                'name': 'Upcoming activity'})
+            cls.env['ir.model.data'].create({
+                'name': 'som_upcoming_activity',
+                'module': 'som_crm',
+                'model': 'mail.activity.type',
+                'res_id': cls.activity_type_upcoming.id,
+            })
+
+        # Create a base lead
+        cls.lead = cls.Lead.create({
+            'name': 'Test Lead - Activity Counters',
+            'user_id': cls.test_user.id,
+            'email_from': 'test@example.com',
+        })
+
+        cls.phone_call_ressult_id = cls.env['phone.call.result'].create({
+            'name': 'Test Result',
+        })
+
+    def _create_and_complete_activity(self, lead_record, activity_type, user):
+        """
+        Helper method to create and complete an activity in one step.
+        This is what triggers the creation of the 'mail.message'
+        that the compute method is counting.
+        """
+        # Create the activity
+        activity = self.Activity.create({
+            'activity_type_id': activity_type.id,
+            'res_model_id': self.ModelCrmLead.id,
+            'res_id': lead_record.id,
+            'summary': f'Test {activity_type.name}',
+            'user_id': user.id,
+        })
+
+        if activity_type == self.activity_type_call:
+            activity['som_phone_call_result_id'] = self.phone_call_ressult_id.id
+
+        # Mark as done (with user context)
+        # This action creates the mail.message with subtype 'mail.mt_activities'
+        activity.with_user(user)._action_done(feedback='Test feedback')
+
+    def test_initial_counts_are_zero(self):
+        """
+        Test that a newly created lead has all activity counters set to 0.
+        """
+        # We create a fresh lead here to be 100% sure of its initial state
+        fresh_lead = self.Lead.create({
+            'name': 'Fresh Lead for Zero Test',
+        })
+
+        # The compute method should be triggered on create for stored fields
+        self.assertEqual(
+            fresh_lead.som_mail_activity_count, 0, "Initial email count should be 0")
+        self.assertEqual(
+            fresh_lead.som_task_activity_count, 0, "Initial task count should be 0")
+        self.assertEqual(
+            fresh_lead.som_call_activity_count, 0, "Initial call count should be 0")
+        self.assertEqual(
+            fresh_lead.som_upcomming_activity_count, 0, "Initial upcoming count should be 0")
+        self.assertEqual(
+            fresh_lead.som_meeting_activity_count, 0, "Initial meeting count should be 0")
+
+    def test_counters_increment_on_activity_completion(self):
+        """
+        Test that counters increment correctly when activities are marked as done.
+        This test completes one of each activity type and checks the specific counter.
+        """
+        # Ensure initial state of the shared test lead
+        self.assertEqual(self.lead.som_call_activity_count, 0, "Pre-test call count must be 0")
+        self.assertEqual(self.lead.som_mail_activity_count, 0, "Pre-test email count must be 0")
+
+        # --- 1. Complete a 'Call' activity ---
+        self._create_and_complete_activity(self.lead, self.activity_type_call, self.test_user)
+        self.assertEqual(
+            self.lead.som_call_activity_count, 1, "Call count should be 1 after completion")
+
+        # --- 2. Complete an 'Email' activity ---
+        self._create_and_complete_activity(self.lead, self.activity_type_email, self.test_user)
+        self.assertEqual(
+            self.lead.som_mail_activity_count, 1, "Email count should be 1 after completion")
+
+        # --- 3. Complete a 'Task' (To-Do) activity ---
+        self._create_and_complete_activity(self.lead, self.activity_type_todo, self.test_user)
+        self.assertEqual(
+            self.lead.som_task_activity_count, 1, "Task/Todo count should be 1 after completion")
+
+        # --- 4. Complete a 'Meeting' activity ---
+        self._create_and_complete_activity(self.lead, self.activity_type_meeting, self.test_user)
+        self.assertEqual(
+            self.lead.som_meeting_activity_count, 1, "Meeting count should be 1 after completion")
+
+        # --- 5. Complete an 'Upcoming' (Custom Type) activity ---
+        self._create_and_complete_activity(self.lead, self.activity_type_upcoming, self.test_user)
+        self.assertEqual(
+            self.lead.som_upcomming_activity_count, 1,
+            "Upcoming count should be 1 after completion")
+
+        # --- 6. Complete a *second* 'Call' to test incrementing > 1 ---
+        self._create_and_complete_activity(self.lead, self.activity_type_call, self.test_user)
+        self.assertEqual(self.lead.som_call_activity_count, 2, "Call count should now be 2")
+
+        # Verify other counts were not affected
+        self.assertEqual(self.lead.som_mail_activity_count, 1, "Email count should remain 1")
+
+    def test_log_note_does_not_increment_counters(self):
+        """
+        Test that a simple log note (not an activity) does not affect the counters.
+        This verifies the 'subtype_id == mail.mt_activities' filter in the compute method.
+        """
+        # Get initial counts from the shared lead
+        initial_call_count = self.lead.som_call_activity_count
+        initial_task_count = self.lead.som_task_activity_count
+
+        # Post a standard note (subtype 'mail.mt_note')
+        self.lead.with_user(self.test_user).message_post(
+            body="This is a standard log note.",
+            message_type='comment',
+            subtype_xmlid='mail.mt_note'
+        )
+
+        # Check that counters have not changed
+        self.assertEqual(
+            self.lead.som_call_activity_count, initial_call_count,
+            "Call count should not change after posting a note"
+        )
+        self.assertEqual(
+            self.lead.som_task_activity_count, initial_task_count,
+            "Task count should not change after posting a note"
+        )
+        self.assertEqual(
+            self.lead.som_upcomming_activity_count, 0,
+            "Upcoming count should remain 0 after posting a note"
+        )
