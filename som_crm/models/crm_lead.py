@@ -406,11 +406,18 @@ class Lead(models.Model):
         action = self.env["ir.actions.actions"]._for_xml_id(
             "mail.action_view_mail_message"
         )
+        xml_id = self.env.context.get('activity_type', False)
+        if not xml_id:
+            return
+        mail_activity_type_id = (
+            self.env.ref(xml_id, raise_if_not_found=False) or False)
         action['domain'] = [
             ("res_id", "=", self.id),
             ("model", "=", 'crm.lead'),
             ("subtype_id", "=", activity_subtype_id.id),
+            ("mail_activity_type_id", "=", mail_activity_type_id.id),
         ]
+        action['context'] = {'create': False, 'edit': False, 'delete': False}
         return action
 
     def _find_matching_partner_custom(self):

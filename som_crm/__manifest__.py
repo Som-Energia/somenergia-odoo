@@ -43,6 +43,7 @@
         'views/crm_phonecall_views.xml',
         'views/utm_menus.xml',
         'views/crm_stage_views.xml',
+        'views/mail_message.xml',
     ],
     'post_init_hook': 'post_init_hook',
     # only loaded in demonstration mode

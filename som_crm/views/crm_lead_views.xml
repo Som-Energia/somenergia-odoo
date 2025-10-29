@@ -90,7 +90,19 @@
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button class="oe_stat_button" icon="fa-envelope" name="button_open_activities_by_type" type="object"
                         context="{'activity_type':'mail.mail_activity_data_email'}" attrs="{'invisible': [('type', '=', 'lead')]}">
-                    <field name="som_mail_activity_count" string="Emails" widget="statinfo"/>
+                    <field name="som_mail_activity_count" string="Email" widget="statinfo"/>
+                </button>
+                <button class="oe_stat_button" icon="fa-tasks" name="button_open_activities_by_type" type="object"
+                        context="{'activity_type':'mail.mail_activity_data_todo'}" attrs="{'invisible': [('type', '=', 'lead')]}">
+                    <field name="som_task_activity_count" string="Task" widget="statinfo"/>
+                </button>
+                <button class="oe_stat_button" icon="fa-gears" name="button_open_activities_by_type" type="object"
+                        context="{'activity_type':'som_crm.som_upcoming_activity'}" attrs="{'invisible': [('type', '=', 'lead')]}">
+                    <field name="som_upcomming_activity_count" string="Upcoming" widget="statinfo"/>
+                </button>
+                <button class="oe_stat_button" icon="fa-users" name="button_open_activities_by_type" type="object"
+                        context="{'activity_type':'mail.mail_activity_data_meeting'}" attrs="{'invisible': [('type', '=', 'lead')]}">
+                    <field name="som_meeting_activity_count" string="Meeting" widget="statinfo"/>
                 </button>
             </xpath>
 
