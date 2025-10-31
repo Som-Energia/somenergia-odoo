@@ -70,15 +70,8 @@ class CrmLeadReport(models.Model):
             ,case when (cl.active = true and cl.stage_id != (select ID from crm_stage cs where is_won = true)) then 1 else 0 end as count_flying
             ,case when cl.active = false then 1 else 0 end as count_lost
             ,(select count(*) from crm_lead cl) as count_total
-            ,case
-                when cl.active = true and cl.stage_id = 1 then 'Pendent 1r contacte'
-                when cl.active = true and cl.stage_id = 2 then 'Pendent 1r contacte amb factura'
-                when cl.active = true and cl.stage_id = 3 then 'Pendent rebre factura'
-                when cl.active = true and cl.stage_id = 7 then 'Pendent enviar simulació'
-                when cl.active = true and cl.stage_id = 8 then 'Informació enviada'
-                when cl.active = true and cl.stage_id = 4 then 'Simulació enviada'
-                when cl.active = true and cl.stage_id = 6 then 'Contractat'
-                when cl.active = true and cl.stage_id = 5 then 'Interès i diu que contractarà'
+            , case
+                when cl.active = true then (cs2.name ->> 'ca_ES')
                 else 'Perdut'
             end as active_stage
         """
@@ -87,6 +80,7 @@ class CrmLeadReport(models.Model):
     def _from(self):
         from_str = """
             from crm_lead cl
+            left join crm_stage cs2 on cl.stage_id = cs2.id
         """
         return from_str
 
