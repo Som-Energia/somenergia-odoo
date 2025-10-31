@@ -10,7 +10,8 @@ class CrmLeadReport(models.Model):
     _description = "Opportunities Analysis"
     _auto = False
 
-    id = fields.Integer(string="Id", readonly=True, index=True)
+    id = fields.Integer(string="ID", readonly=True, index=True)
+    opportunity = fields.Many2one(comodel_name="crm.lead", string="Opportunity", readonly=True)
     user_id = fields.Many2one(comodel_name="res.users", string="User", readonly=True)
     team_id = fields.Many2one(comodel_name="crm.team", string="Team", readonly=True)
     nbr_cases = fields.Integer(string="#", readonly=True)
@@ -43,6 +44,7 @@ class CrmLeadReport(models.Model):
         select_str = """
             select
              cl.id as id
+            ,cl.id as opportunity
             ,cl.user_id
             ,cl.team_id
             ,1 as nbr_cases
