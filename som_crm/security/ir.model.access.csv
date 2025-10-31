@@ -7,3 +7,4 @@ access_phone_call_result_sales_user,phone.call.result.sales.user,model_phone_cal
 access_phone_call_result_manager,phone.call.result.sales.manager,model_phone_call_result,sales_team.group_sale_manager,1,1,1,1
 access_wizard_convert_to_opportunity,convert.call.wizard.user,model_convert_call_wizard,sales_team.group_sale_salesman,1,1,1,1
 access_crm_lead_report_user,crm.lead.report.user,model_crm_lead_report,sales_team.group_sale_salesman,1,1,1,1
+access_crm_activity_tracking_report_user,crm.activity.tracking.report.user,model_crm_activity_tracking_report,sales_team.group_sale_salesman,1,1,1,1
