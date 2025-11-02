@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pivot views -->
+    <record id="crm_lead_view_pivot_daily_target" model="ir.ui.view">
+        <field name="name">crm.lead.pivot.daily.target</field>
+        <field name="model">crm.lead.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Objectius de Leads Guanyats" sample="1">
+                <field name="date_closed" interval="day" type="col"/>
+                <field name="user_id" type="row"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="crm_activity_tracking_view_pivot" model="ir.ui.view">
+        <field name="name">crm.activity.pivot.daily.tracking</field>
+        <field name="model">crm.activity.tracking.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Seguiment tasques diàries" sample="1">
+                <field name="date" interval="day" type="col"/>
+                <field name="user" type="row"/>
+                <field name="activity_state" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Graph views -->
+    <record id="crm_lead_view_graph_daily_target" model="ir.ui.view">
+        <field name="name">crm.lead.graph.daily.target</field>
+        <field name="model">crm.lead.report</field>
+        <field name="arch" type="xml">
+            <graph string="Evolució Objectius Diaris" type="line" sample="1">
+                <field name="date_closed" interval="day"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="crm_activity_tracking_view_graph" model="ir.ui.view">
+        <field name="name">crm.lead.graph.daily.tracking</field>
+        <field name="model">crm.activity.tracking.report</field>
+        <field name="arch" type="xml">
+            <graph string="Seguiment tasques diaries" type="line" sample="1">
+                <field name="date" interval="day"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Search views -->
+    <record id="crm_activity_tracking_view_filter" model="ir.ui.view">
+        <field name="model">crm.activity.tracking.report</field>
+        <field name="priority">15</field>
+        <field name="arch" type="xml">
+            <search string="Search Activity Tracking">
+                <filter string="Date" name="date" date="date"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="crm_lead_view_pivot_daily_target_filter" model="ir.ui.view">
+        <field name="model">crm.lead.report</field>
+        <field name="priority">15</field>
+        <field name="arch" type="xml">
+            <search string="Search Leads">
+                <filter string="Date Created" name="create_date" date="create_date"/>
+                <filter string="Date Closed" name="date_closed" date="date_closed"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Menu actions -->
+    <record id="crm_lead_action_daily_target_analysis" model="ir.actions.act_window">
+        <field name="name">Anàlisi Objectius Diaris</field>
+        <field name="res_model">crm.lead.report</field>
+        <field name="view_mode">pivot,graph</field>
+    </record>
+
+    <record id="crm_activity_tracking_action_analysis" model="ir.actions.act_window">
+        <field name="name">Activity Analysis</field>
+        <field name="res_model">crm.activity.tracking.report</field>
+        <field name="view_mode">pivot,graph</field>
+    </record>
+
+    <!-- Menu items -->
+    <menuitem id="crm_menu_daily_target_analysis"
+              name="Objectius Diaris"
+              parent="crm.crm_menu_report"
+              action="crm_lead_action_daily_target_analysis"
+              sequence="99"/>
+
+    <menuitem id="crm_menu_activities_analysis"
+              name="Activity Analysis"
+              parent="crm.crm_menu_report"
+              action="crm_activity_tracking_action_analysis"
+              sequence="99"/>
+</odoo>
