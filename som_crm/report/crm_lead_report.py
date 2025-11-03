@@ -38,6 +38,11 @@ class CrmLeadReport(models.Model):
         group_operator="max",
         readonly=True, index=True
     )
+    count_total_lost = fields.Integer(
+        string="Count Total Lost",
+        group_operator="max",
+        readonly=True, index=True
+    )
     active_stage = fields.Char(string="Active Stage", readonly=True, index=True)
 
     def _select(self):
@@ -72,6 +77,7 @@ class CrmLeadReport(models.Model):
             ,case when (cl.active = true and cl.stage_id != (select ID from crm_stage cs where is_won = true)) then 1 else 0 end as count_flying
             ,case when cl.active = false then 1 else 0 end as count_lost
             ,(select count(*) from crm_lead cl) as count_total
+            ,(select count(*) from crm_lead cl where active = false) as count_total_lost
             , case
                 when cl.active = true then (cs2.name ->> 'ca_ES')
                 else 'Perdut'

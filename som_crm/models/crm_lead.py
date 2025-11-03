@@ -383,7 +383,7 @@ class Lead(models.Model):
             return
 
         lead_to_update_ids = lead_ids.filtered(lambda x: x.id in found_ids)
-        lead_to_update_ids.write({'stage_id': won_stage_id.id})
+        lead_to_update_ids.write({'stage_id': won_stage_id.id, 'active': True})
 
         _logger.info(f"Leads moved to 'Won' stage: {lead_to_update_ids.ids}")
 
