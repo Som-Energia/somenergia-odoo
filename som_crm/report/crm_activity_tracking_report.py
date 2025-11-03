@@ -23,26 +23,31 @@ class CrmActivityTrackingReport(models.Model):
 
     def _select(self):
         select_str = """
-        select
-            1 as nbr_cases
-            ,*
-        from
-        (
-            select mm.id, 'done' as activity_state, ru.id as user, date as date
-            ,res_id as opportunity
-            ,mm.mail_activity_type_id as activity_type
-            from mail_message mm
-            left join res_users ru on ru.partner_id = mm.author_id
-            where mm.subtype_id = 3 and mm.model = 'crm.lead'
+            select
+                1 as nbr_cases
+                ,*
+            from
+            (
+                select mm.id, 'done' as activity_state, ru.id as user, date as date
+                ,res_id as opportunity
+                ,mm.mail_activity_type_id as activity_type
+                from mail_message mm
+                left join res_users ru on ru.partner_id = mm.author_id
+                where mm.subtype_id = 3 and mm.model = 'crm.lead'
 
-            union all
+                union all
 
-            select ma.id, 'pending' as activity_state, user_id as user, date_deadline as date
-            ,res_id as opportunity
-            ,ma.activity_type_id as activity_type
-            from mail_activity ma
-            where res_model = 'crm.lead'
-        ) sq_activity
+                select ma.id, 'pending' as activity_state, ma.user_id as user
+                ,ma.date_deadline as date
+                ,res_id as opportunity
+                ,ma.activity_type_id as activity_type
+                from mail_activity ma
+                left join crm_lead cl on cl.id = ma.res_id
+                left join crm_stage cs on cs.id = cl.stage_id
+                where res_model = 'crm.lead'
+                and cl.active = true
+                and cs.is_won = false
+            ) sq_activity_tracking
         """
         return select_str
 
