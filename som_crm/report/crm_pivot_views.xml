@@ -67,6 +67,39 @@
         </field>
     </record>
 
+    <!-- Tree views -->
+    <record id="crm_lead_report_tree" model="ir.ui.view">
+        <field name="model">crm.lead.report</field>
+        <field name="arch" type="xml">
+            <tree string="CRM Opportunity Report">
+                <field name="opportunity" widget="many2one" options="{'open': True}"/>
+                <field name="user_id"/>
+                <field name="team_id"/>
+                <field name="active_stage"/>
+                <field name="virtual_state"/>
+                <field name="create_date"/>
+                <field name="date_closed"/>
+                <field name="day_close"/>
+                <field name="channel"/>
+                <field name="source"/>
+                <field name="lost_reason"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="crm_activity_tracking_report_tree" model="ir.ui.view">
+        <field name="model">crm.activity.tracking.report</field>
+        <field name="arch" type="xml">
+            <tree string="CRM Activities Analysis">
+                <field name="opportunity" widget="many2one" options="{'open': True}"/>
+                <field name="user"/>
+                <field name="activity_state"/>
+                <field name="date"/>
+                <field name="activity_type"/>
+            </tree>
+        </field>
+    </record>
+
     <!-- Menu actions -->
     <record id="crm_lead_action_daily_target_analysis" model="ir.actions.act_window">
         <field name="name">Anàlisi Objectius Diaris</field>

@@ -10,7 +10,8 @@ class CrmActivityTrackingReport(models.Model):
     _description = "Activities Analysis"
     _auto = False
 
-    id = fields.Integer(string="Id", readonly=True, index=True)
+    id = fields.Integer(string="ID", readonly=True, index=True)
+    nbr_cases = fields.Integer(string="#", readonly=True)
     user = fields.Many2one(comodel_name="res.users", string="User", readonly=True)
     activity_state = fields.Selection(
         selection=[("done", "Done"), ("pending", "Pending")]

@@ -48,7 +48,7 @@ class CrmLeadReport(models.Model):
             ,cl.user_id
             ,cl.team_id
             ,1 as nbr_cases
-            ,cl.stage_id as state
+            ,cl.stage_id as stage
             ,cl.create_date
             ,cl.date_closed
             ,cl.day_close
