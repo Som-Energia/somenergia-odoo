@@ -18,7 +18,12 @@ class CrmLeadReport(models.Model):
     stage = fields.Many2one(comodel_name="crm.stage", string="State", readonly=True)
     create_date = fields.Datetime(readonly=True, index=True)
     date_closed = fields.Datetime(string="Close Date", readonly=True, index=True)
-    day_close = fields.Float(string="Days to be closed", readonly=True, index=True)
+    day_close = fields.Float(
+        string="Days to be closed",
+        readonly=True,
+        index=True,
+        group_operator="avg",
+    )
     channel = fields.Many2one(comodel_name="utm.medium", string="Channel", readonly=True)
     source = fields.Many2one(comodel_name="utm.source", string="Source", readonly=True)
     lost_reason = fields.Many2one(comodel_name="crm.lost.reason", string="Lost Reason", readonly=True)
