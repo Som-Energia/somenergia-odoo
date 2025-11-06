@@ -27,6 +27,10 @@ class CrmLeadReport(models.Model):
     channel = fields.Many2one(comodel_name="utm.medium", string="Channel", readonly=True)
     source = fields.Many2one(comodel_name="utm.source", string="Source", readonly=True)
     lost_reason = fields.Many2one(comodel_name="crm.lost.reason", string="Lost Reason", readonly=True)
+    lang_id = fields.Many2one(comodel_name="res.lang", string="Lost Reason", readonly=True)
+    som_comparison_result = fields.Char(string="Comparison Result", readonly=True)
+    campaign_id = fields.Many2one(comodel_name="utm.campaign", string="Campaign", readonly=True)
+    medium_id = fields.Many2one(comodel_name="utm.medium", string="Medium", readonly=True)
     won_daily_target = fields.Float(string="Daily target %", readonly=True, index=True)
     won_daily_target_static = fields.Integer(
         string="Daily target", readonly=True, index=True,
@@ -67,6 +71,10 @@ class CrmLeadReport(models.Model):
             ,cl.som_channel as channel
             ,cl.source_id as source
             ,cl.lost_reason_id as lost_reason
+            ,cl.lang_id
+            ,cl.som_comparison_result
+            ,cl.campaign_id
+            ,cl.medium_id
             ,100 / (COALESCE(
                 (SELECT value FROM ir_config_parameter WHERE key = 'som_crm_daily_won_leads_target')::float,
                 1.0)
