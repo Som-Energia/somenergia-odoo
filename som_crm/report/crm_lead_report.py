@@ -12,7 +12,7 @@ class CrmLeadReport(models.Model):
 
     id = fields.Integer(string="ID", readonly=True, index=True)
     opportunity = fields.Many2one(comodel_name="crm.lead", string="Opportunity", readonly=True)
-    user_id = fields.Many2one(comodel_name="res.users", string="User", readonly=True)
+    user_id = fields.Many2one(comodel_name="res.users", string="Comercial", readonly=True)
     team_id = fields.Many2one(comodel_name="crm.team", string="Team", readonly=True)
     nbr_cases = fields.Integer(string="#", readonly=True)
     stage = fields.Many2one(comodel_name="crm.stage", string="State", readonly=True)
@@ -49,16 +49,18 @@ class CrmLeadReport(models.Model):
         readonly=True, index=True
     )
     active_stage = fields.Char(string="Active Stage", readonly=True, index=True)
+    stage_ordered_name = fields.Char(string="Stage Ordered", readonly=True)
 
     def _select(self):
         select_str = """
             select
-             cl.id as id
+            cl.id as id
             ,cl.id as opportunity
             ,cl.user_id
             ,cl.team_id
             ,1 as nbr_cases
             ,cl.stage_id as stage
+            ,LPAD(cs2.sequence::text, 2, '0') || ' - ' || (cs2.name ->> 'ca_ES')::text as stage_ordered_name
             ,cl.create_date
             ,cl.date_closed
             ,cl.day_close
