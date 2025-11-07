@@ -52,6 +52,9 @@
         <field name="arch" type="xml">
             <search string="Search Activity Tracking">
                 <filter string="Date" name="date" date="date"/>
+                <separator/>
+                <filter string="Activity due today or before" name="som_activity_due_today_or_before" domain="[('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <separator/>
             </search>
         </field>
     </record>

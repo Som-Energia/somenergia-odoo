@@ -12,7 +12,7 @@ class CrmLeadReport(models.Model):
 
     id = fields.Integer(string="ID", readonly=True, index=True)
     opportunity = fields.Many2one(comodel_name="crm.lead", string="Opportunity", readonly=True)
-    user_id = fields.Many2one(comodel_name="res.users", string="User", readonly=True)
+    user_id = fields.Many2one(comodel_name="res.users", string="Comercial", readonly=True)
     team_id = fields.Many2one(comodel_name="crm.team", string="Team", readonly=True)
     nbr_cases = fields.Integer(string="#", readonly=True)
     stage = fields.Many2one(comodel_name="crm.stage", string="State", readonly=True)
@@ -27,6 +27,10 @@ class CrmLeadReport(models.Model):
     channel = fields.Many2one(comodel_name="utm.medium", string="Channel", readonly=True)
     source = fields.Many2one(comodel_name="utm.source", string="Source", readonly=True)
     lost_reason = fields.Many2one(comodel_name="crm.lost.reason", string="Lost Reason", readonly=True)
+    lang_id = fields.Many2one(comodel_name="res.lang", string="Lost Reason", readonly=True)
+    som_comparison_result = fields.Char(string="Comparison Result", readonly=True)
+    campaign_id = fields.Many2one(comodel_name="utm.campaign", string="Campaign", readonly=True)
+    medium_id = fields.Many2one(comodel_name="utm.medium", string="Medium", readonly=True)
     won_daily_target = fields.Float(string="Daily target %", readonly=True, index=True)
     won_daily_target_static = fields.Integer(
         string="Daily target", readonly=True, index=True,
@@ -49,22 +53,28 @@ class CrmLeadReport(models.Model):
         readonly=True, index=True
     )
     active_stage = fields.Char(string="Active Stage", readonly=True, index=True)
+    stage_ordered_name = fields.Char(string="Stage Ordered", readonly=True)
 
     def _select(self):
         select_str = """
             select
-             cl.id as id
+            cl.id as id
             ,cl.id as opportunity
             ,cl.user_id
             ,cl.team_id
             ,1 as nbr_cases
             ,cl.stage_id as stage
+            ,LPAD(cs2.sequence::text, 2, '0') || ' - ' || (cs2.name ->> 'ca_ES')::text as stage_ordered_name
             ,cl.create_date
             ,cl.date_closed
             ,cl.day_close
             ,cl.som_channel as channel
             ,cl.source_id as source
             ,cl.lost_reason_id as lost_reason
+            ,cl.lang_id
+            ,cl.som_comparison_result
+            ,cl.campaign_id
+            ,cl.medium_id
             ,100 / (COALESCE(
                 (SELECT value FROM ir_config_parameter WHERE key = 'som_crm_daily_won_leads_target')::float,
                 1.0)

@@ -46,7 +46,7 @@ class CrmActivityTrackingReport(models.Model):
                 left join crm_stage cs on cs.id = cl.stage_id
                 where res_model = 'crm.lead'
                 and cl.active = true
-                and cs.is_won = false
+                and coalesce(cs.is_won, false) = false
             ) sq_activity_tracking
         """
         return select_str
