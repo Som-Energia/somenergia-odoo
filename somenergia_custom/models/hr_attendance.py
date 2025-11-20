@@ -343,3 +343,16 @@ class HrAttendance(models.Model):
                               'abs_name': emp_leave_ids[0].name_get(),
                           })
                     )
+
+    @api.model
+    def _theoretical_hours_helper(self, id_employee, str_day):
+        """Get theoretical working hours for the given day and employee.
+        :param id_employee: hr.employee id as integer
+        :param str_day: date in string format 'YYYY-MM-DD'
+        :return: theoretical hours as float
+        """
+        emp_id = self.env['hr.employee'].browse(id_employee)
+        th = self.env['hr.attendance.theoretical.time.report']._theoretical_hours(
+                    emp_id.sudo(), fields.Date.from_string(str_day)
+        )
+        return th
