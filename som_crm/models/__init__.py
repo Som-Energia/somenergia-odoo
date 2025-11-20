@@ -9,3 +9,4 @@ from . import phone_call_result
 from . import mail_activity
 from . import crm_team
 from . import crm_stage
+from . import iap_tools_extend
