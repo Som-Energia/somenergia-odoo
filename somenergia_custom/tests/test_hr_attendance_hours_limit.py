@@ -44,12 +44,30 @@ class TestHrAttendanceHoursLimit(common.TransactionCase):
             'tz': 'Europe/Brussels',
         })
 
+        cls.chile_user = new_test_user(
+            cls.env, login='chile_user',
+            groups='hr_attendance.group_hr_attendance,hr_attendance.group_hr_attendance_kiosk',
+            tz='America/Santiago',
+        )
+        cls.chile_emp = cls.env['hr.employee'].create({
+            'name': 'Chile Employee',
+            'user_id': cls.chile_user.id,
+            'country_id': cls.env.ref("base.cl").id,
+            'tz': 'America/Santiago',
+        })
+
         cls.env.company.som_attendance_limit_checkin = 6
         cls.env.company.som_attendance_limit_checkout = 22
 
     def _tz_datetime(self, year, month, day, hour, minute):
         tz = pytz.timezone('Europe/Brussels')
-        return tz.localize(datetime(year, month, day, hour, minute)).astimezone(pytz.utc).replace(tzinfo=None)
+        return tz.localize(
+            datetime(year, month, day, hour, minute)).astimezone(pytz.utc).replace(tzinfo=None)
+
+    def _tz_datetime_cl(self, year, month, day, hour, minute):
+        tz = pytz.timezone('America/Santiago')
+        return tz.localize(
+            datetime(year, month, day, hour, minute)).astimezone(pytz.utc).replace(tzinfo=None)
 
     @freeze_time('2025-03-06 6:00:00')
     def test_ahl_raise_before_checkin_limit(self):
@@ -88,7 +106,7 @@ class TestHrAttendanceHoursLimit(common.TransactionCase):
 
         att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
         self.assertEqual(len(att_ids), 0)
-        
+
         att_id = self.env['hr.attendance'].with_user(self.employee_user.id).create({
             'employee_id': self.employee_emp.id,
             'check_in': self._tz_datetime(year_aux, month_aux, day_aux, 17, 50),
@@ -122,3 +140,61 @@ class TestHrAttendanceHoursLimit(common.TransactionCase):
         att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
         self.assertEqual(len(att_ids), 1)
         self.assertNotEqual(att_id.check_out, False)
+
+    @freeze_time('2025-03-06 10:00:00')
+    def test_ahl_chile_raise_before_checkin_limit(self):
+        # Chile local time must be 5:50h
+        year_aux, month_aux, day_aux, hour_cl, min_cl = (2025, 3, 6, 5, 50)
+
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.chile_emp.id)])
+        self.assertEqual(len(att_ids), 0)
+
+        with self.assertRaises(ValidationError, msg="Debería fallar porque 5:50h es antes del límite de 6:00h en Chile."):
+            self.env['hr.attendance'].with_user(self.chile_user.id).create({
+                'employee_id': self.chile_emp.id,
+                'check_in': self._tz_datetime_cl(year_aux, month_aux, day_aux, hour_cl, min_cl),
+            })
+
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.chile_emp.id)])
+        self.assertEqual(len(att_ids), 0)
+
+    @freeze_time('2025-03-06 22:00:00')
+    def test_ahl_chile_noraise_checkout_limit(self):
+        year_aux, month_aux, day_aux = (2025, 3, 6)
+
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.chile_emp.id)])
+        self.assertEqual(len(att_ids), 0)
+
+        att_id = self.env['hr.attendance'].with_user(self.chile_user.id).create({
+            'employee_id': self.chile_emp.id,
+            'check_in': self._tz_datetime_cl(year_aux, month_aux, day_aux, 17, 0),
+        })
+
+        att_id.write({
+            'check_out': self._tz_datetime_cl(year_aux, month_aux, day_aux, 21, 50),
+        })
+
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.chile_emp.id)])
+        self.assertEqual(len(att_ids), 1)
+        self.assertNotEqual(att_id.check_out, False)
+
+    @freeze_time('2025-03-06 18:00:00')
+    def test_ahl_chile_raise_after_checkout_limit(self):
+        year_aux, month_aux, day_aux = (2025, 3, 6)
+
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.chile_emp.id)])
+        self.assertEqual(len(att_ids), 0)
+
+        att_id = self.env['hr.attendance'].with_user(self.chile_user.id).create({
+            'employee_id': self.chile_emp.id,
+            'check_in': self._tz_datetime_cl(year_aux, month_aux, day_aux, 17, 50),
+        })
+
+        with self.assertRaises(ValidationError):
+            att_id.write({
+                'check_out': self._tz_datetime_cl(year_aux, month_aux, day_aux, 22, 1),
+            })
+
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.chile_emp.id)])
+        self.assertEqual(len(att_ids), 1)
+        self.assertEqual(att_id.check_out, False)
