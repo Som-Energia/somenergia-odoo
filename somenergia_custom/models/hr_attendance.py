@@ -257,16 +257,14 @@ class HrAttendance(models.Model):
         hour_limit_end = self.env.company.som_attendance_limit_checkout
         for att_id in self:
             checkin_limit = att_id.get_attendance_hour_limit(hour_limit_start)
-            checkin_limit_tz = self._get_local_tz_datetime(checkin_limit)
             checkout_limit = att_id.get_attendance_hour_limit(hour_limit_end)
-            checkout_limit_tz = self._get_local_tz_datetime(checkout_limit)
-            if att_id.check_in and att_id.check_in < checkin_limit_tz:
+            if att_id.check_in and att_id.check_in < checkin_limit:
                 raise exceptions.ValidationError(
                     _("No es pot obrir l'assitència abans de les %(limit)s" % {
                           'limit': checkin_limit.strftime('%d/%m/%Y %H:%M'),
                       })
                 )
-            if att_id.check_out and att_id.check_out > checkout_limit_tz:
+            if att_id.check_out and att_id.check_out > checkout_limit:
                 raise exceptions.ValidationError(
                     _("No es pot tancar l'assitència després de les %(limit)s" % {
                           'limit': checkout_limit.strftime('%d/%m/%Y %H:%M'),
@@ -274,7 +272,7 @@ class HrAttendance(models.Model):
                 )
 
             if (self.env.company.som_amend_attendance_restrictive and
-                    att_id.check_out and att_id.check_out > self._get_local_tz_datetime(fields.Datetime.now())):
+                    att_id.check_out and att_id.check_out > fields.Datetime.now()):
                 raise exceptions.ValidationError(
                     _("No es pot tancar l'assitència a futur")
                 )
