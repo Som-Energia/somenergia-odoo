@@ -60,7 +60,8 @@ class HrAttendance(models.Model):
         return self._get_local_tz_datetime(check_out_aux)
 
     def _get_local_tz_datetime(self, datetime_aux):
-        local_tz = timezone('Europe/Madrid')
+        tz_name = self.employee_id.user_id.tz or self.employee_id.tz or 'UTC'
+        local_tz = timezone(tz_name)
         local_dt = local_tz.localize(datetime_aux, is_dst=None)
         dt_time_utc = local_dt.astimezone(utc)
         dt_str = dt_time_utc.strftime("%m/%d/%Y %H:%M:%S")
@@ -273,7 +274,7 @@ class HrAttendance(models.Model):
                 )
 
             if (self.env.company.som_amend_attendance_restrictive and
-                    att_id.check_out and att_id.check_out > fields.Datetime.now()):
+                    att_id.check_out and att_id.check_out > self._get_local_tz_datetime(fields.Datetime.now())):
                 raise exceptions.ValidationError(
                     _("No es pot tancar l'assitència a futur")
                 )
