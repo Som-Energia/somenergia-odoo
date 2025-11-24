@@ -80,6 +80,14 @@ class TestErpLeadSync(TransactionCase):
             'som_cups': 'ES_ALREADY_WON',
         })
 
+        cls.lead_inactive_to_check = cls.CrmLead.create({
+            'name': 'Lead Inactive to Check in ERP',
+            'type': 'opportunity',
+            'stage_id': cls.stage_new.id,
+            'som_cups': 'ES_INACTIVE_LEAD',
+            'active': False,
+        })
+
 
     def test_get_won_stage(self):
         """Test that the 'Won' stage is correctly retrieved."""
@@ -230,3 +238,52 @@ class TestErpLeadSync(TransactionCase):
         mock_erp_lead_model.write.assert_any_call(
             103, {'crm_lead_id': self.lead_to_find_by_phone.id})
         self.assertEqual(mock_erp_lead_model.write.call_count, 3)
+
+
+    def test_get_leads_to_check_include_inactive(self):
+        """Test that inactive leads are included when include_inactive=True."""
+        leads_exclude_inactive = self.CrmLead.get_leads_to_check(self.stage_won, include_inactive=False)
+        self.assertNotIn(self.lead_inactive_to_check, leads_exclude_inactive)
+
+        leads_include_inactive = self.CrmLead.get_leads_to_check(self.stage_won, include_inactive=True)
+        self.assertIn(self.lead_to_find_by_cups, leads_include_inactive)
+        self.assertIn(self.lead_to_find_by_vat, leads_include_inactive)
+        self.assertIn(self.lead_not_in_erp, leads_include_inactive)
+        self.assertIn(self.lead_to_find_by_phone, leads_include_inactive)
+        self.assertIn(self.lead_inactive_to_check, leads_include_inactive)
+        self.assertLess(len(leads_exclude_inactive), len(leads_include_inactive))
+
+    @patch('odoo.addons.som_crm.models.crm_lead.Client')
+    def test_erp_sync_with_inactive_lead(self, mock_erppeek_client):
+        """
+        Test _erp_sync with include_inactive=True to ensure inactive leads
+        are checked, marked as 'Won', and set to active=True.
+        """
+        mock_client_instance = MagicMock()
+        mock_erppeek_client.return_value = mock_client_instance
+        mock_erp_lead_model = MagicMock()
+        mock_client_instance.model.return_value = mock_erp_lead_model
+
+        # Simulate ERP search behavior: only the inactive lead is found
+        def search_side_effect(domain, limit):
+            if ('cups', '=ilike', 'ES_INACTIVE_LEAD%') in domain:
+                return [999]  # ERP ID for lead_inactive_to_check
+            return []
+
+        mock_erp_lead_model.search.side_effect = search_side_effect
+
+        # Execute the method to be tested, specifically including inactive leads
+        self.CrmLead._erp_sync(include_inactive=True)
+
+        # --- Assertions ---
+
+        # Verify that the lead was found and updated
+        self.assertEqual(self.lead_inactive_to_check.stage_id, self.stage_won)
+        self.assertEqual(self.lead_inactive_to_check.som_erp_lead_id, 999)
+
+        # Verify that the lead is now active
+        self.assertTrue(self.lead_inactive_to_check.active)
+
+        # Verify that the ERP was updated
+        mock_erp_lead_model.write.assert_called_once_with(
+            999, {'crm_lead_id': self.lead_inactive_to_check.id})

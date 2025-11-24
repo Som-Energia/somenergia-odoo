@@ -279,17 +279,20 @@ class Lead(models.Model):
         return crm_stage_id
 
     @api.model
-    def get_leads_to_check(self, won_stage_id=None):
+    def get_leads_to_check(self, won_stage_id=None, include_inactive=False):
         if not won_stage_id:
             won_stage_id = self.get_won_stage()
             if not won_stage_id:
                 _logger.warning("No 'won' stage found, cannot continue")
                 return  False
-
-        lead_ids = self.env['crm.lead'].with_context(active_test=False).search([
+        domain = [
             ("stage_id", "!=", won_stage_id.id),
             ("type", "=", 'opportunity'),
-        ])
+        ]
+        if not include_inactive:
+            lead_ids = self.env['crm.lead'].search(domain)
+        else:
+            lead_ids = self.env['crm.lead'].with_context(active_test=False).search(domain)
         return lead_ids
 
     def _erp_search_by_cups(self, erp_lead_obj, domain, cups_value):
@@ -343,13 +346,13 @@ class Lead(models.Model):
         return False
 
     @api.model
-    def _erp_sync(self):
+    def _erp_sync(self, include_inactive=False):
         won_stage_id = self.get_won_stage()
         if not won_stage_id:
             _logger.warning("No 'won' stage found, cannot proceed with ERP sync")
             return
 
-        lead_ids = self.get_leads_to_check(won_stage_id)
+        lead_ids = self.get_leads_to_check(won_stage_id, include_inactive=include_inactive)
         if not lead_ids:
             _logger.info(f"No leads to check in ERP")
             return
