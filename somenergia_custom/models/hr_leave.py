@@ -201,3 +201,67 @@ class HolidaysRequest(models.Model):
     def _check_stress_day(self):
         if self.env.company.som_restrictive_stress_days:
             return super()._check_stress_day()
+
+    def _compute_date_from_to(self):
+        super(
+            HolidaysRequest, self.with_context(from_compute_date_from_to=True)
+        )._compute_date_from_to()
+
+    ### Overwrite the core method to fix the attendances timetable retrieval
+    ### when more than one timetable is defined in the resource calendar
+    def _get_attendances(self, employee, request_date_from, request_date_to):
+        resource_calendar_id = employee.resource_calendar_id or self.env.company.resource_calendar_id
+        domain = [('calendar_id', '=', resource_calendar_id.id), ('display_type', '=', False)]
+        day_period = self.env.context.get('day_period', False)
+        if day_period:
+            domain += [('day_period', '=', day_period)]
+        if (request_date_from == request_date_to
+                and self.env.context.get('from_compute_date_from_to', False)):
+            domain = [
+                ('calendar_id', '=', resource_calendar_id.id),
+                ('display_type', '=', False),
+                '&',
+                ('date_from', '<=', fields.Date.to_string(request_date_from)),
+                '|',
+                ('date_to', '>=', fields.Date.to_string(request_date_to)),
+                ('date_to', '=', False),
+            ]
+        attendances = self.env['resource.calendar.attendance'].read_group(domain,
+            ['ids:array_agg(id)', 'hour_from:min(hour_from)', 'hour_to:max(hour_to)',
+             'week_type', 'dayofweek', 'day_period'],
+            ['week_type', 'dayofweek', 'day_period'], lazy=False)
+
+        # Must be sorted by dayofweek ASC and day_period DESC
+        attendances = sorted([DummyAttendance(group['hour_from'], group['hour_to'], group['dayofweek'], group['day_period'], group['week_type']) for group in attendances], key=lambda att: (att.dayofweek, att.day_period != 'morning'))
+
+        default_value = DummyAttendance(0, 0, 0, 'morning', False)
+
+        if resource_calendar_id.two_weeks_calendar:
+            # find week type of start_date
+            start_week_type = self.env['resource.calendar.attendance'].get_week_type(request_date_from)
+            attendance_actual_week = [att for att in attendances if att.week_type is False or int(att.week_type) == start_week_type]
+            attendance_actual_next_week = [att for att in attendances if att.week_type is False or int(att.week_type) != start_week_type]
+            # First, add days of actual week coming after date_from
+            attendance_filtred = [att for att in attendance_actual_week if int(att.dayofweek) >= request_date_from.weekday()]
+            # Second, add days of the other type of week
+            attendance_filtred += list(attendance_actual_next_week)
+            # Third, add days of actual week (to consider days that we have remove first because they coming before date_from)
+            attendance_filtred += list(attendance_actual_week)
+            end_week_type = self.env['resource.calendar.attendance'].get_week_type(request_date_to)
+            attendance_actual_week = [att for att in attendances if att.week_type is False or int(att.week_type) == end_week_type]
+            attendance_actual_next_week = [att for att in attendances if att.week_type is False or int(att.week_type) != end_week_type]
+            attendance_filtred_reversed = list(reversed([att for att in attendance_actual_week if int(att.dayofweek) <= request_date_to.weekday()]))
+            attendance_filtred_reversed += list(reversed(attendance_actual_next_week))
+            attendance_filtred_reversed += list(reversed(attendance_actual_week))
+
+            # find first attendance coming after first_day
+            attendance_from = attendance_filtred[0]
+            # find last attendance coming before last_day
+            attendance_to = attendance_filtred_reversed[0]
+        else:
+            # find first attendance coming after first_day
+            attendance_from = next((att for att in attendances if int(att.dayofweek) >= request_date_from.weekday()), attendances[0] if attendances else default_value)
+            # find last attendance coming before last_day
+            attendance_to = next((att for att in reversed(attendances) if int(att.dayofweek) <= request_date_to.weekday()), attendances[-1] if attendances else default_value)
+
+        return (attendance_from, attendance_to)
