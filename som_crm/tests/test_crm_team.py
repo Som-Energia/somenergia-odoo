@@ -25,21 +25,33 @@ class TestCrmTeam(TransactionCase):
             'name': 'Test Team Leader',
             'login': 'test_leader',
             'email': 'leader@test.com',
+            "groups_id": [
+                (6, 0, [cls.env.ref("sales_team.group_sale_salesman_all_leads").id])
+            ],
         })
         cls.user_leader_2 = cls.env['res.users'].create({
             'name': 'Test Team Leader 2',
             'login': 'test_leader_2',
             'email': 'leader2@test.com',
+            "groups_id": [
+                (6, 0, [cls.env.ref("sales_team.group_sale_salesman_all_leads").id])
+            ],
         })
         cls.user_member_1 = cls.env['res.users'].create({
             'name': 'Test Member 1',
             'login': 'test_member1',
             'email': 'member1@test.com',
+            "groups_id": [
+                (6, 0, [cls.env.ref("sales_team.group_sale_salesman_all_leads").id])
+            ],
         })
         cls.user_member_2 = cls.env['res.users'].create({
             'name': 'Test Member 2',
             'login': 'test_member2',
             'email': 'member2@test.com',
+            "groups_id": [
+                (6, 0, [cls.env.ref("sales_team.group_sale_salesman_all_leads").id])
+            ],
         })
 
         user_ids_full = [cls.user_leader.id, cls.user_member_1.id, cls.user_member_2.id]
@@ -209,3 +221,74 @@ class TestCrmTeam(TransactionCase):
                          "Member 1 (absent) should NOT be in the candidate list.")
         self.assertIn(self.user_member_2, called_list,
                       "Member 2 should be in the candidate list.")
+
+    def test_team_members_capacity(self):
+        """
+        Test the full team, EXCLUDING members without available leads capacity.
+        Verify that only members with available capacity are considered.
+        """
+        # First, we set user_member_1's max leads capacity to 1
+        self.user_member_2.som_max_leads_capacity = 1
+
+        # We create an opportunity assigned to user_member_1 to fill his capacity
+        self.env['crm.lead'].create({
+            'name': 'Test Opportunity',
+            'type': 'opportunity',
+            'user_id': self.user_member_2.id,
+            'team_id': self.team_full.id,
+        })
+
+        self.assertEqual(self.user_member_2._get_assigned_opportunities_count(), 1,
+                         "user_member_2 should have 1 assigned opportunity.")
+        self.assertEqual(self.user_member_2._get_available_leads_capacity(), 0,
+                         "user_member_2 should have 0 available leads capacity.")
+
+        # Now user_member_1 should have 0 available capacity
+        member = self.team_full.get_random_member(exclude_absent_members=False)
+
+        # The only valid member should be user_member_1 and the leader
+        self.assertIn(member, [self.user_leader, self.user_member_1],
+                      "The selected member should have available leads capacity.")
+
+        # Reset to unlimited capacity
+        self.user_member_2.som_max_leads_capacity = 0
+
+        self.env['crm.lead'].create({
+            'name': 'Test Opportunity 2',
+            'type': 'opportunity',
+            'user_id': self.user_member_2.id,
+            'team_id': self.team_full.id,
+        })
+
+        self.assertEqual(self.user_member_2._get_assigned_opportunities_count(), 2,
+                         "user_member_2 should have 2 assigned opportunities.")
+        self.assertEqual(self.user_member_2._get_available_leads_capacity(), float('inf'),
+                         "user_member_2 should have unlimited capacity.")
+
+        member = self.team_full.get_random_member(exclude_absent_members=False)
+        self.assertIn(member, [self.user_leader, self.user_member_1, self.user_member_2],
+                      "With unlimited capacity, any member can be selected.")
+
+    def test_team_members_capacity_no_one_available(self):
+        """
+        Test the full team, EXCLUDING members without available leads capacity.
+        Verify that if no members have capacity, any member can be selected.
+        """
+        # Set all members' max leads capacity to 1
+        self.user_leader.som_max_leads_capacity = 1
+        self.user_member_1.som_max_leads_capacity = 1
+        self.user_member_2.som_max_leads_capacity = 1
+        # Create opportunities to fill their capacities
+        for user in [self.user_leader, self.user_member_1, self.user_member_2]:
+            self.env['crm.lead'].create({
+                'name': f'Test Opportunity for {user.name}',
+                'type': 'opportunity',
+                'user_id': user.id,
+                'team_id': self.team_full.id,
+            })
+            self.assertEqual(user._get_available_leads_capacity(), 0,
+                             f"{user.name} should have 0 available leads capacity.")
+        # Now, all members have 0 available capacity
+        member = self.team_full.get_random_member(exclude_absent_members=False)
+        self.assertIn(member, [self.user_leader, self.user_member_1, self.user_member_2],
+                      "With no available capacity, any member can be selected.")
