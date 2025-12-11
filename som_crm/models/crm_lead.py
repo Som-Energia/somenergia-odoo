@@ -214,6 +214,11 @@ class Lead(models.Model):
         store=True,
     )
 
+    som_next_renovation_date = fields.Date(
+        string='Next Renovation Date',
+        help="Date of the next renovation",
+    )
+
     def auto_assign_user(self):
         team_id = self.env.ref(
             'sales_team.team_sales_department', raise_if_not_found=False
