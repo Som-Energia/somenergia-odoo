@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo.tests.common import TransactionCase, tagged
-# unittest.mock.patch allows us to "mock" the random.choice function
+from freezegun import freeze_time
 from unittest.mock import patch
+from datetime import datetime
 
 
 @tagged('som_crm_team')
@@ -65,6 +66,29 @@ class TestCrmTeam(TransactionCase):
             'name': 'Empty Test Team',
             'user_id': False,
             'crm_team_member_ids': False,
+        })
+
+        # employee to manage 'is_present'
+        cls.user_member_1.action_create_employee()
+        cls.user_member_2.action_create_employee()
+        cls.user_leader.action_create_employee()
+        cls.user_leader_2.action_create_employee()
+
+        cls.hr_leave_type_1 = cls.env['hr.leave.type'].create({
+            'name': 'Leave Type 1',
+        })
+
+        leave_start_datetime = datetime(2025, 4, 1, 8, 0, 0, 0)
+        leave_end_datetime = datetime(2025, 4, 3, 15, 0, 0, 0)
+        cls.holiday_1 = cls.env['hr.leave'].with_context(
+            mail_create_nolog=True, mail_notrack=True
+        ).with_user(cls.user_member_1).create({
+            'name': 'Leave 1',
+            'employee_id': cls.user_member_1.employee_id.id,
+            'holiday_status_id': cls.hr_leave_type_1.id,
+            'date_from': leave_start_datetime,
+            'date_to': leave_end_datetime,
+            'number_of_days': 3,
         })
 
     def test_empty_team(self):
@@ -153,5 +177,35 @@ class TestCrmTeam(TransactionCase):
                          "The leader should NOT be in the candidate list.")
         self.assertIn(self.user_member_1, called_list,
                       "Member 1 should be in the candidate list.")
+        self.assertIn(self.user_member_2, called_list,
+                      "Member 2 should be in the candidate list.")
+
+    @freeze_time('2025-04-02 06:00:00')
+    @patch('odoo.addons.som_crm.models.crm_team.choice')
+    def test_team_exclude_memeber_not_is_present_mocked(self, mock_choice):
+        """
+        Test the full team, EXCLUDING absent members, using a mock.
+        Verify that 'random.choice' is called with the FILTERED list.
+        """
+        # We force 'random.choice' to return a specific member
+        mock_choice.return_value = self.user_member_2
+
+        # Call the function
+        member = self.team_full.get_random_member(exclude_absent_members=True)
+
+        # 1. Check the result
+        self.assertEqual(member, self.user_member_2,
+                         "The returned member should be the one from the mock.")
+
+        # 2. Check that it was called
+        mock_choice.assert_called_once()
+
+        # 3. Check the candidate list
+        called_list = mock_choice.call_args[0][0]
+
+        self.assertEqual(len(called_list), 2,
+                         "random.choice should be called with only 2 members.")
+        self.assertNotIn(self.user_member_1, called_list,
+                         "Member 1 (absent) should NOT be in the candidate list.")
         self.assertIn(self.user_member_2, called_list,
                       "Member 2 should be in the candidate list.")
