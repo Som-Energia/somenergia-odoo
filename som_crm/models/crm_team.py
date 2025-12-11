@@ -11,10 +11,16 @@ class CrmTeam(models.Model):
         self.ensure_one()
         user_member_ids = self.member_ids
         if exclude_team_leader:
-            user_member_ids = self.member_ids.filtered(lambda x: x != self.user_id)
+            user_member_ids = user_member_ids.filtered(lambda x: x != self.user_id)
         if exclude_absent_members:
             user_member_ids = user_member_ids.filtered(lambda x: x.employee_id.is_present)
+        user_member_with_capacity_ids = user_member_ids.filtered(
+            lambda x: x._get_available_leads_capacity() > 0
+        )
         if not user_member_ids:
             return False
-        random_member_id = choice(user_member_ids)
+        if user_member_with_capacity_ids:
+            random_member_id = choice(user_member_with_capacity_ids)
+        else:
+            random_member_id = choice(user_member_ids)
         return random_member_id
