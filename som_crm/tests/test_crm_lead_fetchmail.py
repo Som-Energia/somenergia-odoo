@@ -19,6 +19,7 @@ class TestCrmLeadFetchmail(TransactionCase):
                 (6, 0, [cls.env.ref("sales_team.group_sale_salesman_all_leads").id])
             ],
         })
+        cls.sales_user.action_create_employee()
 
         # 2. Sales Team
         cls.sales_team = cls.env.ref(

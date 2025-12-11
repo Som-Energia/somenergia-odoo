@@ -24,6 +24,7 @@
         'crm_lead_vat',
         'mail_activity_board',
         'odoo_callinfo',
+        'somenergia_custom',
     ],
     "external_dependencies": {"python": ["erppeek"]},
 

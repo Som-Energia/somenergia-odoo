@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-        <record id="view_users_form" model="ir.ui.view">
-            <field name="name">res.users.form.inherit</field>
-            <field name="model">res.users</field>
-            <field name="type">form</field>
-            <field name="inherit_id" ref="base.view_users_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//group[@name='preferences']/.." position="inside">
-                    <group name="som_crm" string="CRM">
-                        <field name="som_call_center_user"/>
-                    </group>
-                </xpath>
-            </field>
-        </record>
+    <record id="view_users_form" model="ir.ui.view">
+        <field name="name">res.users.form.inherit</field>
+        <field name="model">res.users</field>
+        <field name="type">form</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='preferences']/.." position="inside">
+                <group name="som_crm" string="CRM">
+                    <field name="som_call_center_user"/>
+                    <field name="som_max_leads_capacity"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
 </odoo>
