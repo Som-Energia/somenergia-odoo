@@ -251,7 +251,7 @@ class TestCrmTeam(TransactionCase):
                       "The selected member should have available leads capacity.")
 
         # Reset to unlimited capacity
-        self.user_member_2.som_max_leads_capacity = 0
+        self.user_member_2.som_max_leads_capacity = -1
 
         self.env['crm.lead'].create({
             'name': 'Test Opportunity 2',
@@ -267,7 +267,7 @@ class TestCrmTeam(TransactionCase):
 
         member = self.team_full.get_random_member(exclude_absent_members=False)
         self.assertIn(member, [self.user_leader, self.user_member_1, self.user_member_2],
-                      "With unlimited capacity, any member can be selected.")
+                      "With user_member_2 unlimited capacity, any member can be selected.")
 
     def test_team_members_capacity_no_one_available(self):
         """
