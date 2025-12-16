@@ -15,7 +15,7 @@ class ResUsers(models.Model):
         string='Max leads capacity',
         required=False,
         default=50,
-        help='Maximum number of leads that can be assigned to this user. 0 means unlimited.',
+        help='Maximum number of leads that can be assigned to this user. -1 means unlimited.',
     )
 
     @api.constrains('som_call_center_user')
@@ -42,7 +42,7 @@ class ResUsers(models.Model):
     def _get_available_leads_capacity(self):
         """ Returns the number of available leads capacity for the user. """
         self.ensure_one()
-        if self.som_max_leads_capacity == 0:
+        if self.som_max_leads_capacity == -1:
             return float('inf') # Unlimited capacity
         assigned_opportunities_count = self._get_assigned_opportunities_count()
         if assigned_opportunities_count >= self.som_max_leads_capacity:
