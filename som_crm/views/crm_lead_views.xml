@@ -29,6 +29,7 @@
                 <field name="lang_id"
                     options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
                 <field name="som_comparison_result"/>
+                <field name="som_next_renovation_date"/>
             </xpath>
 
 
@@ -48,6 +49,7 @@
                 <field name="lang_id"
                     options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
                 <field name="som_comparison_result"/>
+                <field name="som_next_renovation_date"/>
             </xpath>
 
             <xpath expr="//label[@for='contact_name_page_lead']"  position="attributes">
@@ -171,6 +173,7 @@
 
             <field name="source_id" position="after">
                 <field name="som_comparison_result" optional="show"/>
+                <field name="som_next_renovation_date" optional="show"/>
                 <field name="som_url_origin" widget="url" optional="hide"/>
             </field>
         </field>
