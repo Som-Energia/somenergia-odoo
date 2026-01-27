@@ -80,6 +80,13 @@ class HrEmployeeBase(models.AbstractModel):
         string='Excluded from telephone assistance',
     )
 
+    som_disable_att_restrictions = fields.Boolean(
+        string='Excluded from attendance restriction',
+    )
+
+    som_disable_att_restrictions_date_limit = fields.Date(
+        string='Excluded from attendance restriction til date',
+    )
 
 class HrEmployee(models.Model):
     _inherit = "hr.employee"
