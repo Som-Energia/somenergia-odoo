@@ -15,12 +15,22 @@ class HrAttendance(models.Model):
     @api.depends('check_in')
     def _compute_som_edition_allowed(self):
         for record in self:
-            allowed = True
+            allowed_standard = True
+            allowed_special = False
             if self.env.company.som_amend_attendance_restrictive:
+                # standard case for global restriction
                 days_to = self.env.company.som_amend_attendance_days_to
                 date_to = fields.Date.to_date(fields.Date.today() - timedelta(days=days_to))
-                allowed = (date_to <= record.check_in.date() <= fields.Date.today())
-            record.som_edition_allowed = allowed
+                allowed_standard = (date_to <= record.check_in.date() <= fields.Date.today())
+
+                # special case for employees excluded from restrictions
+                if record.employee_id.som_disable_att_restrictions:
+                    date_from_excl = record.employee_id.som_disable_att_restrictions_date_from
+                    date_to_excl = record.employee_id.som_disable_att_restrictions_date_to
+                    # both dates must be set if the flag is active
+                    if date_from_excl <= record.check_in.date() <= date_to_excl:
+                        allowed_special = True
+            record.som_edition_allowed = allowed_standard or allowed_special
 
     som_comments = fields.Text(
         string="Comments"

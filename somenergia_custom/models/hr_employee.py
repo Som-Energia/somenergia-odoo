@@ -85,7 +85,7 @@ class HrEmployeeBase(models.AbstractModel):
     )
 
     som_disable_att_restrictions_date_from = fields.Date(
-        string='Disaabled restrictions for attendance from date',
+        string='Disabled restrictions for attendance from date',
     )
 
     som_disable_att_restrictions_date_to = fields.Date(
