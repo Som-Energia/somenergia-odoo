@@ -80,6 +80,14 @@
                 <field name="som_appraisal_ref_date"/>
                 <field name="som_excluded_from_tel_assistance"/>
             </field>
+
+            <xpath expr="//group[@name='identification_group']" position="inside">
+                <field name="som_disable_att_restrictions" />
+                <field name="som_disable_att_restrictions_date_from"
+                    attrs="{'invisible': [('som_disable_att_restrictions', '=', False)], 'required': [('som_disable_att_restrictions', '=', True)]}"/>
+                <field name="som_disable_att_restrictions_date_to"
+                    attrs="{'invisible': [('som_disable_att_restrictions', '=', False)], 'required': [('som_disable_att_restrictions', '=', True)]}"/>
+            </xpath>
         </field>
     </record>
 
