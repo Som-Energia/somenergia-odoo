@@ -187,6 +187,7 @@ class TestHrLeaveType(TestHrHolidaysCommon):
         self.assertIn(msg_type_count, str_msg)
 
         msg_absence_name_get = f'<br/>{self.holiday_1.name_get()[0][1]}'
+        msg_absence_name_get = msg_absence_name_get.replace('dies', 'días')
         self.assertIn(msg_absence_name_get, str_msg)
 
     @freeze_time('2024-11-20')
@@ -207,9 +208,11 @@ class TestHrLeaveType(TestHrHolidaysCommon):
         self.assertIn(msg_type_count, str_msg)
 
         msg_absence_name_get = f'<br/>{self.holiday_2.name_get()[0][1]}'
+        msg_absence_name_get = msg_absence_name_get.replace('dies', 'días')
         self.assertIn(msg_absence_name_get, str_msg)
 
         msg_absence_name_get = f'<br/>{self.holiday_3.name_get()[0][1]}'
+        msg_absence_name_get = msg_absence_name_get.replace('dies', 'días')
         self.assertIn(msg_absence_name_get, str_msg)
 
     @freeze_time('2024-11-20')
