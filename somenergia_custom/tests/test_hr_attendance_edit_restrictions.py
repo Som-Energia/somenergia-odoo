@@ -345,6 +345,119 @@ class TestHrAttendanceEditRestrictions(common.TransactionCase):
         att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
         self.assertEqual(len(att_ids), 1)
 
+
+    # EXCLUDED EMPLOYEE
+    # ---------------------------------
+    @freeze_time('2025-03-04 17:00:00')
+    def test_rae__setup_enabled__create_no_raise_excluded_employee(self):
+        self.env.company.som_amend_attendance_restrictive = True
+        self.env.company.som_amend_attendance_days_to = 0
+        year_aux, month_aux, day_aux = (2025, 3, 3)
+
+        self.employee_emp.som_disable_att_restrictions = False
+        self.employee_emp.som_disable_att_restrictions_date_from = False
+        self.employee_emp.som_disable_att_restrictions_date_to = False
+
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
+        self.assertEqual(len(att_ids), 0)
+
+        with self.assertRaises(AccessError) as context:
+            self.env['hr.attendance'].with_user(self.employee_user.id).create({
+                'employee_id': self.employee_emp.id,
+                'check_in': datetime(year_aux, month_aux, day_aux, 7, 10),
+            })
+
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
+        self.assertEqual(len(att_ids), 0)
+
+        # Now exclude employee from restrictions
+        self.employee_emp.som_disable_att_restrictions = True
+        self.employee_emp.som_disable_att_restrictions_date_from = datetime(2025, 3, 1).date()
+        self.employee_emp.som_disable_att_restrictions_date_to = datetime(2025, 3, 10).date()
+        self.env['hr.attendance'].with_user(self.employee_user.id).create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 7, 10),
+        })
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
+        self.assertEqual(len(att_ids), 1)
+
+    @freeze_time('2025-03-05 17:00:00')
+    def test_rae__setup_enabled__write_no_raise_excluded_employee(self):
+        self.env.company.som_amend_attendance_restrictive = False
+        self.env.company.som_amend_attendance_days_to = 0
+        year_aux, month_aux, day_aux = (2025, 3, 3)
+
+        self.employee_emp.som_disable_att_restrictions = False
+        self.employee_emp.som_disable_att_restrictions_date_from = False
+        self.employee_emp.som_disable_att_restrictions_date_to = False
+
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
+        self.assertEqual(len(att_ids), 0)
+
+        att_id = self.env['hr.attendance'].with_user(self.employee_user.id).create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 7, 10),
+            'check_out': datetime(year_aux, month_aux, day_aux, 12, 45),
+        })
+
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
+        self.assertEqual(len(att_ids), 1)
+
+        self.env.company.som_amend_attendance_restrictive = True
+
+        with self.assertRaises(AccessError) as context:
+            att_id.with_user(self.employee_user.id).write({
+                'check_out': datetime(year_aux, month_aux, day_aux, 13, 45),
+            })
+        self.assertEqual(att_id.check_out, datetime(year_aux, month_aux, day_aux, 12, 45))
+
+        # Now exclude employee from restrictions
+        self.employee_emp.som_disable_att_restrictions = True
+        self.employee_emp.som_disable_att_restrictions_date_from = datetime(2025, 3, 1).date()
+        self.employee_emp.som_disable_att_restrictions_date_to = datetime(2025, 3, 10).date()
+        att_id.with_user(self.employee_user.id).write({
+            'check_out': datetime(year_aux, month_aux, day_aux, 13, 45),
+        })
+        self.assertEqual(att_id.check_out, datetime(year_aux, month_aux, day_aux, 13, 45))
+
+    @freeze_time('2025-03-04 17:00:00')
+    def test_rae__setup_enabled__unlink_no_raise_excluded_employee(self):
+        self.env.company.som_amend_attendance_restrictive = False
+        self.env.company.som_amend_attendance_days_to = 0
+        year_aux, month_aux, day_aux = (2025, 3, 3)
+
+        self.employee_emp.som_disable_att_restrictions = False
+        self.employee_emp.som_disable_att_restrictions_date_from = False
+        self.employee_emp.som_disable_att_restrictions_date_to = False
+
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
+        self.assertEqual(len(att_ids), 0)
+
+        att_id = self.env['hr.attendance'].with_user(self.employee_user.id).create({
+            'employee_id': self.employee_emp.id,
+            'check_in': datetime(year_aux, month_aux, day_aux, 7, 10),
+            'check_out': datetime(year_aux, month_aux, day_aux, 12, 45),
+        })
+
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
+        self.assertEqual(len(att_ids), 1)
+
+        self.env.company.som_amend_attendance_restrictive = True
+
+        with self.assertRaises(AccessError) as context:
+            att_id.with_user(self.employee_user.id).unlink()
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
+        self.assertEqual(len(att_ids), 1)
+
+        # Now exclude employee from restrictions
+        self.employee_emp.som_disable_att_restrictions = True
+        self.employee_emp.som_disable_att_restrictions_date_from = datetime(2025, 3, 1).date()
+        self.employee_emp.som_disable_att_restrictions_date_to = datetime(2025, 3, 10).date()
+        att_id.with_user(self.employee_user.id).unlink()
+        att_ids = self.env['hr.attendance'].search([('employee_id', '=', self.employee_emp.id)])
+        self.assertEqual(len(att_ids), 0)
+
+
     # CHECKOUT FUTURE
     # ---------------------------------
     @freeze_time('2025-03-04 8:00:00')
