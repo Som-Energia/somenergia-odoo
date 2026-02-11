@@ -10,6 +10,7 @@
                 <field name="som_erp_lead_id" readonly="1"/>
                 <field name="som_last_call_date"/>
                 <field name="som_last_act_done_mail_date"/>
+                <field name="som_id_meta" readonly="1"/>
             </xpath>
 
             <xpath expr="//group[@name='lead_partner']//field[@name='lang_id']" position="attributes">
@@ -38,6 +39,7 @@
                 <field name="som_erp_lead_id" readonly="1"/>
                 <field name="som_last_call_date"/>
                 <field name="som_last_act_done_mail_date"/>
+                <field name="som_id_meta" readonly="1"/>
             </xpath>
 
             <xpath expr="//group[@name='lead_info']" position="inside">
@@ -175,6 +177,7 @@
                 <field name="som_comparison_result" optional="show"/>
                 <field name="som_next_renovation_date" optional="show"/>
                 <field name="som_url_origin" widget="url" optional="hide"/>
+                <field name="som_id_meta" readonly="1" optional="hide"/>
             </field>
         </field>
     </record>

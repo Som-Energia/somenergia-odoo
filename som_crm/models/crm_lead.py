@@ -633,7 +633,7 @@ class Lead(models.Model):
             template_id.send_mail(
                 self.id,
                 force_send=True,
-                email_values= email_values,
+                email_values=email_values,
             )
         except Exception as e:
             _logger.error("Lead ID %s: error sending confirmation email: %s", self.id, e)
@@ -650,7 +650,7 @@ class Lead(models.Model):
         return True
 
     @api.model
-    def _import_leads_from_gsheets_cron(self):
+    def _import_leads_from_gsheets_cron(self, send_email_confirmation=False):
         dict_gsheets_connectors = {
             'ca_ES': 'som_crm.som_gsheets_connector_notoriety_campaign_meta_ca',
             'es_ES': 'som_crm.som_gsheets_connector_notoriety_campaign_meta_es',
@@ -658,11 +658,14 @@ class Lead(models.Model):
         for lang_code, xml_id in dict_gsheets_connectors.items():
             connector_id = self.env.ref(xml_id, raise_if_not_found=False) or False
             if not connector_id:
-                _logger.warning(f"Google Sheets connector for {lang_code} not found")
+                _logger.warning(f"Google Sheets connector for {xml_id} not found")
                 continue
-            self._import_leads_from_gsheets(connector_id, lang_code)
+            _logger.info(
+                f"Starting import of leads from: {connector_id.name} for language {lang_code}")
+            self._import_leads_from_gsheets(
+                connector_id, lang_code, send_email_confirmation=send_email_confirmation)
 
-    def _get_values_from_gsheets_row(self, dict_row):
+    def _get_values_from_gsheets_row(self, dict_row, lang_code=None):
         res = {}
         # font
         font_values = {
@@ -679,7 +682,7 @@ class Lead(models.Model):
             source_id = source_ids[0] if source_ids else False
 
         # phone (ex: 'p:+34655844787' 'p:') extracting the number part
-        phone_value = dict_row.get('phone', False)
+        phone_value = dict_row.get('phone_number', False)
         odoo_phone = False
         if phone_value and phone_value.startswith('p:'):
             odoo_phone = phone_value[2:] if len(phone_value) > 2 else False
@@ -693,6 +696,7 @@ class Lead(models.Model):
             channel_id = channel_ids[0]
 
         # campaign
+        # TODO: we're lossing info regarding 'ad_name'
         campaign_id = False
         campaingn_value = dict_row.get('adset_name', False)
         campaign_ids = self.env['utm.campaign'].sudo().search(
@@ -702,28 +706,70 @@ class Lead(models.Model):
         else:
             campaign_id = campaign_ids[0] if campaign_ids else False
 
+        # lang
+        lang_id = False
+        lang_ids = self.env['res.lang'].search([('code', '=', lang_code)], limit=1)
+        if lang_ids:
+            lang_id = lang_ids[0]
+
+        # email
+        email_value = dict_row.get('email', False)
+
         res.update({
-            'name': dict_row.get('name', 'Lead from Google Sheets'),
-            'source_id': source_id.id,
+            'name': dict_row.get('first_name', 'Lead from Google Sheets'),
+            'contact_name': dict_row.get('first_name', False),
+            'source_id': source_id.id if source_id else False,
             'phone': odoo_phone,
-            'som_channel': channel_id.id,
+            'som_channel': channel_id.id if channel_id else False,
             'campaign_id': campaign_id.id if campaign_id else False,
+            'lang_id': lang_id.id if lang_id else False,
+            'email_from': email_value if email_value else False,
         })
         return res
 
-    def _import_leads_from_gsheets(self, connector_id, lang_code):
+    def _import_leads_from_gsheets(self, connector_id, lang_code, send_email_confirmation=False):
         data = connector_id.get_data_from_google_sheet()
         if not data:
             _logger.warning("No data retrieved from Google Sheet: %s", connector_id.name)
             return False
         try:
+            count_data = len(data)
+            _logger.info(
+                "Data retrieved from Google Sheet '%s': %s rows", connector_id.name, count_data)
+            count_created = 0
+            count_error = 0
+            count_skipped = 0
             existing_meta_ids = self.search([('som_id_meta', '!=', False)]).mapped('som_id_meta')
             for dict_row in data:
                 meta_id = dict_row.get('id', False)
                 if meta_id in existing_meta_ids:
+                    count_skipped += 1
                     continue
-                data_from_row = self._get_values_from_gsheets_row(dict_row)
-                # ---
+                data_from_row = self._get_values_from_gsheets_row(dict_row, lang_code=lang_code)
+                try:
+                    lead_id = self.create({
+                        **data_from_row,
+                        'som_id_meta': meta_id,
+                        'type': 'opportunity',
+                        'user_id': False,
+                    })
+                    lead_id.auto_assign_user()
+                    lead_id.create_upcomming_activity(force_today=True)
+                    lead_id.assign_partner()
+                    if send_email_confirmation:
+                        lead_id.action_send_email_confirmation(invoice_received=False)
+                    count_created += 1
+                except Exception as e:
+                    _logger.error("Error creating lead from row with Meta ID %s: %s", meta_id, e)
+                    count_error += 1
+                    continue
+            _logger.info(
+                "Import finished for '%s': \n"
+                "%s leads created \n"
+                "%s errors \n"
+                "%s skipped \n"
+                "%s rows processed",
+                connector_id.name, count_created, count_error, count_skipped, count_data)
 
         except Exception as e:
             _logger.error("Error processing data from Google Sheet: %s", e)
