@@ -219,6 +219,12 @@ class Lead(models.Model):
         help="Date of the next renovation",
     )
 
+    som_id_meta = fields.Char(
+        string='ID Meta',
+        index=True,
+        help="ID from the Meta system, used for integration with Meta platforms",
+    )
+
     def auto_assign_user(self):
         team_id = self.env.ref(
             'sales_team.team_sales_department', raise_if_not_found=False
@@ -645,20 +651,81 @@ class Lead(models.Model):
 
     @api.model
     def _import_leads_from_gsheets_cron(self):
-        gsheets_connector_cat_id = self.env.ref(
-            'som_crm.som_gsheets_connector_notoriety_campaign_meta_ca',
-            raise_if_not_found=False) or False
-        if not gsheets_connector_cat_id:
-            _logger.warning("Google Sheets connector category not found")
-            return False
+        dict_gsheets_connectors = {
+            'ca_ES': 'som_crm.som_gsheets_connector_notoriety_campaign_meta_ca',
+            'es_ES': 'som_crm.som_gsheets_connector_notoriety_campaign_meta_es',
+        }
+        for lang_code, xml_id in dict_gsheets_connectors.items():
+            connector_id = self.env.ref(xml_id, raise_if_not_found=False) or False
+            if not connector_id:
+                _logger.warning(f"Google Sheets connector for {lang_code} not found")
+                continue
+            self._import_leads_from_gsheets(connector_id, lang_code)
 
-        self._import_leads_from_gsheets(gsheets_connector_cat_id)
-        return True
+    def _get_values_from_gsheets_row(self, dict_row):
+        res = {}
+        # font
+        font_values = {
+            'fb': 'facebook',
+            'ig': 'instagram',
+        }
+        font_value = dict_row.get('platform', False)
+        odoo_font_name = (
+            font_values.get(font_value, font_value) if font_value else False)
+        source_id = False
+        if odoo_font_name:
+            source_ids = self.env['utm.source'].search(
+                [('name', '=', odoo_font_name)], limit=1)
+            source_id = source_ids[0] if source_ids else False
 
-    def _import_leads_from_gsheets(self, connector_id):
+        # phone (ex: 'p:+34655844787' 'p:') extracting the number part
+        phone_value = dict_row.get('phone', False)
+        odoo_phone = False
+        if phone_value and phone_value.startswith('p:'):
+            odoo_phone = phone_value[2:] if len(phone_value) > 2 else False
+
+        # channel
+        channel_id = False
+        channel_ids = self.env['utm.medium'].sudo().search([('name', '=', 'Import')], limit=1)
+        if not channel_ids:
+            channel_id = self.env['utm.medium'].sudo().create({'name': 'Import'})
+        else:
+            channel_id = channel_ids[0]
+
+        # campaign
+        campaign_id = False
+        campaingn_value = dict_row.get('adset_name', False)
+        campaign_ids = self.env['utm.campaign'].sudo().search(
+            [('name', '=', campaingn_value)], limit=1)
+        if not campaign_ids and campaingn_value:
+            campaign_id = self.env['utm.campaign'].sudo().create({'name': campaingn_value})
+        else:
+            campaign_id = campaign_ids[0] if campaign_ids else False
+
+        res.update({
+            'name': dict_row.get('name', 'Lead from Google Sheets'),
+            'source_id': source_id.id,
+            'phone': odoo_phone,
+            'som_channel': channel_id.id,
+            'campaign_id': campaign_id.id if campaign_id else False,
+        })
+        return res
+
+    def _import_leads_from_gsheets(self, connector_id, lang_code):
         data = connector_id.get_data_from_google_sheet()
         if not data:
             _logger.warning("No data retrieved from Google Sheet: %s", connector_id.name)
             return False
+        try:
+            existing_meta_ids = self.search([('som_id_meta', '!=', False)]).mapped('som_id_meta')
+            for dict_row in data:
+                meta_id = dict_row.get('id', False)
+                if meta_id in existing_meta_ids:
+                    continue
+                data_from_row = self._get_values_from_gsheets_row(dict_row)
+                # ---
+
+        except Exception as e:
+            _logger.error("Error processing data from Google Sheet: %s", e)
 
         return True
