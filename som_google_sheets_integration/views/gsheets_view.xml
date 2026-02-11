@@ -6,7 +6,7 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="test_connection" string="Importar Dades Ara" type="object" class="oe_highlight"/>
+                    <button name="test_connection" string="Test Connection" type="object" class="oe_highlight"/>
                 </header>
                 <sheet>
                     <group>
@@ -42,6 +42,6 @@
         <field name="view_id" ref="view_gsheets_connector_tree"/>
     </record>
 
-    <menuitem id="menu_gsheets_root" name="GSheets Import" web_icon="base,static/img/icons/mrp_plm.png"/>
+    <menuitem id="menu_gsheets_root" name="GSheets Import" web_icon="som_google_sheets_integration,static/img/icons/icon.png"/>
     <menuitem id="menu_gsheets_connector" parent="menu_gsheets_root" action="action_gsheets_connector"/>
 </odoo>

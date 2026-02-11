@@ -3,6 +3,9 @@ import json
 import gspread
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class GsheetsConnector(models.Model):
@@ -23,7 +26,7 @@ class GsheetsConnector(models.Model):
     credentials_json = fields.Binary(string='JSON file (Service Account)', required=True)
     credentials_filename = fields.Char(string='Filename')
 
-    def _connect_to_google_sheets(self):
+    def get_data_from_google_sheet(self):
         self.ensure_one()
 
         # 1. Decode the uploaded JSON file
@@ -31,7 +34,8 @@ class GsheetsConnector(models.Model):
             json_data = base64.b64decode(self.credentials_json).decode('utf-8')
             credentials_dict = json.loads(json_data)
         except Exception as e:
-            raise UserError(_("Error reading the JSON file: %s") % str(e))
+            logger.error("Error reading the JSON file: %s", e)
+            return False
 
         # 2. Connect to Google Sheets using gspread
         try:
@@ -43,16 +47,25 @@ class GsheetsConnector(models.Model):
             records = worksheet.get_all_records()
             return records
         except Exception as e:
-            raise UserError(_(
-                "Error connecting to Google: %s.") % str(e))
+            logger.error("Error connecting to Google: %s", e)
+            return False
 
     def test_connection(self):
         self.ensure_one()
 
-        res = self._connect_to_google_sheets()
+        res = self.get_data_from_google_sheet()
         if not res:
-            raise UserError(_(
-                "Connection successful but no data found in the specified worksheet."))
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Connection Failed'),
+                    'message': _(
+                        'Failed to connect to the Google Sheet. \n'
+                        'Please check your credentials and sheet details.'),
+                    'sticky': True,
+                }
+            }
         else:
             # If we reach here, the connection is successful
             return {
@@ -61,17 +74,8 @@ class GsheetsConnector(models.Model):
                 'params': {
                     'title': _('Connection Successful'),
                     'message': _(
-                        'Successfully connected to the Google Sheet and data has been read.'),
+                        'Successfully connected to the Google Sheet and data has been read.\n'
+                        'Number of records retrieved: %d' % len(res)),
                     'sticky': False,
                 }
             }
-
-    def hook_action_import_data(self):
-        """
-        This method is intended to be called to import data from the Google Sheet.
-        You can implement the logic to process the data and create/update records in Odoo as needed.
-        For now, it just connects and retrieves the data without processing it.
-        You can expand this method based on your specific requirements.
-        """
-        self.ensure_one()
-        pass
