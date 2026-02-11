@@ -177,4 +177,18 @@
         <field name="res_model">crm.lead</field>
         <field name="icon">fa-gears</field>
     </record>
+
+    <!-- Gsheets Connectors -->
+    <record model="gsheets.connector" id="som_gsheets_connector_notoriety_campaign_meta_ca">
+        <field name="name">Leads Particulars Campanya Notorietat CA</field>
+        <field name="google_sheet_id">1VbCXm0EvYjtzU6qRbDNuf-SDeSeIMRcmRm-lQ5WHzOo</field>
+        <field name="worksheet_name">Dades de meta</field>
+    </record>
+
+     <record model="gsheets.connector" id="som_gsheets_connector_notoriety_campaign_meta_es">
+         <field name="name">Leads Particulars Campanya Notorietat CAST</field>
+         <field name="google_sheet_id">1Ep8yGpgSQrqXsEFW-Uu_1EaFjyXNes-7a2-GYzruUzw</field>
+         <field name="worksheet_name">Dades de meta</field>
+     </record>
+
 </data>
