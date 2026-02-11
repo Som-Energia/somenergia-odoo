@@ -25,6 +25,7 @@
         'mail_activity_board',
         'odoo_callinfo',
         'somenergia_custom',
+        'som_google_sheets_integration',
     ],
     "external_dependencies": {"python": ["erppeek"]},
 
