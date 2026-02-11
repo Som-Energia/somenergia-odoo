@@ -191,4 +191,22 @@
          <field name="worksheet_name">Dades de meta</field>
      </record>
 
+     <record model="ir.cron" id="som_crm_import_leads_from_gsheets">
+         <field name="name">Som - Import leads from Google Sheets</field>
+         <field name="interval_number">1</field>
+         <field name="interval_type">hours</field>
+         <field name="numbercall">-1</field>
+         <field
+             name="nextcall"
+             eval="(DateTime.now() + timedelta(minutes=60)).strftime('%Y-%m-%d %H:05:00')"
+         />
+         <field name="doall" eval="True" />
+         <field name="active" eval="False" />
+         <field name="model_id" ref="som_crm.model_crm_lead" />
+         <field name="state">code</field>
+         <field name="code">
+             model._import_leads_from_gsheets_cron()
+         </field>
+    </record>
+
 </data>

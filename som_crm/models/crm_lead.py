@@ -642,3 +642,23 @@ class Lead(models.Model):
                 "Lead ID %s: email sent but failed to post message in chatter: %s", self.id, e)
 
         return True
+
+    @api.model
+    def _import_leads_from_gsheets_cron(self):
+        gsheets_connector_cat_id = self.env.ref(
+            'som_crm.som_gsheets_connector_notoriety_campaign_meta_ca',
+            raise_if_not_found=False) or False
+        if not gsheets_connector_cat_id:
+            _logger.warning("Google Sheets connector category not found")
+            return False
+
+        self._import_leads_from_gsheets(gsheets_connector_cat_id)
+        return True
+
+    def _import_leads_from_gsheets(self, connector_id):
+        data = connector_id.get_data_from_google_sheet()
+        if not data:
+            _logger.warning("No data retrieved from Google Sheet: %s", connector_id.name)
+            return False
+
+        return True
