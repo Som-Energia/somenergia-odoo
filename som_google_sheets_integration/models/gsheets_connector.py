@@ -16,14 +16,14 @@ class GsheetsConnector(models.Model):
     google_sheet_id = fields.Char(
         string='Google Sheet ID',
         required=True,
-        help="ID del Google Sheet (la part de l'URL després de /d/ i abans de /edit)")
+        help="ID from the Google Sheet (the part of the URL after /d/ and before /edit)")
     worksheet_name = fields.Char(
         string='Worksheet Name',
         default='Sheet1',
-        help="Nom de la fulla dins del Google Sheet (per defecte 'Sheet1')")
+        help="Name of the worksheet within the Google Sheet (default is 'Sheet1')")
 
     # field to upload the JSON credentials file
-    credentials_json = fields.Binary(string='JSON file (Service Account)', required=True)
+    credentials_json = fields.Binary(string='JSON file (Service Account)')
     credentials_filename = fields.Char(string='Filename')
 
     def get_data_from_google_sheet(self):
