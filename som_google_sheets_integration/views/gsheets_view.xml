@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gsheets_connector_form" model="ir.ui.view">
+        <field name="name">gsheets.connector.form</field>
+        <field name="model">gsheets.connector</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="test_connection" string="Test Connection" type="object" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name" required="1"/>
+                        <field name="google_sheet_id" required="1"/>
+                        <field name="worksheet_name" required="1"/>
+                    </group>
+                    <group>
+                        <field name="credentials_json" filename="credentials_filename" required="1"/>
+                        <field name="credentials_filename" invisible="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gsheets_connector_tree" model="ir.ui.view">
+        <field name="name">gsheets.connector.tree</field>
+        <field name="model">gsheets.connector</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="google_sheet_id"/>
+                <field name="worksheet_name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_gsheets_connector" model="ir.actions.act_window">
+        <field name="name">GSheets Connectors</field>
+        <field name="res_model">gsheets.connector</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_gsheets_connector_tree"/>
+    </record>
+
+    <menuitem id="menu_gsheets_root" name="GSheets Import" web_icon="som_google_sheets_integration,static/img/icons/icon.png"/>
+    <menuitem id="menu_gsheets_connector" parent="menu_gsheets_root" action="action_gsheets_connector"/>
+</odoo>

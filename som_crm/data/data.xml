@@ -177,4 +177,36 @@
         <field name="res_model">crm.lead</field>
         <field name="icon">fa-gears</field>
     </record>
+
+    <!-- Gsheets Connectors -->
+    <record model="gsheets.connector" id="som_gsheets_connector_notoriety_campaign_meta_ca">
+        <field name="name">Leads Particulars Campanya Notorietat CA</field>
+        <field name="google_sheet_id">1VbCXm0EvYjtzU6qRbDNuf-SDeSeIMRcmRm-lQ5WHzOo</field>
+        <field name="worksheet_name">Dades de meta</field>
+    </record>
+
+     <record model="gsheets.connector" id="som_gsheets_connector_notoriety_campaign_meta_es">
+         <field name="name">Leads Particulars Campanya Notorietat CAST</field>
+         <field name="google_sheet_id">1Ep8yGpgSQrqXsEFW-Uu_1EaFjyXNes-7a2-GYzruUzw</field>
+         <field name="worksheet_name">Dades de meta</field>
+     </record>
+
+     <record model="ir.cron" id="som_crm_import_leads_from_gsheets">
+         <field name="name">Som - Import leads from Google Sheets</field>
+         <field name="interval_number">1</field>
+         <field name="interval_type">hours</field>
+         <field name="numbercall">-1</field>
+         <field
+             name="nextcall"
+             eval="(DateTime.now() + timedelta(minutes=60)).strftime('%Y-%m-%d %H:05:00')"
+         />
+         <field name="doall" eval="True" />
+         <field name="active" eval="False" />
+         <field name="model_id" ref="som_crm.model_crm_lead" />
+         <field name="state">code</field>
+         <field name="code">
+             model._import_leads_from_gsheets_cron()
+         </field>
+    </record>
+
 </data>
