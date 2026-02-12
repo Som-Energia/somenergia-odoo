@@ -651,6 +651,26 @@ class Lead(models.Model):
 
     def _get_values_from_gsheets_row(self, dict_row, lang_code=None):
         res = {}
+
+        # name and contact_name
+        name_value = dict_row.get('first_name', False) or dict_row.get('nombre', False)
+        # email
+        email_value = dict_row.get('email', False) or dict_row.get('correo_electrónico', False)
+        # phone (ex: 'p:+34655844787' 'p:') extracting the number part
+        phone_value = (
+            dict_row.get('phone_number', False) or dict_row.get('número_de_teléfono', False)
+        )
+
+        if not name_value or not email_value or not phone_value:
+            _logger.error(
+                "Row with Meta ID %s: missing contact information name, email or phone",
+                dict_row.get('id', 'N/A'))
+            return False
+
+        odoo_phone = False
+        if phone_value and phone_value.startswith('p:'):
+            odoo_phone = phone_value[2:] if len(phone_value) > 2 else False
+
         # font
         font_values = {
             'fb': 'facebook',
@@ -664,12 +684,6 @@ class Lead(models.Model):
             source_ids = self.env['utm.source'].search(
                 [('name', '=', odoo_font_name)], limit=1)
             source_id = source_ids[0] if source_ids else False
-
-        # phone (ex: 'p:+34655844787' 'p:') extracting the number part
-        phone_value = dict_row.get('phone_number', False)
-        odoo_phone = False
-        if phone_value and phone_value.startswith('p:'):
-            odoo_phone = phone_value[2:] if len(phone_value) > 2 else False
 
         # channel
         channel_id = False
@@ -696,18 +710,15 @@ class Lead(models.Model):
         if lang_ids:
             lang_id = lang_ids[0]
 
-        # email
-        email_value = dict_row.get('email', False)
-
         res.update({
-            'name': dict_row.get('first_name', 'Lead from Google Sheets'),
-            'contact_name': dict_row.get('first_name', False),
+            'name': name_value,
+            'contact_name': name_value,
+            'email_from': email_value if email_value else False,
+            'phone': odoo_phone if odoo_phone else False,
             'source_id': source_id.id if source_id else False,
-            'phone': odoo_phone,
             'som_channel': channel_id.id if channel_id else False,
             'campaign_id': campaign_id.id if campaign_id else False,
             'lang_id': lang_id.id if lang_id else False,
-            'email_from': email_value if email_value else False,
         })
         return res
 
@@ -735,6 +746,9 @@ class Lead(models.Model):
                     continue
                 data_from_row = self._get_values_from_gsheets_row(dict_row, lang_code=lang_code)
                 try:
+                    if not data_from_row:
+                        count_error += 1
+                        continue
                     lead_id = self.create({
                         **data_from_row,
                         'som_id_meta': meta_id,
