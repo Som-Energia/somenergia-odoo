@@ -649,22 +649,6 @@ class Lead(models.Model):
 
         return True
 
-    @api.model
-    def _import_leads_from_gsheets_cron(self, send_email_confirmation=False):
-        dict_gsheets_connectors = {
-            'ca_ES': 'som_crm.som_gsheets_connector_notoriety_campaign_meta_ca',
-            'es_ES': 'som_crm.som_gsheets_connector_notoriety_campaign_meta_es',
-        }
-        for lang_code, xml_id in dict_gsheets_connectors.items():
-            connector_id = self.env.ref(xml_id, raise_if_not_found=False) or False
-            if not connector_id:
-                _logger.warning(f"Google Sheets connector for {xml_id} not found")
-                continue
-            _logger.info(
-                f"Starting import of leads from: {connector_id.name} for language {lang_code}")
-            self._import_leads_from_gsheets(
-                connector_id, lang_code, send_email_confirmation=send_email_confirmation)
-
     def _get_values_from_gsheets_row(self, dict_row, lang_code=None):
         res = {}
         # font
@@ -727,7 +711,9 @@ class Lead(models.Model):
         })
         return res
 
-    def _import_leads_from_gsheets(self, connector_id, lang_code, send_email_confirmation=False):
+    def _import_leads_from_gsheets(
+            self, connector_id, lang_code,
+            send_email_confirmation=False, limit=10, autoassign_user=True):
         data = connector_id.get_data_from_google_sheet()
         if not data:
             _logger.warning("No data retrieved from Google Sheet: %s", connector_id.name)
@@ -736,9 +722,11 @@ class Lead(models.Model):
             count_data = len(data)
             _logger.info(
                 "Data retrieved from Google Sheet '%s': %s rows", connector_id.name, count_data)
+            _logger.info("Limit leads to import: %s", limit)
             count_created = 0
             count_error = 0
             count_skipped = 0
+            count_processed = 0
             existing_meta_ids = self.search([('som_id_meta', '!=', False)]).mapped('som_id_meta')
             for dict_row in data:
                 meta_id = dict_row.get('id', False)
@@ -753,25 +741,52 @@ class Lead(models.Model):
                         'type': 'opportunity',
                         'user_id': False,
                     })
-                    lead_id.auto_assign_user()
-                    lead_id.create_upcomming_activity(force_today=True)
                     lead_id.assign_partner()
+                    if autoassign_user:
+                        lead_id.auto_assign_user()
+                        lead_id.create_upcomming_activity(force_today=True)
                     if send_email_confirmation:
                         lead_id.action_send_email_confirmation(invoice_received=False)
                     count_created += 1
                 except Exception as e:
                     _logger.error("Error creating lead from row with Meta ID %s: %s", meta_id, e)
                     count_error += 1
-                    continue
+                finally:
+                    count_processed += 1
+                    if count_processed >= limit:
+                        _logger.info(
+                            "Import limit reached (%s leads), stopping import for '%s'",
+                            limit, connector_id.name)
+                        break
             _logger.info(
                 "Import finished for '%s': \n"
                 "%s leads created \n"
                 "%s errors \n"
                 "%s skipped \n"
                 "%s rows processed",
-                connector_id.name, count_created, count_error, count_skipped, count_data)
+                connector_id.name, count_created, count_error, count_skipped, count_processed)
 
         except Exception as e:
             _logger.error("Error processing data from Google Sheet: %s", e)
 
         return True
+
+    @api.model
+    def _import_leads_from_gsheets_cron(
+            self, send_email_confirmation=False, limit=10, autoassign_user=True):
+        dict_gsheets_connectors = {
+            'ca_ES': 'som_crm.som_gsheets_connector_notoriety_campaign_meta_ca',
+            'es_ES': 'som_crm.som_gsheets_connector_notoriety_campaign_meta_es',
+        }
+        for lang_code, xml_id in dict_gsheets_connectors.items():
+            connector_id = self.env.ref(xml_id, raise_if_not_found=False) or False
+            if not connector_id:
+                _logger.warning(f"Google Sheets connector for {xml_id} not found")
+                continue
+            _logger.info(
+                f"Starting import of leads from: {connector_id.name} for language {lang_code}")
+            self._import_leads_from_gsheets(
+                connector_id, lang_code,
+                send_email_confirmation=send_email_confirmation,
+                limit=limit,
+                autoassign_user=autoassign_user)
