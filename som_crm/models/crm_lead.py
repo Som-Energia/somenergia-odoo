@@ -591,6 +591,10 @@ class Lead(models.Model):
                 raise_if_not_found=False) or False
         return template_id
 
+    def action_send_email_confirmation_multiple(self, invoice_received=False):
+        for record in self:
+            record.action_send_email_confirmation(invoice_received=invoice_received)
+
     def action_send_email_confirmation(self, invoice_received=False):
         self.ensure_one()
 
