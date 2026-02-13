@@ -209,4 +209,16 @@
          </field>
     </record>
 
+    <record id="som_crm_send_mail" model="ir.actions.server">
+        <field name="name">Som - Send first contact mail</field>
+        <field name="type">ir.actions.server</field>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="binding_model_id" ref="crm.model_crm_lead"/>
+        <field name="sequence">99</field>
+        <field name="state">code</field>
+        <field name="code">
+            records.action_send_email_confirmation_multiple(invoice_received=False)
+        </field>
+    </record>
+
 </data>
