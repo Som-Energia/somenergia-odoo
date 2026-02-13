@@ -5,7 +5,7 @@ from odoo.tests.common import TransactionCase, tagged
 from odoo.exceptions import ValidationError
 from datetime import datetime, date, timedelta
 from odoo.fields import Datetime, Date
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 
 @tagged('som_lead')
@@ -1334,3 +1334,493 @@ class TestCrmLeadActivityCounters(TransactionCase):
             self.lead.som_upcomming_activity_count, 0,
             "Upcoming count should remain 0 after posting a note"
         )
+
+
+@tagged('som_lead_gsheets_import')
+class TestCrmLeadGsheetsImport(TransactionCase):
+    """
+    Test class for Google Sheets import functionality.
+    Tests the _get_values_from_gsheets_row, _import_leads_from_gsheets,
+    and _import_leads_from_gsheets_cron methods.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super(TestCrmLeadGsheetsImport, cls).setUpClass()
+
+        cls.Lead = cls.env['crm.lead']
+        cls.Partner = cls.env['res.partner']
+        cls.UtmSource = cls.env['utm.source']
+        cls.UtmMedium = cls.env['utm.medium']
+        cls.UtmCampaign = cls.env['utm.campaign']
+        cls.ResLang = cls.env['res.lang']
+
+        # Create test o check if exists UTM sources
+        cls.source_facebook = cls.UtmSource.search([('name', '=', 'facebook')], limit=1)
+        if not cls.source_facebook:
+            cls.source_facebook = cls.UtmSource.create({'name': 'facebook'})
+        cls.source_instagram = cls.UtmSource.search([('name', '=', 'instagram')], limit=1)
+        if not cls.source_instagram:
+            cls.source_instagram = cls.UtmSource.create({'name': 'instagram'})
+
+        # Create test campaign
+        cls.campaign_test = cls.UtmCampaign.create({'name': 'Test Campaign'})
+
+        # Get or create languages
+        cls.lang_ca = cls.ResLang.search([('code', '=', 'ca_ES')], limit=1)
+        cls.lang_es = cls.ResLang.search([('code', '=', 'es_ES')], limit=1)
+
+        # Ensure 'Import' medium exists or create it
+        cls.medium_import = cls.UtmMedium.search([('name', '=', 'Import')], limit=1)
+        if not cls.medium_import:
+            cls.medium_import = cls.UtmMedium.create({'name': 'Import'})
+
+    # -------------------------------------------------------------------------
+    # Tests for _get_values_from_gsheets_row
+    # -------------------------------------------------------------------------
+
+    def test_get_values_from_gsheets_row_complete_data_english_keys(self):
+        """
+        Test parsing a complete row with English keys (first_name, email, phone_number).
+        """
+        dict_row = {
+            'id': 'META123',
+            'first_name': 'John Doe',
+            'email': 'john.doe@example.com',
+            'phone_number': 'p:+34666111222',
+            'platform': 'fb',
+            'adset_name': 'Winter Campaign',
+        }
+
+        lead = self.Lead
+        result = lead._get_values_from_gsheets_row(dict_row, lang_code='ca_ES')
+
+        self.assertTrue(result, "Result should not be False for complete data")
+        self.assertEqual(result['name'], 'John Doe')
+        self.assertEqual(result['contact_name'], 'John Doe')
+        self.assertEqual(result['email_from'], 'john.doe@example.com')
+        self.assertEqual(result['phone'], '+34666111222')
+        self.assertEqual(result['source_id'], self.source_facebook.id)
+        self.assertEqual(result['som_channel'], self.medium_import.id)
+
+        # Campaign should be created
+        campaign = self.UtmCampaign.search([('name', '=', 'Winter Campaign')], limit=1)
+        self.assertTrue(campaign, "Campaign should be created")
+        self.assertEqual(result['campaign_id'], campaign.id)
+
+        if self.lang_ca:
+            self.assertEqual(result['lang_id'], self.lang_ca.id)
+
+    def test_get_values_from_gsheets_row_complete_data_spanish_keys(self):
+        """
+        Test parsing a complete row with Spanish keys (nombre, correo_electrónico, número_de_teléfono).
+        """
+        dict_row = {
+            'id': 'META456',
+            'nombre': 'María García',
+            'correo_electrónico': 'maria.garcia@example.com',
+            'número_de_teléfono': 'p:+34677222333',
+            'platform': 'ig',
+            'adset_name': 'Spring Campaign',
+        }
+
+        lead = self.Lead
+        result = lead._get_values_from_gsheets_row(dict_row, lang_code='es_ES')
+
+        self.assertTrue(result, "Result should not be False for complete data")
+        self.assertEqual(result['name'], 'María García')
+        self.assertEqual(result['contact_name'], 'María García')
+        self.assertEqual(result['email_from'], 'maria.garcia@example.com')
+        self.assertEqual(result['phone'], '+34677222333')
+        self.assertEqual(result['source_id'], self.source_instagram.id)
+
+        if self.lang_es:
+            self.assertEqual(result['lang_id'], self.lang_es.id)
+
+    def test_get_values_from_gsheets_row_missing_name(self):
+        """
+        Test that missing name returns False.
+        """
+        dict_row = {
+            'id': 'META789',
+            'email': 'test@example.com',
+            'phone_number': 'p:+34666777888',
+        }
+
+        lead = self.Lead
+        result = lead._get_values_from_gsheets_row(dict_row)
+
+        self.assertFalse(result, "Result should be False when name is missing")
+
+    def test_get_values_from_gsheets_row_missing_email(self):
+        """
+        Test that missing email returns False.
+        """
+        dict_row = {
+            'id': 'META999',
+            'first_name': 'Test User',
+            'phone_number': 'p:+34666777888',
+        }
+
+        lead = self.Lead
+        result = lead._get_values_from_gsheets_row(dict_row)
+
+        self.assertFalse(result, "Result should be False when email is missing")
+
+    def test_get_values_from_gsheets_row_missing_phone(self):
+        """
+        Test that missing phone returns False.
+        """
+        dict_row = {
+            'id': 'META101',
+            'first_name': 'Test User',
+            'email': 'test@example.com',
+        }
+
+        lead = self.Lead
+        result = lead._get_values_from_gsheets_row(dict_row)
+
+        self.assertFalse(result, "Result should be False when phone is missing")
+
+    def test_get_values_from_gsheets_row_phone_without_prefix(self):
+        """
+        Test that phone without 'p:' prefix is handled (should be False).
+        """
+        dict_row = {
+            'id': 'META102',
+            'first_name': 'Test User',
+            'email': 'test@example.com',
+            'phone_number': '+34666777888',  # Without 'p:' prefix
+        }
+
+        lead = self.Lead
+        result = lead._get_values_from_gsheets_row(dict_row)
+
+        # The function checks 'if phone_value and phone_value.startswith('p:')'
+        # If it doesn't start with 'p:', odoo_phone will be False
+        # But the main validation checks 'if not name_value or not email_value or not phone_value'
+        # phone_value is '+34666777888', so it's not False
+        # However, odoo_phone will be False because it doesn't start with 'p:'
+        self.assertTrue(result, "Result should exist even without p: prefix")
+        self.assertFalse(result['phone'], "Phone should be False without 'p:' prefix")
+
+    def test_get_values_from_gsheets_row_platform_unknown(self):
+        """
+        Test with an unknown platform value (should not find source).
+        """
+        dict_row = {
+            'id': 'META103',
+            'first_name': 'Test User',
+            'email': 'test@example.com',
+            'phone_number': 'p:+34666777888',
+            'platform': 'unknown_platform',
+        }
+
+        lead = self.Lead
+        result = lead._get_values_from_gsheets_row(dict_row)
+
+        self.assertTrue(result, "Result should exist")
+        self.assertFalse(result['source_id'], "Source ID should be False for unknown platform")
+
+    def test_get_values_from_gsheets_row_reuse_existing_campaign(self):
+        """
+        Test that existing campaigns are reused instead of creating duplicates.
+        """
+        dict_row = {
+            'id': 'META104',
+            'first_name': 'Test User',
+            'email': 'test@example.com',
+            'phone_number': 'p:+34666777888',
+            'adset_name': 'Test Campaign',  # Already exists
+        }
+
+        campaign_count_before = self.UtmCampaign.search_count([('name', '=', 'Test Campaign')])
+
+        lead = self.Lead
+        result = lead._get_values_from_gsheets_row(dict_row)
+
+        campaign_count_after = self.UtmCampaign.search_count([('name', '=', 'Test Campaign')])
+
+        self.assertTrue(result, "Result should exist")
+        self.assertEqual(result['campaign_id'], self.campaign_test.id)
+        self.assertEqual(campaign_count_before, campaign_count_after,
+                         "No new campaign should be created")
+
+    def test_get_values_from_gsheets_row_no_campaign(self):
+        """
+        Test parsing without campaign data.
+        """
+        dict_row = {
+            'id': 'META105',
+            'first_name': 'Test User',
+            'email': 'test@example.com',
+            'phone_number': 'p:+34666777888',
+        }
+
+        lead = self.Lead
+        result = lead._get_values_from_gsheets_row(dict_row)
+
+        self.assertTrue(result, "Result should exist")
+        self.assertFalse(result['campaign_id'], "Campaign ID should be False")
+
+    def test_get_values_from_gsheets_row_new_campaign(self):
+        """
+        Test parsing with new campaign data.
+        """
+        dict_row = {
+            'id': 'META105',
+            'first_name': 'Test User',
+            'email': 'test@example.com',
+            'phone_number': 'p:+34666777888',
+            'adset_name': 'New Campaign for Test',
+        }
+
+        lead = self.Lead
+        result = lead._get_values_from_gsheets_row(dict_row)
+
+        self.assertTrue(result, "Result should exist")
+        self.assertTrue(result['campaign_id'], "Campaign ID should exists")
+
+    def test_get_values_from_gsheets_row_invalid_language_code(self):
+        """
+        Test with an invalid language code.
+        """
+        dict_row = {
+            'id': 'META106',
+            'first_name': 'Test User',
+            'email': 'test@example.com',
+            'phone_number': 'p:+34666777888',
+        }
+
+        lead = self.Lead
+        result = lead._get_values_from_gsheets_row(dict_row, lang_code='invalid_XX')
+
+        self.assertTrue(result, "Result should exist")
+        self.assertFalse(result['lang_id'], "Lang ID should be False for invalid language")
+
+    # -------------------------------------------------------------------------
+    # Tests for _import_leads_from_gsheets
+    # -------------------------------------------------------------------------
+
+    def test_import_leads_from_gsheets_success(self):
+        """
+        Test successful import of leads from Google Sheets.
+        """
+        # Mock data from Google Sheets
+        mock_data = [
+            {
+                'id': 'META_TEST_001',
+                'first_name': 'Lead One',
+                'email': 'lead.one@example.com',
+                'phone_number': 'p:+34666111111',
+                'platform': 'fb',
+                'adset_name': 'Import Test Campaign',
+            },
+            {
+                'id': 'META_TEST_002',
+                'first_name': 'Lead Two',
+                'email': 'lead.two@example.com',
+                'phone_number': 'p:+34666222222',
+                'platform': 'ig',
+                'adset_name': 'Import Test Campaign',
+            },
+        ]
+
+        # Create a mock connector
+        mock_connector = Mock()
+        mock_connector.name = 'Mock Connector'
+        mock_connector.get_data_from_google_sheet.return_value = mock_data
+
+        initial_lead_count = self.Lead.search_count([])
+
+        # Execute import
+        result = self.Lead._import_leads_from_gsheets(
+            mock_connector, 'ca_ES',
+            send_email_confirmation=False,
+            limit=10,
+            autoassign_user=False
+        )
+
+        final_lead_count = self.Lead.search_count([])
+
+        self.assertTrue(result, "Import should return True")
+        self.assertEqual(final_lead_count, initial_lead_count + 2,
+                         "Two new leads should be created")
+
+        # Check created leads
+        lead_one = self.Lead.search([('som_id_meta', '=', 'META_TEST_001')], limit=1)
+        lead_two = self.Lead.search([('som_id_meta', '=', 'META_TEST_002')], limit=1)
+
+        self.assertTrue(lead_one, "Lead One should be created")
+        self.assertTrue(lead_two, "Lead Two should be created")
+        self.assertEqual(lead_one.name, 'Lead One')
+        self.assertEqual(lead_two.email_from, 'lead.two@example.com')
+        self.assertEqual(lead_one.type, 'opportunity')
+        self.assertEqual(lead_two.type, 'opportunity')
+
+    def test_import_leads_from_gsheets_skip_duplicates(self):
+        """
+        Test that leads with existing som_id_meta are skipped.
+        """
+        # Create an existing lead
+        existing_lead = self.Lead.create({
+            'name': 'Existing Lead',
+            'som_id_meta': 'META_DUPLICATE',
+            'type': 'opportunity',
+        })
+
+        mock_data = [
+            {
+                'id': 'META_DUPLICATE',  # Same as existing
+                'first_name': 'Duplicate Lead',
+                'email': 'duplicate@example.com',
+                'phone_number': 'p:+34666333333',
+            },
+            {
+                'id': 'META_NEW',
+                'first_name': 'New Lead',
+                'email': 'new@example.com',
+                'phone_number': 'p:+34666444444',
+            },
+        ]
+
+        mock_connector = Mock()
+        mock_connector.name = 'Mock Connector'
+        mock_connector.get_data_from_google_sheet.return_value = mock_data
+
+        initial_lead_count = self.Lead.search_count([])
+
+        result = self.Lead._import_leads_from_gsheets(
+            mock_connector, 'ca_ES',
+            send_email_confirmation=False,
+            limit=10,
+            autoassign_user=False
+        )
+
+        final_lead_count = self.Lead.search_count([])
+
+        self.assertTrue(result, "Import should return True")
+        self.assertEqual(final_lead_count, initial_lead_count + 1,
+                         "Only one new lead should be created (duplicate skipped)")
+
+        # Check that the existing lead was not modified
+        self.assertEqual(existing_lead.name, 'Existing Lead',
+                         "Existing lead should not be modified")
+
+    def test_import_leads_from_gsheets_limit(self):
+        """
+        Test that the limit parameter works correctly.
+        """
+        # Create 5 mock rows
+        mock_data = [
+            {
+                'id': f'META_LIMIT_{i}',
+                'first_name': f'Lead {i}',
+                'email': f'lead{i}@example.com',
+                'phone_number': f'p:+3466655500{i}',
+            }
+            for i in range(1, 6)
+        ]
+
+        mock_connector = Mock()
+        mock_connector.name = 'Mock Connector'
+        mock_connector.get_data_from_google_sheet.return_value = mock_data
+
+        initial_lead_count = self.Lead.search_count([])
+
+        # Import with limit of 3
+        result = self.Lead._import_leads_from_gsheets(
+            mock_connector, 'ca_ES',
+            send_email_confirmation=False,
+            limit=3,
+            autoassign_user=False
+        )
+
+        final_lead_count = self.Lead.search_count([])
+
+        self.assertTrue(result, "Import should return True")
+        self.assertEqual(final_lead_count, initial_lead_count + 3,
+                         "Only 3 leads should be created (limit respected)")
+
+    def test_import_leads_from_gsheets_invalid_row_data(self):
+        """
+        Test handling of invalid row data (missing required fields).
+        """
+        mock_data = [
+            {
+                'id': 'META_VALID',
+                'first_name': 'Valid Lead',
+                'email': 'valid@example.com',
+                'phone_number': 'p:+34666777777',
+            },
+            {
+                'id': 'META_INVALID',
+                'first_name': 'Invalid Lead',
+                # Missing email and phone
+            },
+        ]
+
+        mock_connector = Mock()
+        mock_connector.name = 'Mock Connector'
+        mock_connector.get_data_from_google_sheet.return_value = mock_data
+
+        initial_lead_count = self.Lead.search_count([])
+
+        result = self.Lead._import_leads_from_gsheets(
+            mock_connector, 'ca_ES',
+            send_email_confirmation=False,
+            limit=10,
+            autoassign_user=False
+        )
+
+        final_lead_count = self.Lead.search_count([])
+
+        self.assertTrue(result, "Import should return True even with errors")
+        self.assertEqual(final_lead_count, initial_lead_count + 1,
+                         "Only valid lead should be created")
+
+        valid_lead = self.Lead.search([('som_id_meta', '=', 'META_VALID')], limit=1)
+        invalid_lead = self.Lead.search([('som_id_meta', '=', 'META_INVALID')], limit=1)
+
+        self.assertTrue(valid_lead, "Valid lead should be created")
+        self.assertFalse(invalid_lead, "Invalid lead should not be created")
+
+    def test_import_leads_from_gsheets_no_data(self):
+        """
+        Test import when connector returns no data.
+        """
+        mock_connector = Mock()
+        mock_connector.name = 'Mock Connector'
+        mock_connector.get_data_from_google_sheet.return_value = None
+
+        result = self.Lead._import_leads_from_gsheets(
+            mock_connector, 'ca_ES',
+            send_email_confirmation=False,
+            limit=10,
+            autoassign_user=False
+        )
+
+        self.assertFalse(result, "Import should return False when no data is available")
+
+    def test_import_leads_from_gsheets_empty_data(self):
+        """
+        Test import when connector returns empty list.
+        """
+        mock_connector = Mock()
+        mock_connector.name = 'Mock Connector'
+        mock_connector.get_data_from_google_sheet.return_value = []
+
+        initial_lead_count = self.Lead.search_count([])
+
+        result = self.Lead._import_leads_from_gsheets(
+            mock_connector, 'ca_ES',
+            send_email_confirmation=False,
+            limit=10,
+            autoassign_user=False
+        )
+
+        final_lead_count = self.Lead.search_count([])
+
+        self.assertFalse(result, "Import should return False even with empty data")
+        self.assertEqual(final_lead_count, initial_lead_count,
+                         "No leads should be created from empty data")
