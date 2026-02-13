@@ -34,6 +34,16 @@ class Lead(models.Model):
             return activity_id[0].date
         return False
 
+    @api.depends('som_current_cost', 'som_simulated_cost')
+    def _compute_comparison_cost(self):
+        for record in self:
+            if record.som_current_cost and record.som_simulated_cost:
+                record.som_comparison_cost = record.som_current_cost - record.som_simulated_cost
+                record.som_comparison_result = (
+                    'favourable' if record.som_comparison_cost > 0 else 'disfavourable')
+            else:
+                record.som_comparison_cost = 0.0
+
     @api.depends('message_ids', 'message_ids.subtype_id', 'message_ids.mail_activity_type_id')
     def _compute_activities_counters(self):
         activity_subtype_id = self.env.ref('mail.mt_activities', raise_if_not_found=False) or False
@@ -148,12 +158,37 @@ class Lead(models.Model):
         store=True,
     )
 
+    som_current_cost = fields.Float(
+        string='Current Cost',
+        required=False,
+        help="Current cost of the lead, used for comparison with our offer",
+    )
+
+    som_simulated_cost = fields.Float(
+        string='Simulated Cost',
+        required=False,
+        help="Simulated cost of the lead with our offer, used for comparison with current cost",
+    )
+
+    som_comparison_cost = fields.Float(
+        string='Savings',
+        required=False,
+        compute='_compute_comparison_cost',
+        store=True,
+        readonly=False,
+        help="Comparison between current cost and simulated cost, "
+        "used to evaluate the potential saving for the lead",
+    )
+
     som_comparison_result = fields.Selection(
         selection=[
             ("favourable", _("favourable")),
             ("disfavourable", _("disfavourable")),
         ],
         string="Comparison Result",
+        compute='_compute_comparison_result',
+        readonly=False,
+        store=True,
         required=False,
     )
 

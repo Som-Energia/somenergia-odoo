@@ -29,10 +29,21 @@
                        options="{'color_field': 'color'}"/>
                 <field name="lang_id"
                     options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
-                <field name="som_comparison_result"/>
                 <field name="som_next_renovation_date"/>
             </xpath>
 
+            <xpath expr="//field[@name='lead_properties']" position="before">
+                <group name="som_comparison_group" string="Comparison">
+                    <group>
+                        <field name="som_current_cost"/>
+                        <field name="som_simulated_cost"/>
+                    </group>
+                    <group>
+                        <field name="som_comparison_cost" readonly="0"/>
+                        <field name="som_comparison_result"/>
+                    </group>
+                </group>
+            </xpath>
 
             <xpath expr="//group[@name='lead_partner']" position="inside">
                 <field name="som_cups"/>
