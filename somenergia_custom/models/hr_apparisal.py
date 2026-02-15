@@ -113,14 +113,25 @@ class HrAppraisal(models.Model):
         """This function will start the appraisal by sending emails to the corresponding employees
         specified in the appraisal"""
         self.ensure_one()
-        tmpl_generic_id = self.env.ref('somenergia_custom.som_email_template_feedback_generic')
-        tmpl_empl_id = self.env.ref('somenergia_custom.som_email_template_feedback_start_employee')
-        tmpl_col_id = self.env.ref('somenergia_custom.som_email_template_feedback_start_collaborator')
+        tmpl_generic_id = self.env.ref(
+            'somenergia_custom.som_email_template_feedback_generic')
+        tmpl_empl_id = self.env.ref(
+            'somenergia_custom.som_email_template_feedback_start_employee')
+        tmpl_col_id = self.env.ref(
+            'somenergia_custom.som_email_template_feedback_start_collaborator')
 
-        send_count = 0
+        sent_count = 0
         appraisal_reviewers_list = self.fetch_appraisal_reviewer()
+        if not appraisal_reviewers_list:
+            raise ValidationError(_("No reviewers found for this feedback."))
+
+        if not self.hr_colleague_ids or not self.emp_id:
+            raise ValidationError(
+                _("The feedback must have at least one colleague and the employee assigned."))
+
         for appraisal_reviewers, survey_id in appraisal_reviewers_list:
             if len(appraisal_reviewers) == 1 and appraisal_reviewers == self.emp_id:
+                # case own feedback only
                 continue
             for employee_id in appraisal_reviewers:
                 if self._existing_answer(survey_id, employee_id):
@@ -134,9 +145,10 @@ class HrAppraisal(models.Model):
                 )
                 template_to_send_id = tmpl_col_id if self.som_type == 'annual_360' else tmpl_generic_id
                 template_to_send_id.send_mail(response.id, force_send=True)
-                send_count += 1
+                sent_count += 1
 
-        if self.hr_emp and self.emp_survey_id and not self._existing_answer(self.emp_survey_id, self.emp_id):
+        if self.hr_emp and self.emp_survey_id and not self._existing_answer(
+                self.emp_survey_id, self.emp_id):
             self.ensure_one()
             if not self.response_id:
                 response = self.emp_survey_id._create_answer(
@@ -151,7 +163,7 @@ class HrAppraisal(models.Model):
                 response = self.response_id
             template_to_send_id = tmpl_empl_id if self.som_type == 'annual_360' else tmpl_generic_id
             template_to_send_id.send_mail(response.id, force_send=True)
-            send_count += 1
+            sent_count += 1
 
         rec = self.env["hr.appraisal.stages"].search([("sequence", "=", 2)])
         self.with_context(appraisal_action=True).write({
