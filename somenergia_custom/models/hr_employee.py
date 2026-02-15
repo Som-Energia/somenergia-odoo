@@ -10,7 +10,6 @@ from odoo.tools import float_round
 class HrEmployeeBase(models.AbstractModel):
     _inherit = "hr.employee.base"
 
-
     def _compute_som_is_absent_regardless_state(self):
         # Used SUPERUSER_ID to forcefully get status of other user's leave, to bypass record rule
         holidays = self.env['hr.leave'].sudo().search([
@@ -49,6 +48,35 @@ class HrEmployeeBase(models.AbstractModel):
         ])
         operator = ['in', 'not in'][(operator == '=') != value]
         return [('id', operator, holidays.mapped('employee_id').ids)]
+
+    def _compute_som_manager_ids(self):
+        """
+        Having the department structure:
+        - Department A
+            - Subdepartment manager 1
+                - manager_1
+            - Subdepartment manager 2
+                - manager_2
+        If and employee belongs to Department A, then both manager_1 and manager_2 will be
+        in the employee's som_manager_ids field.
+        If an employee belongs to Subdepartment manager 1, then only manager_1 will be
+        in the employee's som_manager_ids field.
+        """
+        for record in self:
+            employee_department_id = record.department_id
+            if employee_department_id:
+                # Get all child departments of the employee's department,
+                # including the employee's department
+                own_and_child_departments = self.env['hr.department'].search([
+                    '|',
+                    ('id', 'child_of', employee_department_id.id),
+                    ('id', '=', employee_department_id.id),
+                ])
+                # Get all employees that are managers of any of those departments
+                child_department_manager_ids = own_and_child_departments.mapped('manager_id').ids
+                record.som_manager_ids = [(6, 0, child_department_manager_ids)]
+            else:
+                record.som_manager_ids = False
 
     som_current_calendar_id = fields.Many2one(
         comodel_name="resource.calendar",
@@ -92,9 +120,15 @@ class HrEmployeeBase(models.AbstractModel):
         string='Disabled restrictions for attendance to date',
     )
 
+    som_manager_ids = fields.Many2many(
+        string='Managers',
+        comodel_name='hr.employee',
+        compute='_compute_som_manager_ids',
+        store=False,
+    )
+
 class HrEmployee(models.Model):
     _inherit = "hr.employee"
-
 
     @api.depends('calendar_ids', 'calendar_ids.date_start', 'calendar_ids.date_end')
     def _compute_current_calendar(self):
@@ -155,7 +189,6 @@ class HrEmployee(models.Model):
 class HrEmployeePublic(models.Model):
     _inherit = "hr.employee.public"
 
-
     department_ids = fields.Many2many(
         readonly=True,
     )
@@ -165,5 +198,9 @@ class HrEmployeePublic(models.Model):
     )
 
     som_recruitment_date = fields.Date(
+        readonly=True,
+    )
+
+    som_manager_ids = fields.Many2many(
         readonly=True,
     )

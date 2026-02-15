@@ -5,3 +5,9 @@ access_survey_question_answer_public_manager,survey.question.answer.public.manag
 access_survey_user_input_public_manager,survey.user_input.public.manager,survey.model_survey_user_input,som_survey.som_group_survey_public_manager,1,1,1,1
 access_survey_user_input_line_public_manager,survey.user_input.line.public.manager,survey.model_survey_user_input_line,som_survey.som_group_survey_public_manager,1,1,1,1
 access_survey_invite_public_manager,access.survey.invite,survey.model_survey_invite,som_survey.som_group_survey_public_manager,1,1,1,0
+access_survey_team_leader,survey.survey.team.leader,survey.model_survey_survey,som_survey.som_group_survey_team_leader,1,0,0,0
+access_survey_question_team_leader,survey.question.team.leader,survey.model_survey_question,som_survey.som_group_survey_team_leader,1,0,0,0
+access_survey_question_answer_team_leader,survey.question.answer.team.leader,survey.model_survey_question_answer,som_survey.som_group_survey_team_leader,1,0,0,0
+access_survey_user_input_team_leader,survey.user_input.team.leader,survey.model_survey_user_input,som_survey.som_group_survey_team_leader,1,1,1,1
+access_survey_user_input_line_team_leader,survey.user_input.line.team.leader,survey.model_survey_user_input_line,som_survey.som_group_survey_team_leader,1,0,0,0
+access_survey_invite_team_leader,access.survey.invite.team.leader,survey.model_survey_invite,som_survey.som_group_survey_team_leader,1,1,1,0

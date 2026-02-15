@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <!-- Adapt existing group and rules for Team Leader -->
+    <record id="oh_appraisal.group_appraisal_employee" model="res.groups">
+        <field name="name">Team Leader</field>
+    </record>
+
+    <record id="oh_appraisal.hr_appraisal_rule" model="ir.rule">
+        <field name="name">Som Appraisal Team Leader</field>
+        <field name="domain_force">[('emp_id.department_id','=',user.department_id.id)]</field>
+        <field name="global" eval="True"/>
+        <field name="model_id" ref="oh_appraisal.model_hr_appraisal"/>
+        <field name="groups" eval="[(4,ref('oh_appraisal.group_appraisal_employee'))]"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+</odoo>

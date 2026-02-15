@@ -57,6 +57,7 @@
             <field name="appraisal_date" position="after">
                 <field name="som_type"
                        attrs="{'readonly':[('check_initial','!=',True)]}"/>
+                <field name="som_manager_ids" readonly="1" widget="many2many_tags"/>
             </field>
         </field>
     </record>

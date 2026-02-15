@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="som_survey_survey_view_form" model="ir.ui.view">
+        <field name="model">survey.survey</field>
+        <field name="inherit_id" ref="survey.survey_survey_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_result_survey']" position="attributes">
+                <attribute name="groups">survey.group_survey_manager,som_survey.som_group_survey_public_manager</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -6,13 +6,7 @@
         <record model="res.groups" id="som_group_survey_public_manager">
             <field name="name">Public manager</field>
             <field name="category_id" ref="base.module_category_marketing_surveys"/>
-<!--            <field name="implied_ids" eval="[(4, ref('survey.group_survey_user'))]"/>-->
         </record>
-
-<!--        <record model="res.groups" id="survey.group_survey_manager">-->
-<!--            <field name="implied_ids"-->
-<!--                   eval="[(4, ref('survey.group_survey_user')), (4, ref('som_group_survey_public_manager'))]"/>-->
-<!--        </record>-->
 
         <!-- SURVEY: SURVEY, PAGE, STAGE, QUESTION, LABEL -->
         <record id="survey_survey_rule_public_manager_read" model="ir.rule">
@@ -76,6 +70,69 @@
             <field name="model_id" ref="survey.model_survey_user_input_line"/>
             <field name="domain_force">[('user_input_id.survey_id.users_login_required', '=', False)]</field>
             <field name="groups" eval="[(4, ref('som_group_survey_public_manager'))]"/>
+            <field name="perm_unlink" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_create" eval="1"/>
+        </record>
+
+        <!-- Team Leaders-->
+        <record model="res.groups" id="som_group_survey_team_leader">
+            <field name="name">Team Leader</field>
+            <field name="category_id" ref="base.module_category_marketing_surveys"/>
+        </record>
+
+        <!-- SURVEY: SURVEY, PAGE, STAGE, QUESTION, LABEL -->
+        <record id="survey_survey_rule_team_leader_read" model="ir.rule">
+            <field name="name">Survey: team_leader: read</field>
+            <field name="model_id" ref="survey.model_survey_survey"/>
+            <field name="domain_force">[('users_login_required', '=', True)]</field>
+            <field name="groups" eval="[(4, ref('som_group_survey_team_leader'))]"/>
+            <field name="perm_unlink" eval="0"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_create" eval="0"/>
+        </record>
+
+        <record id="survey_question_rule_team_leader" model="ir.rule">
+            <field name="name">Survey question: team_leader: all</field>
+            <field name="model_id" ref="survey.model_survey_question"/>
+            <field name="domain_force">[('survey_id.users_login_required', '=', True)]</field>
+            <field name="groups" eval="[(4, ref('som_group_survey_team_leader'))]"/>
+            <field name="perm_unlink" eval="0"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_create" eval="0"/>
+        </record>
+
+        <record id="survey_question_answer_rule_team_leader" model="ir.rule">
+            <field name="name">Survey question answer: team_leader: all</field>
+            <field name="model_id" ref="survey.model_survey_question_answer"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('som_group_survey_team_leader'))]"/>
+            <field name="perm_unlink" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_create" eval="1"/>
+        </record>
+
+        <!-- SURVEY: USER_INPUT, USER_INPUT_LINE -->
+        <record id="survey_user_input_rule_team_leader" model="ir.rule">
+            <field name="name">Survey user input: team_leader: all</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="domain_force">[('partner_id.employee_ids.department_id', '=', user.department_id.id)]</field>
+            <field name="groups" eval="[(4, ref('som_group_survey_team_leader'))]"/>
+            <field name="perm_unlink" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_create" eval="1"/>
+        </record>
+
+        <record id="survey_user_input_line_rule_team_leader" model="ir.rule">
+            <field name="name">Survey user input line: team_leader: all</field>
+            <field name="model_id" ref="survey.model_survey_user_input_line"/>
+            <field name="domain_force">[('user_input_id.partner_id.employee_ids.department_id', '=', user.department_id.id)]</field>
+            <field name="groups" eval="[(4, ref('som_group_survey_team_leader'))]"/>
             <field name="perm_unlink" eval="1"/>
             <field name="perm_write" eval="1"/>
             <field name="perm_read" eval="1"/>

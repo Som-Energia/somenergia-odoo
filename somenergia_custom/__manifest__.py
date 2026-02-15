@@ -50,6 +50,7 @@
         'security/hr_attendance_overlapping_report_security.xml',
         'security/hr_attendance_edit_security.xml',
         'security/hr_timesheet_security.xml',
+        'security/hr_appraisal_security.xml',
         'views/hr_attendance_view.xml',
         'views/hr_leave_view.xml',
         'views/som_calendar_week_view.xml',
