@@ -99,10 +99,10 @@
             <field name="model_id" ref="survey.model_survey_question"/>
             <field name="domain_force">[('survey_id.users_login_required', '=', True)]</field>
             <field name="groups" eval="[(4, ref('som_group_survey_team_leader'))]"/>
-            <field name="perm_unlink" eval="1"/>
-            <field name="perm_write" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+            <field name="perm_write" eval="0"/>
             <field name="perm_read" eval="1"/>
-            <field name="perm_create" eval="1"/>
+            <field name="perm_create" eval="0"/>
         </record>
 
         <record id="survey_question_answer_rule_team_leader" model="ir.rule">
