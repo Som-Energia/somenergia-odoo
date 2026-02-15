@@ -92,9 +92,11 @@ class HrAppraisal(models.Model):
         stage_to_start_id = self.env["hr.appraisal.stages"].search([("sequence", "=", 1)])
         tmpl_id = self.env.ref('somenergia_custom.som_email_template_feedback_initialize')
         for record in self.filtered(lambda x: x.state.id == stage_initial_id.id):
-            record.state = stage_to_start_id.id
-            record.check_initial = False
-            record.check_draft = True
+            record.with_context(appraisal_action=True).write({
+                'state': stage_to_start_id.id,
+                'check_initial': False,
+                'check_draft': True,
+            })
             if record.som_type == 'annual_360':
                 tmpl_id.send_mail(record.id, force_send=True)
 
@@ -148,15 +150,33 @@ class HrAppraisal(models.Model):
             send_count += 1
 
         rec = self.env["hr.appraisal.stages"].search([("sequence", "=", 2)])
-        self.state = rec.id
-        self.check_sent = True
-        self.check_draft = False
-        self.check_initial = False
+        self.with_context(appraisal_action=True).write({
+            'state': rec.id,
+            'check_sent': True,
+            'check_draft': False,
+            'check_initial': False,
+        })
 
     def action_get_answers(self):
         res = super().action_get_answers()
         if res.get("domain", False):
             res["domain"] = [("appraisal_id", "=", self.ids[0])]
+        return res
+
+    def action_set_initial(self):
+        res = super(HrAppraisal, self.with_context(appraisal_action=True)).action_set_initial()
+        return res
+
+    def action_done(self):
+        res = super(HrAppraisal, self.with_context(appraisal_action=True)).action_done()
+        return res
+
+    def action_set_draft(self):
+        res = super(HrAppraisal, self.with_context(appraisal_action=True)).action_set_draft()
+        return res
+
+    def action_cancel(self):
+        res = super(HrAppraisal, self.with_context(appraisal_action=True)).action_cancel()
         return res
 
     @api.model
@@ -220,3 +240,11 @@ class HrAppraisal(models.Model):
 
         except Exception as e:
             _logger.exception("Worked weeks reminder - Unable to send email.")
+
+    def write(self, vals):
+        # restrict change state - only allow through action buttons
+        if 'state' in vals and not self.env.context.get('appraisal_action', False):
+            raise ValidationError(_(
+                "You cannot change the state of the appraisal directly."
+                " Please use the available action buttons to change the state."))
+        return super().write(vals)
