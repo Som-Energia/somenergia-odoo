@@ -69,6 +69,13 @@ class HrAppraisal(models.Model):
         copy=False
     )
 
+    som_manager_ids = fields.Many2many(
+        string='Managers',
+        comodel_name='hr.employee',
+        related='emp_id.som_manager_ids',
+        readonly=True,
+    )
+
     def name_get(self):
         res = []
         for app_id in self:
