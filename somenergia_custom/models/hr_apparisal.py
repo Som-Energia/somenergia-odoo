@@ -91,7 +91,11 @@ class HrAppraisal(models.Model):
         stage_initial_id = self.env["hr.appraisal.stages"].search([("sequence", "=", 0)])
         stage_to_start_id = self.env["hr.appraisal.stages"].search([("sequence", "=", 1)])
         tmpl_id = self.env.ref('somenergia_custom.som_email_template_feedback_initialize')
-        for record in self.filtered(lambda x: x.state.id == stage_initial_id.id):
+        initial_appraisal_ids = self.filtered(lambda x: x.state.id == stage_initial_id.id)
+        if not initial_appraisal_ids:
+            # only process appraisals in initial stage
+            raise ValidationError(_("Only appraisals in initial stage can be initialized."))
+        for record in initial_appraisal_ids:
             record.with_context(appraisal_action=True).write({
                 'state': stage_to_start_id.id,
                 'check_initial': False,

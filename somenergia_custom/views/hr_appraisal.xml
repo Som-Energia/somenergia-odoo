@@ -59,6 +59,11 @@
                        attrs="{'readonly':[('check_initial','!=',True)]}"/>
                 <field name="som_manager_ids" readonly="1" widget="many2many_tags"/>
             </field>
+            <button name="action_set_draft" position="attributes">
+                <attribute name="attrs">
+                    {'invisible': ['|','|',('check_draft','=', True), ('check_done','=', True), ('check_initial','=', True)]}
+                </attribute>
+            </button>
         </field>
     </record>
 
@@ -79,7 +84,7 @@
     </record>
 
     <record id="som_initialize_feedback" model="ir.actions.server">
-        <field name="name">Initialize feedback</field>
+        <field name="name">Initialize feedbacks in initial state to draft</field>
         <field name="type">ir.actions.server</field>
         <field name="model_id" ref="oh_appraisal.model_hr_appraisal"/>
         <field name="binding_model_id" ref="oh_appraisal.model_hr_appraisal"/>
