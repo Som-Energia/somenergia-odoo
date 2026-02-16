@@ -129,6 +129,12 @@ class HrAppraisal(models.Model):
             raise ValidationError(
                 _("The feedback must have at least one colleague and the employee assigned."))
 
+        # check at least one reviwer is not the employee himself
+        reviwers_colleague_ids = self.hr_colleague_ids.filtered(lambda x: x != self.emp_id)
+        reviewers_collaborator_ids = self.hr_collaborator_ids.filtered(lambda x: x != self.emp_id)
+        if not reviwers_colleague_ids and not reviewers_collaborator_ids:
+            raise ValidationError(_("At least one reviewer must be different from the employee."))
+
         for appraisal_reviewers, survey_id in appraisal_reviewers_list:
             if len(appraisal_reviewers) == 1 and appraisal_reviewers == self.emp_id:
                 # case own feedback only

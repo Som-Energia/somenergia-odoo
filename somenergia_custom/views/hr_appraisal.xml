@@ -68,31 +68,36 @@
             <field name = "emp_survey_id" position="replace">
                 <field name="emp_survey_id"
                     placeholder="Appraisal Form"
+                    force_save="1"
                     attrs="{'readonly':['|', ('hr_emp','=', False), ('check_draft','!=', True)], 'required':[('hr_emp','=', True)]}"/>
             </field>
 
             <field name="hr_colleague_ids" position="replace">
                 <field name="hr_colleague_ids" widget="many2many_tags"
                     placeholder="Select Appraisal Reviewer"
+                    force_save="1"
                     attrs="{'readonly':['|', ('hr_colleague','=', False), ('check_draft','!=', True)], 'required':[('hr_colleague','=', True)]}"/>
             </field>
 
             <field name="colleague_survey_id" position="replace">
                 <field name="colleague_survey_id"
                     placeholder="Appraisal Form"
+                    force_save="1"
                     attrs="{'readonly':['|', ('hr_colleague','=', False), ('check_draft','!=', True)], 'required':[('hr_colleague','=', True)]}"/>
             </field>
 
             <field name="hr_collaborator_ids" position="replace">
                 <field name="hr_collaborator_ids"
-                        widget="many2many_tags"
-                        placeholder="Select Appraisal Reviewer"
-                        attrs="{'readonly':['|', ('hr_collaborator','=', False), ('check_draft','!=', True)], 'required':[('hr_collaborator','=', True)]}"/>
+                    widget="many2many_tags"
+                    placeholder="Select Appraisal Reviewer"
+                    force_save="1"
+                    attrs="{'readonly':['|', ('hr_collaborator','=', False), ('check_draft','!=', True)], 'required':[('hr_collaborator','=', True)]}"/>
             </field>
 
             <field name="collaborator_survey_id" position="replace">
                 <field name="collaborator_survey_id"
                     placeholder="Appraisal Form"
+                    force_save="1"
                     attrs="{'readonly':['|', ('hr_collaborator','=', False), ('check_draft','!=', True)], 'required':[('hr_collaborator','=', True)]}"/>
             </field>
 
