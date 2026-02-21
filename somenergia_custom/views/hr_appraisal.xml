@@ -105,6 +105,10 @@
                 <attribute name="attrs">{'invisible': [(1, '=', 1)]}</attribute>
             </xpath>
 
+            <xpath expr="//button[@name='action_cancel']" position="after">
+                <button name="%(sh_survey_export_xls.sh_survey_export_wizard_action)d" string="Export Answers" type="action"/>
+            </xpath>
+
         </field>
     </record>
 
