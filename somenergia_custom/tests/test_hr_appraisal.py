@@ -19,6 +19,11 @@ class TestHrAppraisalStateRestriction(TransactionCase):
             'department_id': cls.department.id,
         })
 
+        cls.employee_colleague = cls.env['hr.employee'].create({
+            'name': 'Test Employee Colleague',
+            'department_id': cls.department.id,
+        })
+
         cls.stage_initial = cls.env['hr.appraisal.stages'].search([('sequence', '=', 0)], limit=1)
         if not cls.stage_initial:
             cls.stage_initial = cls.env['hr.appraisal.stages'].create({
@@ -39,6 +44,11 @@ class TestHrAppraisalStateRestriction(TransactionCase):
                 'name': 'Sent',
                 'sequence': 2,
             })
+
+        # create survey template to avoid validation error when starting appraisal
+        cls.survey_id = cls.env['survey.survey'].create({
+            'title': 'Test Survey',
+        })
 
         cls.appraisal = cls.env['hr.appraisal'].with_context(DISABLED_MAIL_CONTEXT).create({
             'emp_id': cls.employee.id,
@@ -80,7 +90,25 @@ class TestHrAppraisalStateRestriction(TransactionCase):
             'state': self.stage_draft.id,
         })
 
-        # Now start appraisal
+        # # We add reviewers to ensure that the appraisal can be started, as it requires at least one reviewer
+        # self.appraisal.reviewer_ids = [(0, 0, {
+        #     'employee_id': self.employee.id,
+        # })]
+
+        # Try to start appraisal and check raises error if no reviewers
+        with self.assertRaises(ValidationError):
+            self.appraisal.action_start_appraisal()
+
+        # Now add a reviewer and start appraisal
+        self.appraisal.write({
+            'hr_emp': True,
+            'emp_survey_id': self.survey_id.id,
+            'hr_colleague': True,
+            'hr_colleague_ids': [
+                (6, 0, [self.employee.id, self.employee_colleague.id]),
+            ],
+            'colleague_survey_id': self.survey_id.id,
+        })
         self.appraisal.action_start_appraisal()
 
         self.assertEqual(self.appraisal.state.id, self.stage_sent.id)
