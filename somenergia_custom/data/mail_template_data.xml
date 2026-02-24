@@ -8,7 +8,7 @@
             <field name="model_id" ref="oh_appraisal.model_hr_appraisal"/>
             <field name="email_from">{{ object.company_id.email }}</field>
             <field name="partner_to">{{ object.emp_id.user_id.partner_id.id }}</field>
-            <field name="subject">[ACCIÓ] El teu feedback anual 360º: comencem!</field>
+            <field name="subject">[ACCIÓ] El teu feedback anual 360º: comencem! -  {{ object.name_get()[0][1] }}</field>
             <field name="description">Enviar mail d'inici de Feedback</field>
             <field name="body_html" type="html">
 <div style="margin: 0px; padding: 0px;">
@@ -84,7 +84,7 @@
             <field name="model_id" ref="survey.model_survey_user_input"/>
             <field name="email_from">{{ object.appraisal_id.company_id.email }}</field>
             <field name="partner_to">{{ object.partner_id.id }}</field>
-            <field name="subject">[ACCIÓ] El teu formulari de feedback anual 360º! - {{ object.survey_id.title }}</field>
+            <field name="subject">[ACCIÓ] El teu formulari de feedback anual 360º! - {{ object.survey_id.title }} - {{ object.appraisal_id.name_get()[0][1] }}</field>
             <field name="description">Enviar mail enquestes de Feedback empleada</field>
             <field name="body_html" type="html">
 <div style="margin: 0px; padding: 0px;">
@@ -128,7 +128,7 @@
             <field name="model_id" ref="survey.model_survey_user_input"/>
             <field name="email_from">{{ object.appraisal_id.company_id.email }}</field>
             <field name="partner_to">{{ object.partner_id.id }}</field>
-            <field name="subject">[ACCIÓ] Col·laboració en feedback anual 360º! - {{ object.survey_id.title }}</field>
+            <field name="subject">[ACCIÓ] Col·laboració en feedback anual 360º! - {{ object.survey_id.title }} - {{ object.appraisal_id.name_get()[0][1] }}</field>
             <field name="description">Enviar mail enquestes de Feedback col·laboradores</field>
             <field name="body_html" type="html">
 <div style="margin: 0px; padding: 0px;">
@@ -173,7 +173,7 @@
             <field name="model_id" ref="survey.model_survey_user_input"/>
             <field name="email_from">{{ object.appraisal_id.company_id.email }}</field>
             <field name="partner_to">{{ object.partner_id.id }}</field>
-            <field name="subject">[ACCIÓ] Recordatori col·laboració en feedback anual 360º! - {{ object.survey_id.title }}</field>
+            <field name="subject">[ACCIÓ] Recordatori col·laboració en feedback anual 360º! - {{ object.survey_id.title }} - {{ object.appraisal_id.name_get()[0][1] }}</field>
             <field name="description">Enviar recordatori mail enquestes de Feedback col·laboradores</field>
             <field name="body_html" type="html">
 <div style="margin: 0px; padding: 0px;">
@@ -214,7 +214,7 @@
             <field name="email_from">{{ object.company_id.email }}</field>
             <field name="partner_to">{{ object.emp_id.user_id.partner_id.id }}</field>
             <field name="email_to">{{ object.get_mail_entorn_laboral() }}</field>
-            <field name="subject">[ACCIÓ] El teu feedback anual 360º: respostes rebudes!</field>
+            <field name="subject">[ACCIÓ] El teu feedback anual 360º: respostes rebudes! - {{ object.name_get()[0][1] }}</field>
             <field name="description">Avís totes respostes rebudes Feedback</field>
             <field name="body_html" type="html">
 <div style="margin: 0px; padding: 0px;">

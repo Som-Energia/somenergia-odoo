@@ -24,6 +24,7 @@
         <field name="arch" type="xml">
             <field name="department_id" position="after">
                 <field name="department_ids" widget="many2many_tags" options="{'no_create_edit' : True}"/>
+                <field name="som_manager_ids" widget="many2many_tags" options="{'no_create_edit' : True}"/>
             </field>
         </field>
     </record>
@@ -79,6 +80,10 @@
                 <field name="som_recruitment_date"/>
                 <field name="som_appraisal_ref_date"/>
                 <field name="som_excluded_from_tel_assistance"/>
+            </field>
+
+            <field name="department_id" position="after">
+                <field name="som_manager_ids" widget="many2many_tags" options="{'no_create_edit' : True}"/>
             </field>
 
             <xpath expr="//group[@name='identification_group']" position="inside">

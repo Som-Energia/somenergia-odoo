@@ -69,6 +69,13 @@ class HrAppraisal(models.Model):
         copy=False
     )
 
+    som_manager_ids = fields.Many2many(
+        string='Managers',
+        comodel_name='hr.employee',
+        related='emp_id.som_manager_ids',
+        readonly=True,
+    )
+
     def name_get(self):
         res = []
         for app_id in self:
@@ -84,10 +91,16 @@ class HrAppraisal(models.Model):
         stage_initial_id = self.env["hr.appraisal.stages"].search([("sequence", "=", 0)])
         stage_to_start_id = self.env["hr.appraisal.stages"].search([("sequence", "=", 1)])
         tmpl_id = self.env.ref('somenergia_custom.som_email_template_feedback_initialize')
-        for record in self.filtered(lambda x: x.state.id == stage_initial_id.id):
-            record.state = stage_to_start_id.id
-            record.check_initial = False
-            record.check_draft = True
+        initial_appraisal_ids = self.filtered(lambda x: x.state.id == stage_initial_id.id)
+        if not initial_appraisal_ids:
+            # only process appraisals in initial stage
+            raise ValidationError(_("Only appraisals in initial stage can be initialized."))
+        for record in initial_appraisal_ids:
+            record.with_context(appraisal_action=True).write({
+                'state': stage_to_start_id.id,
+                'check_initial': False,
+                'check_draft': True,
+            })
             if record.som_type == 'annual_360':
                 tmpl_id.send_mail(record.id, force_send=True)
 
@@ -100,14 +113,31 @@ class HrAppraisal(models.Model):
         """This function will start the appraisal by sending emails to the corresponding employees
         specified in the appraisal"""
         self.ensure_one()
-        tmpl_generic_id = self.env.ref('somenergia_custom.som_email_template_feedback_generic')
-        tmpl_empl_id = self.env.ref('somenergia_custom.som_email_template_feedback_start_employee')
-        tmpl_col_id = self.env.ref('somenergia_custom.som_email_template_feedback_start_collaborator')
+        tmpl_generic_id = self.env.ref(
+            'somenergia_custom.som_email_template_feedback_generic')
+        tmpl_empl_id = self.env.ref(
+            'somenergia_custom.som_email_template_feedback_start_employee')
+        tmpl_col_id = self.env.ref(
+            'somenergia_custom.som_email_template_feedback_start_collaborator')
 
-        send_count = 0
+        sent_count = 0
         appraisal_reviewers_list = self.fetch_appraisal_reviewer()
+        if not appraisal_reviewers_list:
+            raise ValidationError(_("No reviewers found for this feedback."))
+
+        if not self.hr_colleague_ids or not self.emp_id:
+            raise ValidationError(
+                _("The feedback must have at least one colleague and the employee assigned."))
+
+        # check at least one reviwer is not the employee himself
+        reviwers_colleague_ids = self.hr_colleague_ids.filtered(lambda x: x != self.emp_id)
+        reviewers_collaborator_ids = self.hr_collaborator_ids.filtered(lambda x: x != self.emp_id)
+        if not reviwers_colleague_ids and not reviewers_collaborator_ids:
+            raise ValidationError(_("At least one reviewer must be different from the employee."))
+
         for appraisal_reviewers, survey_id in appraisal_reviewers_list:
             if len(appraisal_reviewers) == 1 and appraisal_reviewers == self.emp_id:
+                # case own feedback only
                 continue
             for employee_id in appraisal_reviewers:
                 if self._existing_answer(survey_id, employee_id):
@@ -121,9 +151,10 @@ class HrAppraisal(models.Model):
                 )
                 template_to_send_id = tmpl_col_id if self.som_type == 'annual_360' else tmpl_generic_id
                 template_to_send_id.send_mail(response.id, force_send=True)
-                send_count += 1
+                sent_count += 1
 
-        if self.hr_emp and self.emp_survey_id and not self._existing_answer(self.emp_survey_id, self.emp_id):
+        if self.hr_emp and self.emp_survey_id and not self._existing_answer(
+                self.emp_survey_id, self.emp_id):
             self.ensure_one()
             if not self.response_id:
                 response = self.emp_survey_id._create_answer(
@@ -138,18 +169,36 @@ class HrAppraisal(models.Model):
                 response = self.response_id
             template_to_send_id = tmpl_empl_id if self.som_type == 'annual_360' else tmpl_generic_id
             template_to_send_id.send_mail(response.id, force_send=True)
-            send_count += 1
+            sent_count += 1
 
         rec = self.env["hr.appraisal.stages"].search([("sequence", "=", 2)])
-        self.state = rec.id
-        self.check_sent = True
-        self.check_draft = False
-        self.check_initial = False
+        self.with_context(appraisal_action=True).write({
+            'state': rec.id,
+            'check_sent': True,
+            'check_draft': False,
+            'check_initial': False,
+        })
 
     def action_get_answers(self):
         res = super().action_get_answers()
         if res.get("domain", False):
             res["domain"] = [("appraisal_id", "=", self.ids[0])]
+        return res
+
+    def action_set_initial(self):
+        res = super(HrAppraisal, self.with_context(appraisal_action=True)).action_set_initial()
+        return res
+
+    def action_done(self):
+        res = super(HrAppraisal, self.with_context(appraisal_action=True)).action_done()
+        return res
+
+    def action_set_draft(self):
+        res = super(HrAppraisal, self.with_context(appraisal_action=True)).action_set_draft()
+        return res
+
+    def action_cancel(self):
+        res = super(HrAppraisal, self.with_context(appraisal_action=True)).action_cancel()
         return res
 
     @api.model
@@ -213,3 +262,11 @@ class HrAppraisal(models.Model):
 
         except Exception as e:
             _logger.exception("Worked weeks reminder - Unable to send email.")
+
+    def write(self, vals):
+        # restrict change state - only allow through action buttons
+        if 'state' in vals and not self.env.context.get('appraisal_action', False):
+            raise ValidationError(_(
+                "You cannot change the state of the appraisal directly."
+                " Please use the available action buttons to change the state."))
+        return super().write(vals)

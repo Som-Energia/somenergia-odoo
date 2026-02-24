@@ -5,7 +5,9 @@
 		<field name="inherit_id" ref="sh_survey_export_xls.sh_survey_export_wizard_form_view"/>
 		<field name="arch" type="xml">
 			<field name="sh_group_by_partner" position="after">
+				<field name="som_survey_domain_ids" widget="many2many_tags" invisible="1"/>
 				<field name="som_hr_appraisal_id" />
+				<field name="som_survey_id" domain="[('id', 'in', som_survey_domain_ids)]"/>
 			</field>
 		</field>
 	</record>

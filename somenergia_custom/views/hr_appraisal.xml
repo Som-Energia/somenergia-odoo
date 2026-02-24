@@ -57,7 +57,58 @@
             <field name="appraisal_date" position="after">
                 <field name="som_type"
                        attrs="{'readonly':[('check_initial','!=',True)]}"/>
+                <field name="som_manager_ids" readonly="1" widget="many2many_tags"/>
             </field>
+            <button name="action_set_draft" position="attributes">
+                <attribute name="attrs">
+                    {'invisible': ['|','|',('check_draft','=', True), ('check_done','=', True), ('check_initial','=', True)]}
+                </attribute>
+            </button>
+
+            <field name = "emp_survey_id" position="replace">
+                <field name="emp_survey_id"
+                    placeholder="Appraisal Form"
+                    force_save="1"
+                    attrs="{'readonly':['|', ('hr_emp','=', False), ('check_draft','!=', True)], 'required':[('hr_emp','=', True)]}"/>
+            </field>
+
+            <field name="hr_colleague_ids" position="replace">
+                <field name="hr_colleague_ids" widget="many2many_tags"
+                    placeholder="Select Appraisal Reviewer"
+                    force_save="1"
+                    attrs="{'readonly':['|', ('hr_colleague','=', False), ('check_draft','!=', True)], 'required':[('hr_colleague','=', True)]}"/>
+            </field>
+
+            <field name="colleague_survey_id" position="replace">
+                <field name="colleague_survey_id"
+                    placeholder="Appraisal Form"
+                    force_save="1"
+                    attrs="{'readonly':['|', ('hr_colleague','=', False), ('check_draft','!=', True)], 'required':[('hr_colleague','=', True)]}"/>
+            </field>
+
+            <field name="hr_collaborator_ids" position="replace">
+                <field name="hr_collaborator_ids"
+                    widget="many2many_tags"
+                    placeholder="Select Appraisal Reviewer"
+                    force_save="1"
+                    attrs="{'readonly':['|', ('hr_collaborator','=', False), ('check_draft','!=', True)], 'required':[('hr_collaborator','=', True)]}"/>
+            </field>
+
+            <field name="collaborator_survey_id" position="replace">
+                <field name="collaborator_survey_id"
+                    placeholder="Appraisal Form"
+                    force_save="1"
+                    attrs="{'readonly':['|', ('hr_collaborator','=', False), ('check_draft','!=', True)], 'required':[('hr_collaborator','=', True)]}"/>
+            </field>
+
+            <xpath expr="//field[@name='hr_manager']/.." position="attributes">
+                <attribute name="attrs">{'invisible': [(1, '=', 1)]}</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='action_cancel']" position="after">
+                <button name="%(sh_survey_export_xls.sh_survey_export_wizard_action)d" string="Export Answers" type="action"/>
+            </xpath>
+
         </field>
     </record>
 
@@ -78,7 +129,7 @@
     </record>
 
     <record id="som_initialize_feedback" model="ir.actions.server">
-        <field name="name">Initialize feedback</field>
+        <field name="name">Initialize feedbacks in initial state to draft</field>
         <field name="type">ir.actions.server</field>
         <field name="model_id" ref="oh_appraisal.model_hr_appraisal"/>
         <field name="binding_model_id" ref="oh_appraisal.model_hr_appraisal"/>

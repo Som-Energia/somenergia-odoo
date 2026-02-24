@@ -9,9 +9,53 @@ import io
 class SurveyExportWizard(models.TransientModel):
     _inherit = "sh.survey.export.wizard"
 
+    def get_default_hr_appraisal_id(self):
+        if self.env.context.get('active_model') == 'hr.appraisal':
+            return self.env.context.get('active_id')
+        return False
+
+    def get_default_survey_domain_ids(self):
+        if self.env.context.get('active_model') == 'hr.appraisal':
+            appraisal_id = self.env['hr.appraisal'].browse(self.env.context.get('active_id'))
+            ids_appr_survey = []
+            if appraisal_id.emp_survey_id:
+                ids_appr_survey.append(appraisal_id.emp_survey_id.id)
+            if appraisal_id.colleague_survey_id:
+                ids_appr_survey.append(appraisal_id.colleague_survey_id.id)
+            if appraisal_id.collaborator_survey_id:
+                ids_appr_survey.append(appraisal_id.collaborator_survey_id.id)
+            return ids_appr_survey
+        else:
+            # active_model is survey.survey, so we return the active_id in a list
+            return [self.env.context.get('active_id')]
+
+    def get_default_survey(self):
+        if self.env.context.get('active_model') == 'hr.appraisal':
+            return False
+        else:
+            # active_model is survey.survey, so we return the active_id
+            return self.env.context.get('active_id')
+
     som_hr_appraisal_id = fields.Many2one(
         comodel_name="hr.appraisal",
         string="Feedback",
+        default=get_default_hr_appraisal_id,
+        required=True,
+    )
+
+    som_survey_id = fields.Many2one(
+        comodel_name="survey.survey",
+        string="Survey",
+        required=True,
+        default=get_default_survey,
+    )
+
+    som_survey_domain_ids = fields.Many2many(
+        comodel_name="survey.survey",
+        string="Survey domain",
+        default=get_default_survey_domain_ids,
+        store=False,
+        readonly=False,
     )
 
     def _get_domain(self, active_id):
@@ -24,8 +68,7 @@ class SurveyExportWizard(models.TransientModel):
 
     def get_xls_report(self):
         if self:
-            active_id = self.env['survey.survey'].sudo().search(
-                [('id', '=', self.env.context.get('active_id'))])
+            active_id = self.som_survey_id
             domain = self._get_domain(active_id)
             user_inputs = self.env['survey.user_input'].sudo().search(domain)
 
