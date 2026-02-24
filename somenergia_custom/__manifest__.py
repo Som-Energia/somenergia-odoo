@@ -36,6 +36,7 @@
         'helpdesk_mgmt',
         'helpdesk_mgmt_timesheet',
         'project_timesheet_time_control',
+        'som_survey',
     ],
 
     # always loaded
