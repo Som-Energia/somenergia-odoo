@@ -120,7 +120,7 @@
         <record id="survey_user_input_rule_team_leader" model="ir.rule">
             <field name="name">Survey user input: team_leader: all</field>
             <field name="model_id" ref="survey.model_survey_user_input"/>
-            <field name="domain_force">[('partner_id.employee_ids.department_id', '=', user.department_id.id)]</field>
+            <field name="domain_force">[('appraisal_id.emp_id.department_id', '=', user.department_id.id)]</field>
             <field name="groups" eval="[(4, ref('som_group_survey_team_leader'))]"/>
             <field name="perm_unlink" eval="1"/>
             <field name="perm_write" eval="1"/>
@@ -131,7 +131,7 @@
         <record id="survey_user_input_line_rule_team_leader" model="ir.rule">
             <field name="name">Survey user input line: team_leader: all</field>
             <field name="model_id" ref="survey.model_survey_user_input_line"/>
-            <field name="domain_force">[('user_input_id.partner_id.employee_ids.department_id', '=', user.department_id.id)]</field>
+            <field name="domain_force">[('user_input_id.appraisal_id.emp_id.department_id', '=', user.department_id.id)]</field>
             <field name="groups" eval="[(4, ref('som_group_survey_team_leader'))]"/>
             <field name="perm_unlink" eval="1"/>
             <field name="perm_write" eval="1"/>
