@@ -61,6 +61,35 @@ class AccountAnalyticLine(models.Model):
         string="Timesheet UUID Hook",
     )
 
+    def _get_week_from_date(self, date_value):
+        """Get som.calendar.week based on date"""
+        if not date_value:
+            return False
+
+        # Convert to date if it's datetime
+        if hasattr(date_value, 'date'):
+            date_value = date_value.date()
+
+        # Search for existing week
+        week_id = self.env['som.calendar.week'].search([
+            ('som_cw_date', '<=', date_value),
+            ('som_cw_date_end', '>=', date_value),
+        ], limit=1)
+
+        return week_id or False
+
+    def _get_worked_week(self, employee_id, id_week):
+        """Get som.worked.week based on employee and week"""
+        if not employee_id or not id_week:
+            return False
+
+        worked_week_id = self.env['som.worked.week'].search([
+            ('som_employee_id', '=', employee_id),
+            ('som_week_id', '=', id_week),
+        ], limit=1)
+
+        return worked_week_id or False
+
     def _match_timesheets(self, timesheet_ids):
         list_uuid = list(set(timesheet_ids.mapped('som_timesheet_uuid_hook')))
         for str_uuid in list_uuid:
@@ -87,6 +116,31 @@ class AccountAnalyticLine(models.Model):
     def create(self, vals_list):
         flag_match = False
         for values in vals_list:
+            # when creating from project.task
+            if values.get('task_id'):
+                # TODO: we will get the project area from the employee department
+                # temporary set project_id
+                id_area_project = 86
+                values['project_id'] = id_area_project
+                task_id = self.env['project.task'].browse(values.get('task_id'))
+                # Auto-fill som_additional_project_id based on task's som_additional_project_id
+                if task_id and task_id.som_additional_project_id:
+                    values['som_additional_project_id'] = task_id.som_additional_project_id.id
+                # Auto-fill som_week_id and som_worked_week_id based on date
+                if values.get('date') and not values.get('som_week_id'):
+                    week_id = self._get_week_from_date(values.get('date'))
+                    if week_id:
+                        values['som_week_id'] = week_id.id
+
+                if values.get('som_week_id') and values.get('employee_id') \
+                        and not values.get('som_worked_week_id'):
+                    worked_week_id = self._get_worked_week(
+                        values.get('employee_id'),
+                        values.get('som_week_id')
+                    )
+                    if worked_week_id:
+                        values['som_worked_week_id'] = worked_week_id.id
+
             if values.get('som_additional_project_id', False):
                 str_uuid = str(uuid.uuid4()).replace('-', '')
                 id_project_transversal = values.get('som_additional_project_id', False)
@@ -95,6 +149,7 @@ class AccountAnalyticLine(models.Model):
                         'som_additional_project_id',
                         'som_worked_week_id',
                         'som_week_id',
+                        'task_id',
                     ]
                 }
                 dict_vals_transversal_timesheet.update({
@@ -223,7 +278,6 @@ class AccountAnalyticLine(models.Model):
                         'unit_amount': worked_hours,
                     })
             pass
-
 
     def button_resume_work(self):
         internal_project_ids = self.env['project.project'].get_internal_projects()
