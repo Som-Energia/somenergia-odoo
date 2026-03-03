@@ -61,6 +61,38 @@ class AccountAnalyticLine(models.Model):
         string="Timesheet UUID Hook",
     )
 
+    def _get_week_from_date(self, str_datetime_value):
+        """Get som.calendar.week based on date"""
+        if not str_datetime_value:
+            return False
+
+        # Search for existing week
+        week_id = self.env['som.calendar.week'].search([
+            ('som_cw_date', '<=', str_datetime_value),
+            ('som_cw_date_end', '>=', str_datetime_value),
+        ], limit=1)
+
+        return week_id or False
+
+    def _get_worked_week(self, id_employee, id_week):
+        """Get som.worked.week based on employee and week"""
+        if not id_employee or not id_week:
+            return False
+
+        worked_week_id = self.env['som.worked.week'].search([
+            ('som_employee_id', '=', id_employee),
+            ('som_week_id', '=', id_week),
+        ], limit=1)
+
+        return worked_week_id or False
+
+    def _get_worked_week_info_from_timesheet_date(self, str_datetime_value, id_employee):
+        week_id = self._get_week_from_date(str_datetime_value)
+        if not week_id:
+            return False, False
+        worked_week_id = self._get_worked_week(id_employee, week_id.id)
+        return week_id, worked_week_id
+
     def _match_timesheets(self, timesheet_ids):
         list_uuid = list(set(timesheet_ids.mapped('som_timesheet_uuid_hook')))
         for str_uuid in list_uuid:
@@ -87,6 +119,31 @@ class AccountAnalyticLine(models.Model):
     def create(self, vals_list):
         flag_match = False
         for values in vals_list:
+            # when creating from project.task
+            if values.get('task_id'):
+                # We get the project area from employee's department
+                id_employee = values.get('employee_id', False)
+                if id_employee:
+                    employee_id = self.env['hr.employee'].browse(id_employee)
+                    if employee_id.department_id and employee_id.department_id.som_project_area_id:
+                        values['project_id'] = employee_id.department_id.som_project_area_id.id
+                task_id = self.env['project.task'].browse(values.get('task_id'))
+
+                # Auto-fill som_additional_project_id based on task's som_additional_project_id
+                if task_id and task_id.som_additional_project_id:
+                    values['som_additional_project_id'] = task_id.som_additional_project_id.id
+
+                # Auto-fill som_week_id and som_worked_week_id based on date
+                if values.get('date_time') and not values.get('som_week_id'):
+                    week_id, worked_week_id = self._get_worked_week_info_from_timesheet_date(
+                        values.get('date_time'),
+                        values.get('employee_id')
+                    )
+                    if week_id:
+                        values['som_week_id'] = week_id.id
+                    if worked_week_id:
+                        values['som_worked_week_id'] = worked_week_id.id
+
             if values.get('som_additional_project_id', False):
                 str_uuid = str(uuid.uuid4()).replace('-', '')
                 id_project_transversal = values.get('som_additional_project_id', False)
@@ -95,6 +152,7 @@ class AccountAnalyticLine(models.Model):
                         'som_additional_project_id',
                         'som_worked_week_id',
                         'som_week_id',
+                        'task_id',
                     ]
                 }
                 dict_vals_transversal_timesheet.update({
@@ -104,12 +162,26 @@ class AccountAnalyticLine(models.Model):
                 values['som_timesheet_uuid_hook'] = str_uuid
                 vals_list.append(dict_vals_transversal_timesheet)
                 flag_match = True
+
         res = super(AccountAnalyticLine, self).create(vals_list)
         if flag_match:
             self._match_timesheets(res)
         return res
 
     def write(self, vals):
+        if self.task_id and (vals.get('date_time', False) or vals.get('employee_id', False)):
+            for record in self:
+                date_time = vals.get('date_time', record.date_time)
+                id_employee = vals.get('employee_id', record.employee_id.id)
+                week_id, worked_week_id = self._get_worked_week_info_from_timesheet_date(
+                    date_time,
+                    id_employee
+                )
+                if week_id:
+                    vals['som_week_id'] = week_id.id
+                if worked_week_id:
+                    vals['som_worked_week_id'] = worked_week_id.id
+
         if vals.get('unit_amount'):
             for record in self:
                 if record.som_worked_week_id and record.som_timesheet_add_id:
@@ -223,7 +295,6 @@ class AccountAnalyticLine(models.Model):
                         'unit_amount': worked_hours,
                     })
             pass
-
 
     def button_resume_work(self):
         internal_project_ids = self.env['project.project'].get_internal_projects()

@@ -41,6 +41,7 @@
                            options="{'no_open': True}"
                            string="Area"
                            domain="[('id', 'in', som_project_area_domain_ids)]"
+                           invisible="1"
                            readonly="0"/>
                 </xpath>
                 <xpath expr="//widget[@name='web_ribbon']" position="after">
@@ -65,7 +66,7 @@
                 </xpath>
                 <xpath expr="//kanban/field[@name='allow_milestones']" position="after">
                     <field name="som_department_ids"/>
-                    <field name="som_project_id"/>
+                    <field name="som_project_id" invisible="1"/>
                     <field name="som_additional_project_id"/>
                 </xpath>
                 <xpath expr="//strong[hasclass('o_kanban_record_title')]" position="replace">
@@ -94,9 +95,20 @@
             <field name="arch" type="xml">
                 <field name="user_ids" position="after">
                     <field name="som_department_ids" widget="many2many_tags" optional="show"/>
-                    <field name="som_project_id" optional="show"/>
+                    <field name="som_project_id" invisible="1"/>
                     <field name="som_additional_project_id" optional="show"/>
                 </field>
+            </field>
+        </record>
+
+        <record id="som_view_hr_timesheet_time_form_inherit" model="ir.ui.view">
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="hr_timesheet.view_task_form2_inherited" />
+            <field name="arch" type="xml">
+                <xpath expr="//tree/field[@name='name']" position="before">
+                    <field name="som_worked_week_id" readonly="1" optional="show"/>
+                    <field name="som_additional_project_id" readonly="1" optional="hide"/>
+                </xpath>
             </field>
         </record>
 
