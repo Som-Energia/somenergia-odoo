@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+    <!-- Inherit hr.department form view to add Default Project Area field -->
+        <record id="som_view_department_form_inherit" model="ir.ui.view">
+            <field name="model">hr.department</field>
+            <field name="inherit_id" ref="hr.view_department_form"/>
+            <field name="arch" type="xml">
+                <field name="parent_id" position="after">
+                    <field name= "som_project_area_domain_ids" invisible="1"/>
+                    <field name="som_project_area_id"
+                        domain="[('id', 'in', som_project_area_domain_ids)]"
+                        options="{'no_create': True}"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>
