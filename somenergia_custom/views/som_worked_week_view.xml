@@ -110,6 +110,7 @@
                                        string="Projecte"
                                        domain="[('id', 'in', som_additional_project_domain_ids)]"
                                        readonly="0"/>
+                                <field name='task_id' readonly="1" optional="show"/>
                                 <field name="name"
                                        attrs="{'readonly': [('som_is_cumulative', '=', True)]}"/>
                                 <field name="som_timesheet_add_id"

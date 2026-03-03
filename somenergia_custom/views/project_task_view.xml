@@ -100,5 +100,16 @@
             </field>
         </record>
 
+        <record id="som_view_hr_timesheet_time_form_inherit" model="ir.ui.view">
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="hr_timesheet.view_task_form2_inherited" />
+            <field name="arch" type="xml">
+                <xpath expr="//tree/field[@name='name']" position="before">
+                    <field name="som_worked_week_id" readonly="1" optional="show"/>
+                    <field name="som_additional_project_id" readonly="1" optional="hide"/>
+                </xpath>
+            </field>
+        </record>
+
     </data>
 </odoo>
