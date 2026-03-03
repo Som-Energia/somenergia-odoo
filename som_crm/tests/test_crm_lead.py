@@ -1707,6 +1707,52 @@ class TestCrmLeadGsheetsImport(TransactionCase):
         self.assertEqual(existing_lead.name, 'Existing Lead',
                          "Existing lead should not be modified")
 
+    def test_import_leads_from_gsheets_skip_duplicates_with_lost_leads(self):
+        """
+        Test that leads with existing som_id_meta are skipped even with lost leads
+        """
+        # Create an existing lost lead
+        lost_lead = self.Lead.create({
+            'name': 'Lost Lead',
+            'som_id_meta': 'META_LOST',
+            'type': 'opportunity',
+        })
+        lost_lead.action_set_lost()
+
+        mock_data = [
+            {
+                'id': 'META_NEW',
+                'first_name': 'New Lead',
+                'email': 'new@example.com',
+                'phone_number': 'p:+34666444444',
+            },
+            {
+                'id': 'META_LOST',  # Same as lost
+                'first_name': 'Lost Lead',
+                'email': 'lost@example.com',
+                'phone_number': 'p:+34666555555',
+            },
+        ]
+
+        mock_connector = Mock()
+        mock_connector.name = 'Mock Connector'
+        mock_connector.get_data_from_google_sheet.return_value = mock_data
+
+        initial_lead_count = self.Lead.search_count([])
+
+        result = self.Lead._import_leads_from_gsheets(
+            mock_connector, 'ca_ES',
+            send_email_confirmation=False,
+            limit=10,
+            autoassign_user=False
+        )
+
+        final_lead_count = self.Lead.search_count([])
+
+        self.assertTrue(result, "Import should return True")
+        self.assertEqual(final_lead_count, initial_lead_count + 1,
+                         "Only one new lead should be created (lost skipped)")
+
     def test_import_leads_from_gsheets_limit(self):
         """
         Test that the limit parameter works correctly.
