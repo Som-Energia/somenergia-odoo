@@ -777,7 +777,9 @@ class Lead(models.Model):
             count_error = 0
             count_skipped = 0
             count_processed = 0
-            existing_meta_ids = self.search([('som_id_meta', '!=', False)]).mapped('som_id_meta')
+            existing_meta_ids = self.with_context(active_test=False).search([
+                ('som_id_meta', '!=', False)
+            ]).mapped('som_id_meta')
             for dict_row in data:
                 meta_id = dict_row.get('id', False)
                 if meta_id in existing_meta_ids:
