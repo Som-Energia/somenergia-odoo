@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from odoo import api, fields, models, _, _lt
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class Task(models.Model):
@@ -55,3 +56,27 @@ class Task(models.Model):
         result = super().button_start_work()
         result["context"].update({"resuming_lines": timesheets_to_avoid_timer_ids.ids})
         return result
+
+    def write(self, vals):
+        # we don't allow to change 'som_additional_project_id'
+        # if the task has timesheet lines linked to it
+        # to avoid inconsistencies in the timesheet entries
+        if 'som_additional_project_id' in vals:
+            id_new_ap = vals.get('som_additional_project_id', False)
+            timesheet_line_obj = self.env['account.analytic.line']
+            for task_id in self:
+                current_ap_id = task_id.som_additional_project_id
+                flag_changing_som_additional_project_id = (
+                    current_ap_id.id != id_new_ap
+                )
+                timesheet_with_som_additional_project_ids = \
+                    task_id.timesheet_ids.filtered(
+                        lambda x: x.som_additional_project_id.id == current_ap_id.id)
+                if flag_changing_som_additional_project_id and \
+                        timesheet_with_som_additional_project_ids:
+                    raise ValidationError(_(
+                        "You cannot change the 'Transversal project' on a task that has "
+                        "timesheet entries linked to it."
+                    ))
+
+        return super().write(vals)
