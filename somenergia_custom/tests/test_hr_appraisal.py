@@ -309,7 +309,7 @@ class TestHrAppraisalSecurityRules(TransactionCase):
         rule = self.env.ref('oh_appraisal.hr_appraisal_rule')
         self.assertEqual(
             rule.domain_force,
-            "[('emp_id.department_id','=',user.department_id.id)]",
+            "[('emp_id.department_id','child_of',user.department_id.id)]",
             "Team Leader appraisal rule should keep the expected domain_force",
         )
         group_ids = rule.groups.mapped('id')
@@ -318,3 +318,38 @@ class TestHrAppraisalSecurityRules(TransactionCase):
             group_ids,
             "Team Leader appraisal rule should apply to Team Leader group",
         )
+
+    def test_team_leader_cannot_access_other_department_appraisal(self):
+        """Test that a Team Leader cannot access appraisals of employees in other departments"""
+        with self.assertRaises(AccessError):
+            self.appraisal_hr.with_user(self.user_sales_team_leader).read(['id'])
+
+    def test_team_leader_can_access_subdepartment_appraisal(self):
+        """Test that a Team Leader can access appraisals of employees in sub-departments"""
+        # Create a sub-department under Sales
+        sub_dept_sales = self.env['hr.department'].create({
+            'name': 'Sub Sales Department',
+            'parent_id': self.dept_sales.id,
+        })
+
+        # Create an employee in the sub-department
+        employee_sub_sales = self.env['hr.employee'].create({
+            'name': 'Sub Sales Employee',
+            'department_id': sub_dept_sales.id,
+        })
+
+        # Create an appraisal for the employee in the sub-department
+        appraisal_sub_sales = self.env['hr.appraisal'].with_context(DISABLED_MAIL_CONTEXT).create({
+            'emp_id': employee_sub_sales.id,
+            'som_type': 'generic',
+            'state': self.stage_initial.id,
+            'appraisal_date': '2026-02-01',
+            'appraisal_deadline': '2026-02-28',
+        })
+
+        # Sales team leader should see the appraisal from the sub-department
+        appraisals = self.env['hr.appraisal'].with_user(self.user_sales_team_leader).search([])
+        appraisal_ids = appraisals.mapped('id')
+
+        self.assertIn(appraisal_sub_sales.id, appraisal_ids,
+                      "Team Leader should see appraisals from employees in sub-departments")
