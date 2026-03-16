@@ -60,7 +60,7 @@ class TestCrmTeam(TransactionCase):
         # Team with all members
         cls.team_full = cls.env['crm.team'].create({
             'name': 'Full Test Team',
-            'user_id': cls.user_leader.id, # The team leader
+            'user_id': cls.user_leader.id,  # The team leader
             'crm_team_member_ids': [
                 (0, 0, {'user_id': user_id}) for user_id in user_ids_full
             ],
@@ -268,6 +268,49 @@ class TestCrmTeam(TransactionCase):
         member = self.team_full.get_random_member(exclude_absent_members=False)
         self.assertIn(member, [self.user_leader, self.user_member_1, self.user_member_2],
                       "With user_member_2 unlimited capacity, any member can be selected.")
+
+    def test_team_members_capacity_with_won_opportunities(self):
+        """
+        Test that won opportunities do not count against the user's capacity.
+        """
+        # Set user_member_1's max leads capacity to 1
+        self.user_member_1.som_max_leads_capacity = 1
+
+        # Create a won opportunity for user_member_1
+        stage_won = self.env['crm.stage'].search([('is_won', '=', True)], limit=1)
+        self.env['crm.lead'].create({
+            'name': 'Won Opportunity',
+            'type': 'opportunity',
+            'user_id': self.user_member_1.id,
+            'team_id': self.team_full.id,
+            'stage_id': stage_won.id,
+        })
+
+        self.assertEqual(self.user_member_1._get_assigned_opportunities_count(), 0,
+                         "Won opportunities should not count against capacity.")
+        self.assertEqual(self.user_member_1._get_available_leads_capacity(), 1,
+                         "user_member_1 should still have 1 available leads capacity.")
+
+    def test_team_members_capacity_with_inactive_opportunities(self):
+        """
+        Test that inactive opportunities do not count against the user's capacity.
+        """
+        # Set user_member_1's max leads capacity to 1
+        self.user_member_1.som_max_leads_capacity = 1
+
+        # Create an inactive opportunity for user_member_1
+        opportunity = self.env['crm.lead'].create({
+            'name': 'Inactive Opportunity',
+            'type': 'opportunity',
+            'user_id': self.user_member_1.id,
+            'team_id': self.team_full.id,
+            'active': False,
+        })
+
+        self.assertEqual(self.user_member_1._get_assigned_opportunities_count(), 0,
+                         "Inactive opportunities should not count against capacity.")
+        self.assertEqual(self.user_member_1._get_available_leads_capacity(), 1,
+                         "user_member_1 should still have 1 available leads capacity.")
 
     def test_team_members_capacity_no_one_available(self):
         """
