@@ -37,13 +37,15 @@ class ResUsers(models.Model):
         return self.env['crm.lead'].search_count([
             ('user_id', '=', self.id),
             ('type', '=', 'opportunity'),
+            ('active', '=', True),
+            ('stage_id.is_won', '=', False),
         ])
 
     def _get_available_leads_capacity(self):
         """ Returns the number of available leads capacity for the user. """
         self.ensure_one()
         if self.som_max_leads_capacity == -1:
-            return float('inf') # Unlimited capacity
+            return float('inf')  # Unlimited capacity
         assigned_opportunities_count = self._get_assigned_opportunities_count()
         if assigned_opportunities_count >= self.som_max_leads_capacity:
             return 0
