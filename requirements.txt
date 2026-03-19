@@ -2,3 +2,4 @@
 pydantic
 typing
 gspread
+pyOpenSSL==25.3.0

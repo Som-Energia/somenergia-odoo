@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="som_crm_mail_domain_blacklist_view_tree" model="ir.ui.view">
+        <field name="name">som.crm.mail.domain.blacklist.tree</field>
+        <field name="model">som.crm.mail.domain.blacklist</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom" string="Mail Domain Blacklist">
+                <field name="name" placeholder="e.g. gmail.com"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="som_crm_mail_domain_blacklist_view_form" model="ir.ui.view">
+        <field name="name">som.crm.mail.domain.blacklist.form</field>
+        <field name="model">som.crm.mail.domain.blacklist</field>
+        <field name="arch" type="xml">
+            <form string="Mail Domain Blacklist">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="som_crm_mail_domain_blacklist_action" model="ir.actions.act_window">
+        <field name="name">Mail Domain Blacklist</field>
+        <field name="res_model">som.crm.mail.domain.blacklist</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Add a new Mail Domain to the Blacklist
+            </p>
+            <p>
+                Domains added here will be ignored globally when searching for duplicate leads by email domain.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item (Under CRM > Configuration) -->
+    <menuitem
+        id="menu_som_crm_mail_domain_blacklist"
+        name="Mail Domain Blacklist"
+        parent="crm.crm_menu_config"
+        action="som_crm_mail_domain_blacklist_action"
+        sequence="50"/>
+
+</odoo>

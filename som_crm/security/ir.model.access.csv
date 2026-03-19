@@ -8,3 +8,4 @@ access_phone_call_result_manager,phone.call.result.sales.manager,model_phone_cal
 access_wizard_convert_to_opportunity,convert.call.wizard.user,model_convert_call_wizard,sales_team.group_sale_salesman,1,1,1,1
 access_crm_lead_report_user,crm.lead.report.user,model_crm_lead_report,sales_team.group_sale_salesman,1,1,1,1
 access_crm_activity_tracking_report_user,crm.activity.tracking.report.user,model_crm_activity_tracking_report,sales_team.group_sale_salesman,1,1,1,1
+access_som_crm_mail_domain_blacklist,som.crm.mail.domain.blacklist,model_som_crm_mail_domain_blacklist,sales_team.group_sale_manager,1,1,1,1

@@ -39,7 +39,6 @@
                         <div class="text-muted">Target lead daily conversion</div>
                     </div>
                 </div>
-
                 <div class="col-12 col-lg-6 o_setting_box" id="default_company_schedule_setting">
                     <div class="o_setting_right_pane">
                         <label for="som_crm_call_category_id"/>
