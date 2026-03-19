@@ -6,6 +6,8 @@ try:
             'liquidrockentertainment.com',
             'coac.cat',
             'xtec.cat',
+            'movistar.es',
+            'uoc.edu',
         }
         _MAIL_DOMAIN_BLACKLIST.update(_SOM_BLACKLISTED_DOMAINS)
 
