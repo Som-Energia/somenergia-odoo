@@ -26,3 +26,17 @@ class SomCrmMailDomainBlacklist(models.Model):
         records = super().create(vals_list)
         records._update_blacklist()
         return records
+
+    def unlink(self):
+        domains_to_remove = self.mapped('name')
+        res = super().unlink()
+        try:
+            from odoo.addons.iap.tools.iap_tools import _MAIL_DOMAIN_BLACKLIST
+            if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
+                remaining_domains = set(self.search([]).mapped('name'))
+                for domain in domains_to_remove:
+                    if domain not in remaining_domains:
+                        _MAIL_DOMAIN_BLACKLIST.discard(domain)
+        except ImportError:
+            pass
+        return res
