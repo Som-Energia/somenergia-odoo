@@ -3,6 +3,11 @@ from odoo import models, fields, api
 from odoo.addons.iap.tools.iap_tools import _MAIL_DOMAIN_BLACKLIST
 
 
+_ORIGINAL_MAIL_DOMAIN_BLACKLIST = (
+    _MAIL_DOMAIN_BLACKLIST.copy() if isinstance(_MAIL_DOMAIN_BLACKLIST, set) else set()
+)
+
+
 class SomCrmMailDomainBlacklist(models.Model):
     _name = 'som.crm.mail.domain.blacklist'
     _description = 'Mail Domain Blacklist'
@@ -35,11 +40,12 @@ class SomCrmMailDomainBlacklist(models.Model):
 
     def write(self, vals):
         for record in self:
-            if 'name' in vals and record.name not in vals['name']:
+            if 'name' in vals and record.name != vals['name']:
                 # If the domain name is being changed, we need to remove
                 # the old one from the blacklist
                 try:
-                    if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
+                    if isinstance(_MAIL_DOMAIN_BLACKLIST, set) \
+                            and record.name not in _ORIGINAL_MAIL_DOMAIN_BLACKLIST:
                         _MAIL_DOMAIN_BLACKLIST.discard(record.name)
                 except ImportError:
                     pass
@@ -62,7 +68,8 @@ class SomCrmMailDomainBlacklist(models.Model):
             if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
                 remaining_domains = set(self.search([]).mapped('name'))
                 for domain in domains_to_remove:
-                    if domain not in remaining_domains:
+                    if domain not in remaining_domains and \
+                            domain not in _ORIGINAL_MAIL_DOMAIN_BLACKLIST:
                         _MAIL_DOMAIN_BLACKLIST.discard(domain)
         except ImportError:
             pass
