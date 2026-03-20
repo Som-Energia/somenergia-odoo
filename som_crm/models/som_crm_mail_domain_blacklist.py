@@ -11,10 +11,9 @@ class SomCrmMailDomainBlacklist(models.Model):
     company_id = fields.Many2one(
         'res.company', string='Company', default=lambda self: self.env.company)
 
-    def _update_blacklist_rebuild(self):
+    def _update_blacklist(self):
         try:
             if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
-                _MAIL_DOMAIN_BLACKLIST.clear()
                 _MAIL_DOMAIN_BLACKLIST.update(self.search([]).mapped('name'))
         except ImportError:
             pass
@@ -22,16 +21,40 @@ class SomCrmMailDomainBlacklist(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
-        records._update_blacklist_rebuild()
+        records._update_blacklist()
         return records
 
     def write(self, vals):
+        for record in self:
+            if 'name' in vals and record.name not in vals['name']:
+                # If the domain name is being changed, we need to remove
+                # the old one from the blacklist
+                try:
+                    if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
+                        _MAIL_DOMAIN_BLACKLIST.discard(record.name)
+                except ImportError:
+                    pass
         res = super().write(vals)
-        self._update_blacklist_rebuild()
+        for record in self:
+            if 'name' in vals:
+                # If the domain name is being changed, we need to add
+                # the new one to the blacklist
+                try:
+                    if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
+                        _MAIL_DOMAIN_BLACKLIST.add(record.name)
+                except ImportError:
+                    pass
         return res
 
     def unlink(self):
         domains_to_remove = self.mapped('name')
         res = super().unlink()
-        self._update_blacklist_rebuild()
+        try:
+            if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
+                remaining_domains = set(self.search([]).mapped('name'))
+                for domain in domains_to_remove:
+                    if domain not in remaining_domains:
+                        _MAIL_DOMAIN_BLACKLIST.discard(domain)
+        except ImportError:
+            pass
         return res
