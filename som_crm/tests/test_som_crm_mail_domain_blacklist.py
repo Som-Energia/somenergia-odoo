@@ -114,3 +114,33 @@ class TestSomCrmMailDomainBlacklist(TransactionCase):
             domain_name,
             _MAIL_DOMAIN_BLACKLIST,
             "The domain should be removed from the blacklist once all duplicates are unlinked.")
+
+    def test_write_updates_blacklist(self):
+        """
+        Test that updating the domain name through write also updates
+        the global _MAIL_DOMAIN_BLACKLIST.
+        """
+
+        original_domain = 'test-write-domain.cat'
+        new_domain = 'test-updated-domain.cat'
+
+        if original_domain in _MAIL_DOMAIN_BLACKLIST:
+            _MAIL_DOMAIN_BLACKLIST.remove(original_domain)
+        if new_domain in _MAIL_DOMAIN_BLACKLIST:
+            _MAIL_DOMAIN_BLACKLIST.remove(new_domain)
+
+        record = self.env['som.crm.mail.domain.blacklist'].create({'name': original_domain})
+        self.assertIn(
+            original_domain,
+            _MAIL_DOMAIN_BLACKLIST,
+            "The original domain should be in the blacklist after creation.")
+
+        record.write({'name': new_domain})
+        self.assertNotIn(
+            original_domain,
+            _MAIL_DOMAIN_BLACKLIST,
+            "The original domain should be removed from the blacklist after update.")
+        self.assertIn(
+            new_domain,
+            _MAIL_DOMAIN_BLACKLIST,
+            "The new domain should be added to the blacklist after update.")
