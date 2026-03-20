@@ -11,9 +11,10 @@ class SomCrmMailDomainBlacklist(models.Model):
     company_id = fields.Many2one(
         'res.company', string='Company', default=lambda self: self.env.company)
 
-    def _update_blacklist(self):
+    def _update_blacklist_rebuild(self):
         try:
             if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
+                _MAIL_DOMAIN_BLACKLIST.clear()
                 _MAIL_DOMAIN_BLACKLIST.update(self.search([]).mapped('name'))
         except ImportError:
             pass
@@ -21,18 +22,16 @@ class SomCrmMailDomainBlacklist(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
-        records._update_blacklist()
+        records._update_blacklist_rebuild()
         return records
+
+    def write(self, vals):
+        res = super().write(vals)
+        self._update_blacklist_rebuild()
+        return res
 
     def unlink(self):
         domains_to_remove = self.mapped('name')
         res = super().unlink()
-        try:
-            if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
-                remaining_domains = set(self.search([]).mapped('name'))
-                for domain in domains_to_remove:
-                    if domain not in remaining_domains:
-                        _MAIL_DOMAIN_BLACKLIST.discard(domain)
-        except ImportError:
-            pass
+        self._update_blacklist_rebuild()
         return res
