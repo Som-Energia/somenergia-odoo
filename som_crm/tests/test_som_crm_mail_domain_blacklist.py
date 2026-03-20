@@ -3,6 +3,7 @@ import uuid
 
 from odoo.tests.common import TransactionCase, tagged
 from odoo.addons.iap.tools.iap_tools import _MAIL_DOMAIN_BLACKLIST
+from odoo.addons.som_crm.models.som_crm_mail_domain_blacklist import _ORIGINAL_MAIL_DOMAIN_BLACKLIST
 
 
 @tagged('som_mail_domain_blacklist')
@@ -115,6 +116,21 @@ class TestSomCrmMailDomainBlacklist(TransactionCase):
             _MAIL_DOMAIN_BLACKLIST,
             "The domain should be removed from the blacklist once all duplicates are unlinked.")
 
+    def test_unlink_keeps_original_blacklist_domain(self):
+        """
+        Deleting a custom record must not remove a domain already present in the original blacklist.
+        """
+
+        domain_name = next(iter(_ORIGINAL_MAIL_DOMAIN_BLACKLIST))
+
+        record = self.env['som.crm.mail.domain.blacklist'].create({'name': domain_name})
+        record.unlink()
+
+        self.assertIn(
+            domain_name,
+            _MAIL_DOMAIN_BLACKLIST,
+            "Original blacklist domains must stay in memory after unlink.")
+
     def test_write_updates_blacklist(self):
         """
         Test that updating the domain name through write also updates
@@ -144,3 +160,26 @@ class TestSomCrmMailDomainBlacklist(TransactionCase):
             new_domain,
             _MAIL_DOMAIN_BLACKLIST,
             "The new domain should be added to the blacklist after update.")
+
+    def test_write_keeps_original_blacklist_domain(self):
+        """
+        Updating a record must not remove the previous value if it belongs to the original blacklist
+        """
+
+        original_domain = next(iter(_ORIGINAL_MAIL_DOMAIN_BLACKLIST))
+        new_domain = 'test-original-domain-update.cat'
+
+        if new_domain in _MAIL_DOMAIN_BLACKLIST:
+            _MAIL_DOMAIN_BLACKLIST.remove(new_domain)
+
+        record = self.env['som.crm.mail.domain.blacklist'].create({'name': original_domain})
+        record.write({'name': new_domain})
+
+        self.assertIn(
+            original_domain,
+            _MAIL_DOMAIN_BLACKLIST,
+            "Original blacklist domains must stay in memory after write.")
+        self.assertIn(
+            new_domain,
+            _MAIL_DOMAIN_BLACKLIST,
+            "The updated domain should be added to the blacklist after write.")
