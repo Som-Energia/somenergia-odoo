@@ -11,6 +11,15 @@ class SomCrmMailDomainBlacklist(models.Model):
     company_id = fields.Many2one(
         'res.company', string='Company', default=lambda self: self.env.company)
 
+    def _register_hook(self):
+        """
+        Extend the _register_hook to ensure the blacklist is updated when starting Odoo.
+        This method is called when Odoo loads the module,
+        ensuring that the blacklist is populated with the current records
+        """
+        self._update_blacklist()
+        return super()._register_hook()
+
     def _update_blacklist(self):
         try:
             if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
