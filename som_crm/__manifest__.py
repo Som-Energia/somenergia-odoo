@@ -46,6 +46,7 @@
         'views/utm_menus.xml',
         'views/crm_stage_views.xml',
         'views/mail_message.xml',
+        'views/som_crm_mail_domain_blacklist_views.xml',
         'report/crm_pivot_views.xml',
     ],
     'post_init_hook': 'post_init_hook',

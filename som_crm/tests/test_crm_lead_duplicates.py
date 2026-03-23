@@ -32,6 +32,7 @@ class TestCrmLeadDuplicates(TransactionCase):
 
     def test_compute_potential_duplicates_blacklisted_domain_is_exact_email(self):
         """For blacklisted domains, duplicates are searched by exact email."""
+        self.env['som.crm.mail.domain.blacklist'].create({'name': 'xtec.cat'})
         from odoo.addons.iap.tools.iap_tools import _MAIL_DOMAIN_BLACKLIST
 
         self.assertIn('xtec.cat', _MAIL_DOMAIN_BLACKLIST)
