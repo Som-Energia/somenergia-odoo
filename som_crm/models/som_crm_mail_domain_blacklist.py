@@ -16,61 +16,62 @@ class SomCrmMailDomainBlacklist(models.Model):
     company_id = fields.Many2one(
         'res.company', string='Company', default=lambda self: self.env.company)
 
-    def _register_hook(self):
-        """
-        Extend the _register_hook to ensure the blacklist is updated when starting Odoo.
-        This method is called when Odoo loads the module,
-        ensuring that the blacklist is populated with the current records
-        """
-        self._update_blacklist()
-        return super()._register_hook()
+    # def _register_hook(self):
+    #     """
+    #     Extend the _register_hook to ensure the blacklist is updated when starting Odoo.
+    #     This method is called when Odoo loads the module,
+    #     ensuring that the blacklist is populated with the current records
+    #     """
+    #     self._update_blacklist()
+    #     return super()._register_hook()
 
-    def _update_blacklist(self):
-        try:
-            if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
-                _MAIL_DOMAIN_BLACKLIST.update(self.search([]).mapped('name'))
-        except ImportError:
-            pass
+    # def _update_blacklist(self):
+    #     try:
+    #         # if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
+    #         #     _MAIL_DOMAIN_BLACKLIST.update(self.search([]).mapped('name'))
+    #         pass
+    #     except ImportError:
+    #         pass
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        records = super().create(vals_list)
-        records._update_blacklist()
-        return records
+    # @api.model_create_multi
+    # def create(self, vals_list):
+    #     records = super().create(vals_list)
+    #     records._update_blacklist()
+    #     return records
 
-    def write(self, vals):
-        for record in self:
-            if 'name' in vals and record.name != vals['name']:
-                # If the domain name is being changed, we need to remove
-                # the old one from the blacklist
-                try:
-                    if isinstance(_MAIL_DOMAIN_BLACKLIST, set) \
-                            and record.name not in _ORIGINAL_MAIL_DOMAIN_BLACKLIST:
-                        _MAIL_DOMAIN_BLACKLIST.discard(record.name)
-                except ImportError:
-                    pass
-        res = super().write(vals)
-        for record in self:
-            if 'name' in vals:
-                # If the domain name is being changed, we need to add
-                # the new one to the blacklist
-                try:
-                    if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
-                        _MAIL_DOMAIN_BLACKLIST.add(record.name)
-                except ImportError:
-                    pass
+    # def write(self, vals):
+        # for record in self:
+        #     if 'name' in vals and record.name != vals['name']:
+        #         # If the domain name is being changed, we need to remove
+        #         # the old one from the blacklist
+        #         try:
+        #             if isinstance(_MAIL_DOMAIN_BLACKLIST, set) \
+        #                     and record.name not in _ORIGINAL_MAIL_DOMAIN_BLACKLIST:
+        #                 _MAIL_DOMAIN_BLACKLIST.discard(record.name)
+        #         except ImportError:
+        #             pass
+        # res = super().write(vals)
+        # for record in self:
+        #     if 'name' in vals:
+        #         # If the domain name is being changed, we need to add
+        #         # the new one to the blacklist
+        #         try:
+        #             if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
+        #                 _MAIL_DOMAIN_BLACKLIST.add(record.name)
+        #         except ImportError:
+        #             pass
         return res
 
-    def unlink(self):
-        domains_to_remove = self.mapped('name')
-        res = super().unlink()
-        try:
-            if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
-                remaining_domains = set(self.search([]).mapped('name'))
-                for domain in domains_to_remove:
-                    if domain not in remaining_domains and \
-                            domain not in _ORIGINAL_MAIL_DOMAIN_BLACKLIST:
-                        _MAIL_DOMAIN_BLACKLIST.discard(domain)
-        except ImportError:
-            pass
-        return res
+    # def unlink(self):
+        # domains_to_remove = self.mapped('name')
+        # res = super().unlink()
+        # try:
+        #     if isinstance(_MAIL_DOMAIN_BLACKLIST, set):
+        #         remaining_domains = set(self.search([]).mapped('name'))
+        #         for domain in domains_to_remove:
+        #             if domain not in remaining_domains and \
+        #                     domain not in _ORIGINAL_MAIL_DOMAIN_BLACKLIST:
+        #                 _MAIL_DOMAIN_BLACKLIST.discard(domain)
+        # except ImportError:
+        #     pass
+        # return res
