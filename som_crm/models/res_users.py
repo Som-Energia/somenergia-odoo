@@ -18,6 +18,30 @@ class ResUsers(models.Model):
         help='Maximum number of leads that can be assigned to this user. -1 means unlimited.',
     )
 
+    som_not_assign_opportunities = fields.Boolean(
+        string='Do not assign opportunities',
+        required=False,
+        default=False,
+        help='If checked, no opportunities will be assigned to this user.',
+    )
+
+    som_not_assign_opportunities_from = fields.Date(
+        string='From',
+        required=False,
+    )
+    som_not_assign_opportunities_to = fields.Date(
+        string='To',
+        required=False,
+    )
+
+    @api.constrains('som_not_assign_opportunities_from', 'som_not_assign_opportunities_to')
+    def _check_not_assign_opportunities_dates(self):
+        for record in self:
+            if record.som_not_assign_opportunities:
+                if record.som_not_assign_opportunities_from and record.som_not_assign_opportunities_to:
+                    if record.som_not_assign_opportunities_from > record.som_not_assign_opportunities_to:
+                        raise ValidationError(_("The 'From' date cannot be later than the 'To' date."))
+
     @api.constrains('som_call_center_user')
     def _check_call_center_user(self):
         for record in self:
