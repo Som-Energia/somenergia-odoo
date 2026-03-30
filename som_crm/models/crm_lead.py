@@ -421,20 +421,26 @@ class Lead(models.Model):
 
         found_ids = []
         for lead_id in lead_ids:
-            erp_lead_id = lead_id.get_contract_in_erp(erp_lead_obj)
-            if erp_lead_id:
-                erp_lead_obj.write(erp_lead_id, {'crm_lead_id': lead_id.id})
-                lead_id.som_erp_lead_id = erp_lead_id
-                found_ids.append(lead_id.id)
+            try:
+                erp_lead_id = lead_id.get_contract_in_erp(erp_lead_obj)
+                if erp_lead_id:
+                    with self.env.cr.savepoint():
+                        lead_id.write({
+                            'som_erp_lead_id': erp_lead_id,
+                            'stage_id': won_stage_id.id,
+                            'active': True
+                        })
+                        erp_lead_obj.write(erp_lead_id, {'crm_lead_id': lead_id.id})
+                        found_ids.append(lead_id.id)
+
+            except Exception as e:
+                _logger.error("Error syncing lead %s to ERP: %s", lead_id.id, e)
 
         if not found_ids:
             _logger.info("No leads with contract in ERP found")
             return
 
-        lead_to_update_ids = lead_ids.filtered(lambda x: x.id in found_ids)
-        lead_to_update_ids.write({'stage_id': won_stage_id.id, 'active': True})
-
-        _logger.info(f"Leads moved to 'Won' stage: {lead_to_update_ids.ids}")
+        _logger.info(f"Leads moved to 'Won' stage: {found_ids}")
 
     def button_open_phonecall(self):
         self.ensure_one()
