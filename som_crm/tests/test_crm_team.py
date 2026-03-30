@@ -2,7 +2,7 @@
 from odoo.tests.common import TransactionCase, tagged
 from freezegun import freeze_time
 from unittest.mock import patch
-from datetime import datetime
+from datetime import datetime, date
 
 
 @tagged('som_crm_team')
@@ -128,7 +128,8 @@ class TestCrmTeam(TransactionCase):
         Should return False, as the member list becomes empty.
         """
         member = self.team_leader_only.get_random_member(exclude_team_leader=True)
-        self.assertFalse(member,
+        self.assertFalse(
+            member,
             "It should return False, as the only member (leader) was excluded.")
 
     @patch('odoo.addons.som_crm.models.crm_team.choice')
@@ -144,7 +145,9 @@ class TestCrmTeam(TransactionCase):
         member = self.team_full.get_random_member()
 
         # 1. Check that the result is the one we forced
-        self.assertEqual(member, self.user_member_1,
+        self.assertEqual(
+            member,
+            self.user_member_1,
             "The returned member should be the one from the mock.")
 
         # 2. Check that 'random.choice' was called exactly once
@@ -335,3 +338,73 @@ class TestCrmTeam(TransactionCase):
         member = self.team_full.get_random_member(exclude_absent_members=False)
         self.assertIn(member, [self.user_leader, self.user_member_1, self.user_member_2],
                       "With no available capacity, any member can be selected.")
+
+    @freeze_time('2025-04-02 10:00:00')
+    @patch('odoo.addons.som_crm.models.crm_team.choice')
+    def test_team_exclude_member_not_assign_opportunities_inside_date_range(self, mock_choice):
+        """Users with do-not-assign enabled and current date in range must be excluded."""
+        (self.user_leader | self.user_member_1 | self.user_member_2).write({
+            'som_not_assign_opportunities': False,
+            'som_not_assign_opportunities_from': False,
+            'som_not_assign_opportunities_to': False,
+        })
+        self.user_member_1.write({
+            'som_not_assign_opportunities': True,
+            'som_not_assign_opportunities_from': date(2025, 4, 1),
+            'som_not_assign_opportunities_to': date(2025, 4, 3),
+        })
+
+        mock_choice.return_value = self.user_member_2
+        member = self.team_full.get_random_member(exclude_absent_members=False)
+
+        self.assertEqual(member, self.user_member_2)
+        mock_choice.assert_called_once()
+        called_list = mock_choice.call_args[0][0]
+        self.assertNotIn(self.user_member_1, called_list)
+        self.assertIn(self.user_leader, called_list)
+        self.assertIn(self.user_member_2, called_list)
+
+    @freeze_time('2025-04-05 10:00:00')
+    @patch('odoo.addons.som_crm.models.crm_team.choice')
+    def test_team_include_member_not_assign_opportunities_outside_date_range(self, mock_choice):
+        """Users with do-not-assign enabled but outside date range must remain assignable."""
+        (self.user_leader | self.user_member_1 | self.user_member_2).write({
+            'som_not_assign_opportunities': False,
+            'som_not_assign_opportunities_from': False,
+            'som_not_assign_opportunities_to': False,
+        })
+        self.user_member_1.write({
+            'som_not_assign_opportunities': True,
+            'som_not_assign_opportunities_from': date(2025, 4, 1),
+            'som_not_assign_opportunities_to': date(2025, 4, 3),
+        })
+
+        mock_choice.return_value = self.user_member_1
+        member = self.team_full.get_random_member(exclude_absent_members=False)
+
+        self.assertEqual(member, self.user_member_1)
+        mock_choice.assert_called_once()
+        called_list = mock_choice.call_args[0][0]
+        self.assertIn(self.user_member_1, called_list)
+        self.assertIn(self.user_leader, called_list)
+        self.assertIn(self.user_member_2, called_list)
+
+    def test_team_include_disabled_not_assign_opportunities(self):
+        """Users with do-not-assign disabled must remain assignable."""
+        (self.user_leader | self.user_member_1 | self.user_member_2).write({
+            'som_not_assign_opportunities': False,
+            'som_not_assign_opportunities_from': False,
+            'som_not_assign_opportunities_to': False,
+        })
+
+        mock_choice = self.env['crm.team'].get_random_member
+        with patch('odoo.addons.som_crm.models.crm_team.choice') as mock_random_choice:
+            mock_random_choice.return_value = self.user_member_1
+            member = self.team_full.get_random_member(exclude_absent_members=False)
+
+            self.assertEqual(member, self.user_member_1)
+            mock_random_choice.assert_called_once()
+            called_list = mock_random_choice.call_args[0][0]
+            self.assertIn(self.user_member_1, called_list)
+            self.assertIn(self.user_leader, called_list)
+            self.assertIn(self.user_member_2, called_list)

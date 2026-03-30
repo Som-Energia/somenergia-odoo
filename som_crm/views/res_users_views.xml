@@ -14,4 +14,28 @@
             </xpath>
         </field>
     </record>
+
+
+    <record id="som_view_users_simple_form_inherit" model="ir.ui.view">
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_simple_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='mobile']/.." position="after">
+                <group name="som_data" string="CRM" colspan="4">
+                    <group>
+                        <field name="som_call_center_user"/>
+                        <field name="som_max_leads_capacity"/>
+                    </group>
+                    <group>
+                        <field name="som_not_assign_opportunities" />
+                        <field name="som_not_assign_opportunities_from"
+                            attrs="{'invisible': [('som_not_assign_opportunities', '=', False)], 'required': [('som_not_assign_opportunities', '=', True)]}" />
+                        <field name="som_not_assign_opportunities_to"
+                            attrs="{'invisible': [('som_not_assign_opportunities', '=', False)], 'required': [('som_not_assign_opportunities', '=', True)]}" />
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>
