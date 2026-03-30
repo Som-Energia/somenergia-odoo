@@ -845,3 +845,74 @@ class Lead(models.Model):
                 send_email_confirmation=send_email_confirmation,
                 limit=limit,
                 autoassign_user=autoassign_user)
+
+    def _som_mail_prepare_for_domain_search(self, email, min_email_length=0):
+        from odoo.tools import email_normalize
+        if not email:
+            return False
+        email_tocheck = email_normalize(email, strict=False)
+        if not email_tocheck:
+            email_tocheck = email.casefold()
+
+        if email_tocheck and min_email_length and len(email_tocheck) < min_email_length:
+            return False
+
+        parts = email_tocheck.rsplit('@', maxsplit=1)
+        if len(parts) == 1:
+            return email_tocheck
+        lead_email_domain = parts[1]
+
+        blacklisted = self.env['som.crm.mail.domain.blacklist'].get_all_blacklisted_domains()
+        if lead_email_domain in blacklisted:
+            return email_tocheck
+        return '@' + lead_email_domain
+
+    @api.depends('email_from', 'partner_id', 'contact_name', 'partner_name')
+    def _compute_potential_lead_duplicates(self):
+        MIN_EMAIL_LENGTH = 7
+        MIN_NAME_LENGTH = 6
+        MIN_PHONE_LENGTH = 8
+        SEARCH_RESULT_LIMIT = 21
+
+        def return_if_relevant(model_name, domain):
+            # Includes archived records and transcend multi-company record rules
+            model = self.env[model_name].sudo().with_context(active_test=False)
+            res = model.search(domain, limit=SEARCH_RESULT_LIMIT)
+            return res if len(res) < SEARCH_RESULT_LIMIT else model
+
+        for lead in self:
+            lead_id = lead._origin.id if isinstance(lead.id, models.NewId) else lead.id
+            common_lead_domain = [
+                ('id', '!=', lead_id)
+            ]
+
+            duplicate_lead_ids = self.env['crm.lead']
+            email_search = lead._som_mail_prepare_for_domain_search(lead.email_from, min_email_length=MIN_EMAIL_LENGTH)
+
+            if email_search:
+                duplicate_lead_ids |= return_if_relevant('crm.lead', common_lead_domain + [
+                    '|', ('email_normalized', 'ilike', email_search), ('email_from', 'ilike', email_search)
+                ])
+            if lead.partner_name and len(lead.partner_name.strip()) >= MIN_NAME_LENGTH:
+                duplicate_lead_ids |= return_if_relevant('crm.lead', common_lead_domain + [
+                    ('partner_name', 'ilike', lead.partner_name)
+                ])
+            if lead.contact_name and len(lead.contact_name.strip()) >= MIN_NAME_LENGTH:
+                duplicate_lead_ids |= return_if_relevant('crm.lead', common_lead_domain + [
+                    ('contact_name', 'ilike', lead.contact_name)
+                ])
+            if lead.partner_id and lead.partner_id.commercial_partner_id:
+                duplicate_lead_ids |= lead.with_context(active_test=False).search(common_lead_domain + [
+                    ("partner_id", "child_of", lead.partner_id.commercial_partner_id.id)
+                ])
+            if lead.phone and len(lead.phone.strip()) >= MIN_PHONE_LENGTH:
+                duplicate_lead_ids |= return_if_relevant('crm.lead', common_lead_domain + [
+                    ('phone_mobile_search', 'ilike', lead.phone)
+                ])
+            if lead.mobile and len(lead.mobile.strip()) >= MIN_PHONE_LENGTH:
+                duplicate_lead_ids |= return_if_relevant('crm.lead', common_lead_domain + [
+                    ('phone_mobile_search', 'ilike', lead.mobile)
+                ])
+
+            lead.duplicate_lead_ids = duplicate_lead_ids + lead
+            lead.duplicate_lead_count = len(duplicate_lead_ids)

@@ -47,7 +47,7 @@ class TestSomCrmMailDomainBlacklist(TransactionCase):
         """For blacklisted domains, duplicates are searched by exact email."""
         self.env['som.crm.mail.domain.blacklist'].create({'name': 'xtec.cat'})
 
-        self.assertIn('xtec.cat', _MAIL_DOMAIN_BLACKLIST)
+        self.assertIn('xtec.cat', self.env['som.crm.mail.domain.blacklist'].get_all_blacklisted_domains())
 
         token = uuid.uuid4().hex[:8]
         lead_a = self._create_lead(f'alice-{token}@xtec.cat')
@@ -62,34 +62,27 @@ class TestSomCrmMailDomainBlacklist(TransactionCase):
 
     def test_unlink_removes_from_blacklist(self):
         """Test that removing a domain from the blacklist
-        model also removes it from the global _MAIL_DOMAIN_BLACKLIST."""
+        model also removes it from the get_all_blacklisted_domains() results."""
 
         domain_name = 'test-unlink-domain.cat'
-
-        # Keep track if it existed before so we don't assume
-        if domain_name in _MAIL_DOMAIN_BLACKLIST:
-            _MAIL_DOMAIN_BLACKLIST.remove(domain_name)
 
         record = self.env['som.crm.mail.domain.blacklist'].create({'name': domain_name})
         self.assertIn(
             domain_name,
-            _MAIL_DOMAIN_BLACKLIST,
+            self.env['som.crm.mail.domain.blacklist'].get_all_blacklisted_domains(),
             "The domain should be added to the blacklist upon creation.")
 
         record.unlink()
         self.assertNotIn(
             domain_name,
-            _MAIL_DOMAIN_BLACKLIST,
+            self.env['som.crm.mail.domain.blacklist'].get_all_blacklisted_domains(),
             "The domain should be removed from the blacklist after unlink.")
 
     def test_unlink_keeps_duplicates(self):
-        """Test that removing a domain doesn't remove it from the global _MAIL_DOMAIN_BLACKLIST
+        """Test that removing a domain doesn't remove it from the get_all_blacklisted_domains()
         if another record holds the same domain."""
 
         domain_name = 'test-duplicate-domain.cat'
-
-        if domain_name in _MAIL_DOMAIN_BLACKLIST:
-            _MAIL_DOMAIN_BLACKLIST.remove(domain_name)
 
         self.env['som.crm.mail.domain.blacklist'].create([
             {'name': domain_name},
@@ -103,7 +96,7 @@ class TestSomCrmMailDomainBlacklist(TransactionCase):
 
         self.assertIn(
             domain_name,
-            _MAIL_DOMAIN_BLACKLIST,
+            self.env['som.crm.mail.domain.blacklist'].get_all_blacklisted_domains(),
             "The domain should still be in the blacklist because another record has it.")
 
         remaining_records = self.env['som.crm.mail.domain.blacklist'].search([
@@ -113,7 +106,7 @@ class TestSomCrmMailDomainBlacklist(TransactionCase):
 
         self.assertNotIn(
             domain_name,
-            _MAIL_DOMAIN_BLACKLIST,
+            self.env['som.crm.mail.domain.blacklist'].get_all_blacklisted_domains(),
             "The domain should be removed from the blacklist once all duplicates are unlinked.")
 
     def test_unlink_keeps_original_blacklist_domain(self):
@@ -128,37 +121,32 @@ class TestSomCrmMailDomainBlacklist(TransactionCase):
 
         self.assertIn(
             domain_name,
-            _MAIL_DOMAIN_BLACKLIST,
+            self.env['som.crm.mail.domain.blacklist'].get_all_blacklisted_domains(),
             "Original blacklist domains must stay in memory after unlink.")
 
     def test_write_updates_blacklist(self):
         """
         Test that updating the domain name through write also updates
-        the global _MAIL_DOMAIN_BLACKLIST.
+        the get_all_blacklisted_domains() results.
         """
 
         original_domain = 'test-write-domain.cat'
         new_domain = 'test-updated-domain.cat'
 
-        if original_domain in _MAIL_DOMAIN_BLACKLIST:
-            _MAIL_DOMAIN_BLACKLIST.remove(original_domain)
-        if new_domain in _MAIL_DOMAIN_BLACKLIST:
-            _MAIL_DOMAIN_BLACKLIST.remove(new_domain)
-
         record = self.env['som.crm.mail.domain.blacklist'].create({'name': original_domain})
         self.assertIn(
             original_domain,
-            _MAIL_DOMAIN_BLACKLIST,
+            self.env['som.crm.mail.domain.blacklist'].get_all_blacklisted_domains(),
             "The original domain should be in the blacklist after creation.")
 
         record.write({'name': new_domain})
         self.assertNotIn(
             original_domain,
-            _MAIL_DOMAIN_BLACKLIST,
+            self.env['som.crm.mail.domain.blacklist'].get_all_blacklisted_domains(),
             "The original domain should be removed from the blacklist after update.")
         self.assertIn(
             new_domain,
-            _MAIL_DOMAIN_BLACKLIST,
+            self.env['som.crm.mail.domain.blacklist'].get_all_blacklisted_domains(),
             "The new domain should be added to the blacklist after update.")
 
     def test_write_keeps_original_blacklist_domain(self):
@@ -169,17 +157,14 @@ class TestSomCrmMailDomainBlacklist(TransactionCase):
         original_domain = next(iter(_ORIGINAL_MAIL_DOMAIN_BLACKLIST))
         new_domain = 'test-original-domain-update.cat'
 
-        if new_domain in _MAIL_DOMAIN_BLACKLIST:
-            _MAIL_DOMAIN_BLACKLIST.remove(new_domain)
-
         record = self.env['som.crm.mail.domain.blacklist'].create({'name': original_domain})
         record.write({'name': new_domain})
 
         self.assertIn(
             original_domain,
-            _MAIL_DOMAIN_BLACKLIST,
+            self.env['som.crm.mail.domain.blacklist'].get_all_blacklisted_domains(),
             "Original blacklist domains must stay in memory after write.")
         self.assertIn(
             new_domain,
-            _MAIL_DOMAIN_BLACKLIST,
+            self.env['som.crm.mail.domain.blacklist'].get_all_blacklisted_domains(),
             "The updated domain should be added to the blacklist after write.")
