@@ -775,6 +775,8 @@ class Lead(models.Model):
             _logger.warning("No data retrieved from Google Sheet: %s", connector_id.name)
             return False
         try:
+            # we get a list without duplicates in original data
+            data = list({d['id']: d for d in data}.values())
             count_data = len(data)
             _logger.info(
                 "Data retrieved from Google Sheet '%s': %s rows", connector_id.name, count_data)

@@ -1658,7 +1658,7 @@ class TestCrmLeadGsheetsImport(TransactionCase):
         self.assertEqual(lead_one.type, 'opportunity')
         self.assertEqual(lead_two.type, 'opportunity')
 
-    def test_import_leads_from_gsheets_skip_duplicates(self):
+    def test_import_leads_from_gsheets_skip_duplicates_in_odoo(self):
         """
         Test that leads with existing som_id_meta are skipped.
         """
@@ -1707,7 +1707,7 @@ class TestCrmLeadGsheetsImport(TransactionCase):
         self.assertEqual(existing_lead.name, 'Existing Lead',
                          "Existing lead should not be modified")
 
-    def test_import_leads_from_gsheets_skip_duplicates_with_lost_leads(self):
+    def test_import_leads_from_gsheets_skip_duplicates_in_odoo_with_lost_leads(self):
         """
         Test that leads with existing som_id_meta are skipped even with lost leads
         """
@@ -1752,6 +1752,43 @@ class TestCrmLeadGsheetsImport(TransactionCase):
         self.assertTrue(result, "Import should return True")
         self.assertEqual(final_lead_count, initial_lead_count + 1,
                          "Only one new lead should be created (lost skipped)")
+
+    def test_import_leads_from_gsheets_skip_duplicates_in_gsheets(self):
+        """
+        Test that leads with duplicate IDs in Google Sheets are skipped.
+        """
+        mock_data = [
+            {
+                'id': 'META_DUPLICATE',  # Duplicate ID
+                'first_name': 'Lead One',
+                'email': 'leadone@example.com',
+                'phone_number': 'p:+34666111111',
+            },
+            {
+                'id': 'META_DUPLICATE',  # Duplicate ID
+                'first_name': 'Lead One',
+                'email': 'leadone@example.com',
+                'phone_number': 'p:+34666111111',
+            },
+        ]
+        mock_connector = Mock()
+        mock_connector.name = 'Mock Connector'
+        mock_connector.get_data_from_google_sheet.return_value = mock_data
+
+        initial_lead_count = self.Lead.search_count([])
+
+        result = self.Lead._import_leads_from_gsheets(
+            mock_connector, 'ca_ES',
+            send_email_confirmation=False,
+            limit=10,
+            autoassign_user=False
+        )
+
+        final_lead_count = self.Lead.search_count([])
+
+        self.assertTrue(result, "Import should return True")
+        self.assertEqual(final_lead_count, initial_lead_count + 1,
+                         "Only one new lead should be created (duplicate skipped)")
 
     def test_import_leads_from_gsheets_limit(self):
         """
