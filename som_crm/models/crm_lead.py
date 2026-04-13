@@ -777,6 +777,15 @@ class Lead(models.Model):
         try:
             # we get a list without duplicates in original data
             data = list({d['id']: d for d in data}.values())
+
+            # filter by date if setting is set in company settings, comparing with 'created_time' field in data
+            setting_date_from = self.env.company.som_crm_gsheets_import_date_from
+            if setting_date_from:
+                # created_time format: 2026-04-02T15:21:03+02:00
+                data = [
+                    d for d in data if 'created_time' in d and datetime.strptime(
+                        d['created_time'][:10], "%Y-%m-%d").date() >= setting_date_from]
+
             count_data = len(data)
             _logger.info(
                 "Data retrieved from Google Sheet '%s': %s rows", connector_id.name, count_data)

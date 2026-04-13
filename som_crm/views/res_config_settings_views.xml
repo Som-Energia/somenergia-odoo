@@ -39,6 +39,16 @@
                         <div class="text-muted">Target lead daily conversion</div>
                     </div>
                 </div>
+
+                <div class="col-12 col-lg-6 o_setting_box">
+                    <div class="o_setting_left_pane"/>
+                    <div class="o_setting_right_pane">
+                        <label for="som_crm_date_from_import_gsheets" />
+                        <div class="text-muted">Date from which leads will be imported from Google Sheets. If empty, all leads will be imported.</div>
+                        <field name="som_crm_date_from_import_gsheets" />
+                    </div>
+                </div>
+
                 <div class="col-12 col-lg-6 o_setting_box" id="default_company_schedule_setting">
                     <div class="o_setting_right_pane">
                         <label for="som_crm_call_category_id"/>

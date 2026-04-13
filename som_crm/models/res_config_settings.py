@@ -35,3 +35,8 @@ class ResConfigSettings(models.TransientModel):
         config_parameter='som_crm_daily_won_leads_target',
         default=0
     )
+
+    som_crm_date_from_import_gsheets = fields.Date(
+        related='company_id.som_crm_date_from_import_gsheets',
+        readonly=False,
+    )
