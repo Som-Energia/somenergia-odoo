@@ -205,7 +205,7 @@
          <field name="model_id" ref="som_crm.model_crm_lead" />
          <field name="state">code</field>
          <field name="code">
-             model._import_leads_from_gsheets_cron()
+             model._import_leads_from_gsheets_cron(send_email_confirmation=False, limit=1, autoassign_user=False, str_from_date='2026-04-01')
          </field>
     </record>
 

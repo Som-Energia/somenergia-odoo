@@ -4,8 +4,10 @@
 from odoo.tests.common import TransactionCase, tagged
 from odoo.exceptions import ValidationError
 from datetime import datetime, date, timedelta
+from odoo import fields
 from odoo.fields import Datetime, Date
 from unittest.mock import patch, Mock
+from freezegun import freeze_time
 
 
 @tagged('som_lead')
@@ -1658,7 +1660,7 @@ class TestCrmLeadGsheetsImport(TransactionCase):
         self.assertEqual(lead_one.type, 'opportunity')
         self.assertEqual(lead_two.type, 'opportunity')
 
-    def test_import_leads_from_gsheets_skip_duplicates(self):
+    def test_import_leads_from_gsheets_skip_duplicates_in_odoo(self):
         """
         Test that leads with existing som_id_meta are skipped.
         """
@@ -1707,7 +1709,7 @@ class TestCrmLeadGsheetsImport(TransactionCase):
         self.assertEqual(existing_lead.name, 'Existing Lead',
                          "Existing lead should not be modified")
 
-    def test_import_leads_from_gsheets_skip_duplicates_with_lost_leads(self):
+    def test_import_leads_from_gsheets_skip_duplicates_in_odoo_with_lost_leads(self):
         """
         Test that leads with existing som_id_meta are skipped even with lost leads
         """
@@ -1752,6 +1754,163 @@ class TestCrmLeadGsheetsImport(TransactionCase):
         self.assertTrue(result, "Import should return True")
         self.assertEqual(final_lead_count, initial_lead_count + 1,
                          "Only one new lead should be created (lost skipped)")
+
+    def test_import_leads_from_gsheets_skip_duplicates_in_gsheets(self):
+        """
+        Test that leads with duplicate IDs in Google Sheets are skipped.
+        """
+        mock_data = [
+            {
+                'id': 'META_DUPLICATE',  # Duplicate ID
+                'first_name': 'Lead One',
+                'email': 'leadone@example.com',
+                'phone_number': 'p:+34666111111',
+            },
+            {
+                'id': 'META_DUPLICATE',  # Duplicate ID
+                'first_name': 'Lead One',
+                'email': 'leadone@example.com',
+                'phone_number': 'p:+34666111111',
+            },
+        ]
+        mock_connector = Mock()
+        mock_connector.name = 'Mock Connector'
+        mock_connector.get_data_from_google_sheet.return_value = mock_data
+
+        initial_lead_count = self.Lead.search_count([])
+
+        result = self.Lead._import_leads_from_gsheets(
+            mock_connector, 'ca_ES',
+            send_email_confirmation=False,
+            limit=10,
+            autoassign_user=False
+        )
+
+        final_lead_count = self.Lead.search_count([])
+
+        self.assertTrue(result, "Import should return True")
+        self.assertEqual(final_lead_count, initial_lead_count + 1,
+                         "Only one new lead should be created (duplicate skipped)")
+
+    @freeze_time("2026-04-13 12:00:00")
+    def test_import_leads_from_gsheets_from_date(self):
+        """
+        Test that only leads with 'created_time' on or after the date specified are imported
+        """
+
+        mock_data = [
+            {
+                'id': 'META_DATE_OLD',
+                'first_name': 'Old Date Lead',
+                'email': 'old.date@example.com',
+                'phone_number': 'p:+34666000001',
+                # created_time 2 days before the filter date -> must be skipped
+                'created_time': '2026-04-01T12:47:31+02:00',
+            },
+            {
+                'id': 'META_DATE_OLD_2',
+                'first_name': 'Old Date Lead 2',
+                'email': 'old2.date@example.com',
+                'phone_number': 'p:+34666000005',
+                # created_time 1 day before the filter date -> must be skipped
+                'created_time': '2026-04-02T12:47:31+02:00',
+            },
+            {
+                'id': 'META_DATE_EQUAL',
+                'first_name': 'Equal Date Lead',
+                'email': 'equal.date@example.com',
+                'phone_number': 'p:+34666000002',
+                # created_time exactly on the filter date -> must be imported
+                'created_time': '2026-04-03T12:00:00+02:00',
+            },
+            {
+                'id': 'META_DATE_NEW',
+                'first_name': 'New Date Lead',
+                'email': 'new.date@example.com',
+                'phone_number': 'p:+34666000003',
+                # created_time after the filter date -> must be imported
+                'created_time': '2026-04-05T12:00:00+02:00',
+            },
+        ]
+
+        mock_connector = Mock()
+        mock_connector.name = 'Mock Connector'
+        mock_connector.get_data_from_google_sheet.return_value = mock_data
+
+        initial_lead_count = self.Lead.search_count([])
+
+        result = self.Lead._import_leads_from_gsheets(
+            mock_connector, 'ca_ES',
+            send_email_confirmation=False,
+            limit=10,
+            autoassign_user=False,
+            str_from_date='2026-04-03'
+        )
+
+        final_lead_count = self.Lead.search_count([])
+
+        self.assertTrue(result, "Import should return True")
+        self.assertEqual(
+            final_lead_count, initial_lead_count + 2,
+            "Only leads with created_time >= setting date should be created")
+
+        old_lead = self.Lead.search([('som_id_meta', '=', 'META_DATE_OLD')], limit=1)
+        old_lead2 = self.Lead.search([('som_id_meta', '=', 'META_DATE_OLD_2')], limit=1)
+        equal_lead = self.Lead.search([('som_id_meta', '=', 'META_DATE_EQUAL')], limit=1)
+        new_lead = self.Lead.search([('som_id_meta', '=', 'META_DATE_NEW')], limit=1)
+
+        self.assertFalse(
+            old_lead,
+            "Lead with created_time before filter date should not be created")
+        self.assertFalse(
+            old_lead2,
+            "Lead with created_time before filter date should not be created")
+        self.assertTrue(
+            equal_lead,
+            "Lead with created_time equal to filter date should be created")
+        self.assertTrue(
+            new_lead,
+            "Lead with created_time after filter date should be created")
+
+    @freeze_time("2026-04-13 12:00:00")
+    def test_import_leads_from_gsheets_from_date_no_date(self):
+        """
+        Test that all leads are imported if no str_from_date is provided,
+        even if they have old created_time values.
+        """
+        mock_data = [
+            {
+                'id': 'META_DATE_OLD',
+                'first_name': 'Old Date Lead',
+                'email': 'old.date@example.com',
+                'phone_number': 'p:+34666000001',
+                'created_time': '2026-04-01T12:47:31+02:00',
+            },
+            {
+                'id': 'META_DATE_OLD_2',
+                'first_name': 'Old Date Lead 2',
+                'email': 'old2.date@example.com',
+                'phone_number': 'p:+34666000005',
+                'created_time': '2026-04-02T12:47:31+02:00',
+            },
+        ]
+
+        mock_connector = Mock()
+        mock_connector.name = 'Mock Connector'
+        mock_connector.get_data_from_google_sheet.return_value = mock_data
+        initial_lead_count = self.Lead.search_count([])
+        result = self.Lead._import_leads_from_gsheets(
+            mock_connector, 'ca_ES',
+            send_email_confirmation=False,
+            limit=10,
+            autoassign_user=False,
+            str_from_date=None  # No date filter
+        )
+        final_lead_count = self.Lead.search_count([])
+        self.assertTrue(result, "Import should return True")
+        self.assertEqual(
+            final_lead_count, initial_lead_count + 2,
+            "All leads should be created when no date filter is applied")
 
     def test_import_leads_from_gsheets_limit(self):
         """
