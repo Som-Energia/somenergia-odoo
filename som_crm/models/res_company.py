@@ -26,8 +26,3 @@ class ResCompany(models.Model):
     som_ff_auto_upcomming_activity = fields.Boolean(
         string="Automatic Upcoming Activity creation on Lead creation",
     )
-
-    som_crm_date_from_import_gsheets = fields.Date(
-        string="Date from Google Sheets import",
-        help="Date from which leads will be imported from Google Sheets. If empty, all leads will be imported.",
-    )

@@ -769,7 +769,7 @@ class Lead(models.Model):
 
     def _import_leads_from_gsheets(
             self, connector_id, lang_code,
-            send_email_confirmation=False, limit=10, autoassign_user=True):
+            send_email_confirmation=False, limit=10, autoassign_user=True, str_from_date=None):
         data = connector_id.get_data_from_google_sheet()
         if not data:
             _logger.warning("No data retrieved from Google Sheet: %s", connector_id.name)
@@ -778,13 +778,13 @@ class Lead(models.Model):
             # we get a list without duplicates in original data
             data = list({d['id']: d for d in data}.values())
 
-            # filter by date if setting is set in company settings, comparing with 'created_time' field in data
-            setting_date_from = self.env.company.som_crm_gsheets_import_date_from
-            if setting_date_from:
+            # filter by date if param is set
+            if str_from_date:
+                date_from = datetime.strptime(str_from_date, "%Y-%m-%d").date()
                 # created_time format: 2026-04-02T15:21:03+02:00
                 data = [
                     d for d in data if 'created_time' in d and datetime.strptime(
-                        d['created_time'][:10], "%Y-%m-%d").date() >= setting_date_from]
+                        d['created_time'][:10], "%Y-%m-%d").date() >= date_from]
 
             count_data = len(data)
             _logger.info(
@@ -845,7 +845,8 @@ class Lead(models.Model):
 
     @api.model
     def _import_leads_from_gsheets_cron(
-            self, send_email_confirmation=False, limit=10, autoassign_user=True):
+            self,
+            send_email_confirmation=False, limit=10, autoassign_user=True, str_from_date=None):
         dict_gsheets_connectors = {
             'ca_ES': 'som_crm.som_gsheets_connector_notoriety_campaign_meta_ca',
             'es_ES': 'som_crm.som_gsheets_connector_notoriety_campaign_meta_es',
@@ -861,7 +862,8 @@ class Lead(models.Model):
                 connector_id, lang_code,
                 send_email_confirmation=send_email_confirmation,
                 limit=limit,
-                autoassign_user=autoassign_user)
+                autoassign_user=autoassign_user,
+                str_from_date=str_from_date)
 
     def _som_mail_prepare_for_domain_search(self, email, min_email_length=0):
         from odoo.tools import email_normalize
