@@ -1,0 +1,4 @@
+/* Fix: wysiwyg floating toolbar hidden behind modal dialog */
+.o_web_client.modal-open .oe-toolbar.oe-floating {
+    z-index: 1060 !important;
+}

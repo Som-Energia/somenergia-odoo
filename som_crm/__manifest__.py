@@ -29,6 +29,12 @@
     ],
     "external_dependencies": {"python": ["erppeek"]},
 
+    'assets': {
+        'web.assets_backend': [
+            '/som_crm/static/src/css/som_crm.css',
+        ],
+    },
+
     # always loaded
     'data': [
         'security/ir.model.access.csv',
