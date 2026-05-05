@@ -140,6 +140,7 @@ class Lead(models.Model):
         string='ERP Lead ID',
         required=False,
         help="ID of the lead in the ERP system",
+        copy=False,
     )
 
     som_last_call_date = fields.Datetime(
@@ -148,6 +149,7 @@ class Lead(models.Model):
         compute='_compute_last_call_date',
         help="Date of the last phone call made to this lead",
         store=True,
+        copy=False,
     )
 
     som_last_call_date_only = fields.Date(
@@ -156,18 +158,21 @@ class Lead(models.Model):
         compute='_compute_last_call_date',
         help="Date of the last phone call made to this lead",
         store=True,
+        copy=False,
     )
 
     som_current_cost = fields.Float(
         string='Current Cost',
         required=False,
         help="Current cost of the lead, used for comparison with our offer",
+        copy=False,
     )
 
     som_simulated_cost = fields.Float(
         string='Simulated Cost',
         required=False,
         help="Simulated cost of the lead with our offer, used for comparison with current cost",
+        copy=False,
     )
 
     som_comparison_cost = fields.Float(
@@ -216,7 +221,10 @@ class Lead(models.Model):
         store=True,
     )
 
-    som_url_origin = fields.Char('URL Origin', help="URL from which the lead originated")
+    som_url_origin = fields.Char(
+        'URL Origin',
+        help="URL from which the lead originated",
+    )
 
     # Activity counters
     som_mail_activity_count = fields.Integer(
@@ -241,23 +249,27 @@ class Lead(models.Model):
         string='Upcoming Activities Count',
         compute='_compute_activities_counters',
         store=True,
+        copy=False,
     )
 
     som_meeting_activity_count = fields.Integer(
         string='Meeting Activities Count',
         compute='_compute_activities_counters',
         store=True,
+        copy=False,
     )
 
     som_next_renovation_date = fields.Date(
         string='Next Renovation Date',
         help="Date of the next renovation",
+        copy=False,
     )
 
     som_id_meta = fields.Char(
         string='ID Meta',
         index=True,
         help="ID from the Meta system, used for integration with Meta platforms",
+        copy=False,
     )
 
     def auto_assign_user(self):
