@@ -47,6 +47,14 @@
             <xpath expr="//button[@name='action_button_convert2opportunity']" position="attributes">
                 <attribute name="invisible">0</attribute>
             </xpath>
+            <xpath expr="//button[@name='action_button_convert2opportunity']" position="after">
+                <button
+                    name="action_download_recording"
+                    type="object"
+                    icon="fa-download"
+                    title="Download recording"
+                />
+            </xpath>
         </field>
     </record>
 

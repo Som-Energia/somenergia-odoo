@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import requests
+from urllib.parse import urlparse, urlunparse
 from odoo import api, fields, models, _, _lt
+from odoo.tools import config
+from odoo.exceptions import UserError
 
 
 class CrmPhonecall(models.Model):
@@ -72,6 +76,58 @@ class CrmPhonecall(models.Model):
         # self.check_call_models()
         res = self.get_phonecall_categories()
         pass
+
+    def action_download_recording(self):
+        self.ensure_one()
+        if not self.som_pbx_call_id:
+            raise UserError(_("This call has no PBX call ID."))
+
+        base_url = config.get('irontec_base_url')
+        api_user = config.get('irontec_api_user')
+        api_pwd = config.get('irontec_api_pwd')
+
+        if not all([base_url, api_user, api_pwd]):
+            raise UserError(_("Irontec credentials are not configured properly."))
+
+        try:
+            # Login
+            login_resp = requests.post(
+                f"{base_url}/ApiRest/index.php/api/login",
+                json={"username": api_user, "password": api_pwd},
+                timeout=10,
+            )
+            login_resp.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise UserError(_("Irontec login failed: %s") % str(e))
+
+        token = login_resp.json().get("token")
+        if not token:
+            raise UserError(_("Could not obtain Irontec API token."))
+
+        try:
+            # Get recording info
+            info_resp = requests.get(
+                f"{base_url}/ApiRest/index.php/api/custom/getRecords/{self.som_pbx_call_id}",
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=10,
+            )
+            info_resp.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise UserError(_("Could not retrieve recording info: %s") % str(e))
+
+        info = info_resp.json()
+
+        # Replace whatever host the API returned with the configured public base_url
+        raw_url = info.get("url", "")
+        parsed = urlparse(raw_url)
+        public = urlparse(base_url)
+        download_url = urlunparse(parsed._replace(scheme=public.scheme, netloc=public.netloc))
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': download_url,
+            'target': 'new',
+        }
 
     @api.model
     def _get_calls_by_operator(self, operator, limit=None, date_from=None, date_to=None):
