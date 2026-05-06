@@ -1,6 +1,7 @@
 {
     'name': 'Som Google Sheets Integration',
     'version': '16.0.1.0.0',
+    'license': 'AGPL-3',
     'category': 'Tools',
     'summary': 'It allows to connect to a Google Drive file',
     'depends': ['base'],
