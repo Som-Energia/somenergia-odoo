@@ -947,3 +947,42 @@ class Lead(models.Model):
 
             lead.duplicate_lead_ids = duplicate_lead_ids + lead
             lead.duplicate_lead_count = len(duplicate_lead_ids)
+
+    @api.model
+    def _send_welcome_email_cron(self):
+        _logger.info("Starting welcome email cron")
+        origin_stage = self.env.ref('crm.stage_lead1', raise_if_not_found=False)
+        if not origin_stage:
+            _logger.warning("Origin stage crm.stage_lead1 not found, skipping")
+            return
+
+        leads = self.search([
+            ('stage_id', '=', origin_stage.id),
+            ('partner_id', '!=', False),
+            ('email_from', '!=', False),
+        ], limit=2)
+        _logger.info(f"Leads found for welcome email: {len(leads)}")
+        leads._send_welcome_email()
+        _logger.info("Welcome email cron finished")
+
+    def _send_welcome_email(self):
+        company = self.env.company
+        template = company.som_crm_lead_welcome_template_id
+        target_stage = company.som_crm_lead_welcome_stage_id
+        origin_stage = self.env.ref('crm.stage_lead1', raise_if_not_found=False)
+
+        if not template or not target_stage or not origin_stage:
+            _logger.warning(
+                "Some configuration missing for welcome email. Skipping welcome email sending.",
+            )
+            return
+
+        for lead in self.filtered(
+            lambda x: x.stage_id == origin_stage and x.partner_id and x.email_from
+        ):
+            try:
+                template.send_mail(lead.id, force_send=True)
+                lead.stage_id = target_stage
+                _logger.info(f"Welcome email sent and stage updated for lead ID {lead.id}")
+            except Exception as e:
+                _logger.error(f"Error sending welcome email for lead ID {lead.id}: {e}")

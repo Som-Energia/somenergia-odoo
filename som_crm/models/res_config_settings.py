@@ -35,3 +35,13 @@ class ResConfigSettings(models.TransientModel):
         config_parameter='som_crm_daily_won_leads_target',
         default=0
     )
+
+    som_crm_lead_welcome_template_id = fields.Many2one(
+        related='company_id.som_crm_lead_welcome_template_id',
+        readonly=False,
+    )
+
+    som_crm_lead_welcome_stage_id = fields.Many2one(
+        related='company_id.som_crm_lead_welcome_stage_id',
+        readonly=False,
+    )
