@@ -24,7 +24,14 @@ class CrmTeam(models.Model):
         if exclude_team_leader:
             user_member_ids = user_member_ids.filtered(lambda x: x != self.user_id)
         if exclude_absent_members:
-            user_member_ids = user_member_ids.filtered(lambda x: x.employee_id.is_present)
+            absent_today_employee_ids = set(self.env['hr.leave'].sudo().search([
+                ('employee_id', 'in', user_member_ids.mapped('employee_id').ids),
+                ('request_date_from', '<=', today),
+                ('request_date_to', '>=', today),
+            ]).mapped('employee_id').ids)
+            user_member_ids = user_member_ids.filtered(
+                lambda x: x.employee_id and x.employee_id.id not in absent_today_employee_ids
+            )
         user_member_ids = user_member_ids.filtered(_can_be_assigned_opportunities)
         user_member_with_capacity_ids = user_member_ids.filtered(
             lambda x: x._get_available_leads_capacity() > 0
