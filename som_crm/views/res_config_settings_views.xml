@@ -71,9 +71,16 @@
                 <div class="col-12 col-lg-6 o_setting_box">
                     <div class="o_setting_right_pane">
                         <label for="som_crm_lead_welcome_template_id"/>
-                        <div class="text-muted">Plantilla de benvinguda per a leads nous</div>
+                        <div class="text-muted">Plantilla de benvinguda per a leads nous (CA)</div>
                         <div class="content-group mt16">
                             <field name="som_crm_lead_welcome_template_id" class="o_light_label"/>
+                        </div>
+                        <div class="mt8">
+                        <label for="som_crm_lead_welcome_template_es_id"/>
+                        <div class="text-muted">Plantilla de benvinguda per a leads nous (ES)</div>
+                        </div>
+                        <div class="content-group mt8">
+                            <field name="som_crm_lead_welcome_template_es_id" class="o_light_label"/>
                         </div>
                         <div class="mt8">
                         <label for="som_crm_lead_welcome_stage_id"/>

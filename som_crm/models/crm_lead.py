@@ -949,7 +949,7 @@ class Lead(models.Model):
             lead.duplicate_lead_count = len(duplicate_lead_ids)
 
     @api.model
-    def _send_welcome_email_cron(self):
+    def _send_welcome_email_cron(self, limit=50):
         _logger.info("Starting welcome email cron")
         origin_stage = self.env.ref('crm.stage_lead1', raise_if_not_found=False)
         if not origin_stage:
@@ -960,18 +960,20 @@ class Lead(models.Model):
             ('stage_id', '=', origin_stage.id),
             ('partner_id', '!=', False),
             ('email_from', '!=', False),
-        ], limit=2)
+        ], limit=limit)
         _logger.info(f"Leads found for welcome email: {len(leads)}")
         leads._send_welcome_email()
         _logger.info("Welcome email cron finished")
 
     def _send_welcome_email(self):
         company = self.env.company
-        template = company.som_crm_lead_welcome_template_id
+        template_ca = company.som_crm_lead_welcome_template_id
+        template_es = company.som_crm_lead_welcome_template_es_id
         target_stage = company.som_crm_lead_welcome_stage_id
         origin_stage = self.env.ref('crm.stage_lead1', raise_if_not_found=False)
+        lang_es = self.env.ref('base.lang_es', raise_if_not_found=False)
 
-        if not template or not target_stage or not origin_stage:
+        if not template_ca or not target_stage or not origin_stage:
             _logger.warning(
                 "Some configuration missing for welcome email. Skipping welcome email sending.",
             )
@@ -981,6 +983,9 @@ class Lead(models.Model):
             lambda x: x.stage_id == origin_stage and x.partner_id and x.email_from
         ):
             try:
+                lang = lead.partner_id.lang or ''
+                is_spanish = lang_es and lang == lang_es.code
+                template = template_es if (is_spanish and template_es) else template_ca
                 template.send_mail(lead.id, force_send=True)
                 lead.stage_id = target_stage
                 _logger.info(f"Welcome email sent and stage updated for lead ID {lead.id}")

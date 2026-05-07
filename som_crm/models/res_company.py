@@ -28,7 +28,13 @@ class ResCompany(models.Model):
     )
 
     som_crm_lead_welcome_template_id = fields.Many2one(
-        string="Lead Welcome Email Template",
+        string="Lead Welcome Email Template (CA)",
+        comodel_name="mail.template",
+        domain="[('model', '=', 'crm.lead')]",
+    )
+
+    som_crm_lead_welcome_template_es_id = fields.Many2one(
+        string="Lead Welcome Email Template (ES)",
         comodel_name="mail.template",
         domain="[('model', '=', 'crm.lead')]",
     )

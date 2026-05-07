@@ -41,6 +41,11 @@ class ResConfigSettings(models.TransientModel):
         readonly=False,
     )
 
+    som_crm_lead_welcome_template_es_id = fields.Many2one(
+        related='company_id.som_crm_lead_welcome_template_es_id',
+        readonly=False,
+    )
+
     som_crm_lead_welcome_stage_id = fields.Many2one(
         related='company_id.som_crm_lead_welcome_stage_id',
         readonly=False,
