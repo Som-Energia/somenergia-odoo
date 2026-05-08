@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="som_action_email_template_crm" model="ir.actions.act_window">
+        <field name="name">Plantilles de correu CRM</field>
+        <field name="res_model">mail.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('model', '=', 'crm.lead')]</field>
+        <field name="context">{'default_model': 'crm.lead'}</field>
+    </record>
+
+    <menuitem id="som_menu_email_templates"
+        action="som_crm.som_action_email_template_crm"
+        parent="crm.crm_menu_config"
+        sequence="50"
+        groups="mail.group_mail_template_editor"/>
+</odoo>

@@ -221,4 +221,33 @@
         </field>
     </record>
 
+    <record model="ir.cron" id="som_crm_lead_welcome_email">
+        <field name="name">Som - Send welcome email to new leads</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field
+            name="nextcall"
+            eval="(DateTime.now() + timedelta(minutes=60)).strftime('%Y-%m-%d %H:05:00')"
+        />
+        <field name="doall" eval="True" />
+        <field name="active" eval="False" />
+        <field name="model_id" ref="som_crm.model_crm_lead" />
+        <field name="state">code</field>
+        <field name="code">
+            model._send_welcome_email_cron()
+        </field>
+    </record>
+    <record id="som_crm_action_send_welcome_email" model="ir.actions.server">
+        <field name="name">Som - Send welcome email</field>
+        <field name="type">ir.actions.server</field>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="binding_model_id" ref="crm.model_crm_lead"/>
+        <field name="sequence">99</field>
+        <field name="state">code</field>
+        <field name="code">
+            records._send_welcome_email()
+        </field>
+    </record>
+
 </data>

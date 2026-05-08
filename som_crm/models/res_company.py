@@ -26,3 +26,20 @@ class ResCompany(models.Model):
     som_ff_auto_upcomming_activity = fields.Boolean(
         string="Automatic Upcoming Activity creation on Lead creation",
     )
+
+    som_crm_lead_welcome_template_id = fields.Many2one(
+        string="Lead Welcome Email Template (CA)",
+        comodel_name="mail.template",
+        domain="[('model', '=', 'crm.lead')]",
+    )
+
+    som_crm_lead_welcome_template_es_id = fields.Many2one(
+        string="Lead Welcome Email Template (ES)",
+        comodel_name="mail.template",
+        domain="[('model', '=', 'crm.lead')]",
+    )
+
+    som_crm_lead_welcome_stage_id = fields.Many2one(
+        string="Lead Welcome Target Stage",
+        comodel_name="crm.stage",
+    )

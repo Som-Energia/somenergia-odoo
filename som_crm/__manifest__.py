@@ -50,6 +50,7 @@
         'views/mail_activity_views.xml',
         'views/phone_call_result_views.xml',
         'views/crm_phonecall_views.xml',
+        'views/mail_template_views.xml',
         'views/utm_menus.xml',
         'views/crm_stage_views.xml',
         'views/mail_message.xml',
