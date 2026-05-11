@@ -37,7 +37,6 @@ pyenv activate odoo160
 ODOO_ROOT="/path/to/odoo160"
 python "$ODOO_ROOT/src/core/odoo-bin" \
   -c "$ODOO_ROOT/conf/odoo_som.conf" \
-  --no-xmlrpc \
   --stop-after-init \
   --log-level=test \
   -d <database> \
@@ -52,7 +51,6 @@ pyenv activate odoo160
 ODOO_ROOT="/path/to/odoo160"
 python "$ODOO_ROOT/src/core/odoo-bin" \
   -c "$ODOO_ROOT/conf/odoo_som.conf" \
-  --no-xmlrpc \
   --stop-after-init \
   --log-level=test \
   -d <database> \

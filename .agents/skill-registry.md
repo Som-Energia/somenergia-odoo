@@ -2,14 +2,13 @@
 
 **Delegator use only.** Any agent that launches sub-agents reads this registry to resolve compact rules, then injects them directly into sub-agent prompts. Sub-agents do NOT read this registry or individual SKILL.md files.
 
-See `_shared/skill-resolver.md` for the full resolution protocol.
-
 ## User Skills
 
 > **Configuració inicial** (executar una vegada):
 > ```bash
 > cd $HOME/.config/opencode/skills
-> ln -s $HOME/somenergia/src/somenergia-odoo/.agents/skills somenergia-odoo
+> REPO_PATH="/path/to/somenergia-odoo"  # ajusta aquesta ruta al teu entorn
+> ln -s "$REPO_PATH/.agents/skills" somenergia-odoo
 > ```
 > OpenCode cercarà `.agents/skills/` dins del projecte.
 
@@ -30,10 +29,10 @@ See `_shared/skill-resolver.md` for the full resolution protocol.
 - Sempre fer `git fetch origin && git pull origin main` abans de crear branca
 
 ### git-commit
-- Format: `<emoji> <type>: <description>` (ex: `✨ feat: add user auth`)
-- Tipus: feat, fix, refactor, perf, test, docs, style, chore, build, ci, revert
+- Format: `<emoji> <description>` (ex: `✨ add user auth`)
 - Emoji obligatori seguit d'un espai
 - Descripció en anglès, max 72 caràcters, imperatiu
+- No utilitzar prefixos `feat:`, `fix:`, etc. (el tipus ja ve per l'emoji)
 - Context: utilitzar per guardar canvis implementats
 
 ### git-pr
@@ -44,7 +43,7 @@ See `_shared/skill-resolver.md` for the full resolution protocol.
 
 ### odoo-test
 - Activar entorn: `pyenv activate odoo160`
-- Comanda base: `ODOO_ROOT=/path/to/odoo160 && python "$ODOO_ROOT/src/core/odoo-bin" -c "$ODOO_ROOT/conf/odoo_som.conf" --no-xmlrpc --stop-after-init --log-level=test -d <database> -u <module> --test-enable`
+- Comanda base: `ODOO_ROOT=/path/to/odoo160 && python "$ODOO_ROOT/src/core/odoo-bin" -c "$ODOO_ROOT/conf/odoo_som.conf" --stop-after-init --log-level=test -d <database> -u <module> --test-enable`
 - Filtrat: `--test-tags "<spec1>,<spec2>"`
 - Sintaxi de filtre: `[-][tag][/module][:class][.method]`
 

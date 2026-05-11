@@ -12,7 +12,7 @@ metadata:
 
 Utilitza aquesta skill quan:
 - Has fet canvis de codi que vols guardar
-- Necessites fer un commit seguint Conventional Commits
+- Necessites fer un commit seguint les convencions de gitmoji.dev
 - Vols afegir emoji al commit per fer-lo més llegible
 
 ## Format de Commit (segons gitmoji.dev)
