@@ -18,6 +18,7 @@ See `_shared/skill-resolver.md` for the full resolution protocol.
 | Quan necessites crear una branca nova per treballar | git-branch | .agents/skills/git-branch/SKILL.md |
 | Quan necessites fer un commit de codi | git-commit | .agents/skills/git-commit/SKILL.md |
 | Quan necessites crear una Pull Request | git-pr | .agents/skills/git-pr/SKILL.md |
+| Quan necessites executar tests d'Odoo d'un mòdul o per tags | odoo-test | .agents/skills/odoo-test/SKILL.md |
 
 ## Compact Rules
 
@@ -40,6 +41,12 @@ See `_shared/skill-resolver.md` for the full resolution protocol.
 - Totes les sections: Omple-les totes, no deixis espais buits
 - Idioma: Català per a la descripció
 - Títols: Clar i descriptiu
+
+### odoo-test
+- Activar entorn: `pyenv activate odoo160`
+- Comanda base: `ODOO_ROOT=/path/to/odoo160 && python "$ODOO_ROOT/src/core/odoo-bin" -c "$ODOO_ROOT/conf/odoo_som.conf" --no-xmlrpc --stop-after-init --log-level=test -d <database> -u <module> --test-enable`
+- Filtrat: `--test-tags "<spec1>,<spec2>"`
+- Sintaxi de filtre: `[-][tag][/module][:class][.method]`
 
 ## Project Conventions
 
