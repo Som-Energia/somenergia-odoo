@@ -495,7 +495,11 @@ class Lead(models.Model):
             partner = self.env['res.partner'].search([('email', '=', self.email_from)], limit=1)
 
         if not partner and self.phone:
-            partner = self.env['res.partner'].search([('phone', '=', self.phone)], limit=1)
+            candidate = self.env['res.partner'].search([('phone', '=', self.phone)], limit=1)
+            if candidate and candidate.email and self.email_from \
+                    and candidate.email != self.email_from:
+                candidate = self.env['res.partner']
+            partner = candidate
 
         return partner
 
