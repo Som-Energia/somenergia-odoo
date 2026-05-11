@@ -9,3 +9,4 @@ from . import test_crm_lead_sync
 from . import test_crm_team
 from . import test_crm_lead_welcome_email
 from . import test_som_crm_mail_domain_blacklist
+from . import test_find_matching_partner
