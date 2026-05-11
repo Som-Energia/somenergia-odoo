@@ -497,7 +497,7 @@ class Lead(models.Model):
         if not partner and self.phone:
             candidate = self.env['res.partner'].search([('phone', '=', self.phone)], limit=1)
             if candidate and candidate.email and self.email_from \
-                    and candidate.email != self.email_from:
+                    and candidate.email.lower() != self.email_from.lower():
                 candidate = self.env['res.partner']
             partner = candidate
 
