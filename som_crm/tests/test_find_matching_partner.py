@@ -63,3 +63,9 @@ class TestFindMatchingPartner(TransactionCase):
         lead = self._create_lead()
         partner = lead._find_matching_partner_custom()
         self.assertFalse(partner)
+
+    def test_match_by_phone_partner_no_email_lead_has_email(self):
+        """Phone match: partner has no email but lead does — match proceeds."""
+        lead = self._create_lead(phone='611111111', email_from='newperson@example.com')
+        partner = lead._find_matching_partner_custom()
+        self.assertEqual(partner, self.partner_without_email)
