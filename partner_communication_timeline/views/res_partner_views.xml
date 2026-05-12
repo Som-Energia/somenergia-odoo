@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_communication_timeline" model="ir.ui.view">
+        <field name="name">res.partner.form.communication.timeline</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_pct_open_partner_communications"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-comments">
+                    <field name="pct_communication_message_count"
+                           widget="statinfo"
+                           string="Comunicacions"/>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Comunicacions" name="pct_communication_timeline">
+                    <group>
+                        <button name="action_pct_open_partner_communications"
+                                type="object"
+                                string="Veure totes les comunicacions"
+                                class="btn-primary"/>
+                        <div class="text-muted">
+                            Es mostren les ultimes comunicacions vinculades a esta entitat comercial,
+                            incloent CRM, tiquets, missatges directes al contacte, autors,
+                            destinataris i remitents de correu que coincidixen.
+                        </div>
+                    </group>
+                    <field name="pct_communication_preview_message_ids"
+                           nolabel="1"
+                           readonly="1"
+                           mode="tree,form"
+                           context="{'tree_view_ref': 'partner_communication_timeline.view_mail_message_partner_timeline_tree', 'form_view_ref': 'partner_communication_timeline.view_mail_message_partner_timeline_form'}">
+                        <tree string="Ultimes comunicacions" create="0" edit="0" delete="0" default_order="date desc">
+                            <field name="date"/>
+                            <field name="message_type"/>
+                            <field name="author_id"/>
+                            <field name="email_from"/>
+                            <field name="subject"/>
+                            <field name="pct_origin_model_label" string="Model origen"/>
+                            <field name="pct_origin_display_name" string="Origen"/>
+                            <field name="pct_body_preview" string="Vista previa"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

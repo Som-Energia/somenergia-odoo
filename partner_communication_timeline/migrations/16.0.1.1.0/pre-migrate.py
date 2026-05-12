@@ -1,0 +1,45 @@
+# Copyright 2026 Som Energia
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0.html).
+
+"""
+Add performance indexes on mail_message for the communication timeline.
+
+Indexes added:
+- mail_message_date_idx: speeds up ORDER BY date DESC (global timeline)
+- mail_message_message_type_idx: speeds up WHERE message_type IN (...)
+- mail_message_date_message_type_idx: composite for the most common query pattern
+- mail_message_email_from_idx: speeds up ILIKE searches on email_from (partner matching)
+"""
+
+INDEXES = [
+    (
+        "mail_message_date_idx",
+        "CREATE INDEX mail_message_date_idx ON mail_message (date DESC)",
+    ),
+    (
+        "mail_message_message_type_idx",
+        "CREATE INDEX mail_message_message_type_idx ON mail_message (message_type)",
+    ),
+    (
+        "mail_message_date_message_type_idx",
+        "CREATE INDEX mail_message_date_message_type_idx ON mail_message (message_type, date DESC)",
+    ),
+    (
+        "mail_message_email_from_idx",
+        "CREATE INDEX mail_message_email_from_idx ON mail_message (lower(email_from))",
+    ),
+]
+
+
+def migrate(cr, version):
+    cr.execute("""
+        SELECT indexname
+        FROM pg_indexes
+        WHERE tablename = 'mail_message'
+          AND indexname IN %s
+    """, [tuple(name for name, _ in INDEXES)])
+    existing = {row[0] for row in cr.fetchall()}
+
+    for name, ddl in INDEXES:
+        if name not in existing:
+            cr.execute(ddl)
