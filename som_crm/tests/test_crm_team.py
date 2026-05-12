@@ -100,6 +100,8 @@ class TestCrmTeam(TransactionCase):
             'holiday_status_id': cls.hr_leave_type_1.id,
             'date_from': leave_start_datetime,
             'date_to': leave_end_datetime,
+            'request_date_from': date(2025, 4, 1),
+            'request_date_to': date(2025, 4, 3),
             'number_of_days': 3,
         })
 
@@ -224,6 +226,52 @@ class TestCrmTeam(TransactionCase):
                          "Member 1 (absent) should NOT be in the candidate list.")
         self.assertIn(self.user_member_2, called_list,
                       "Member 2 should be in the candidate list.")
+
+    @freeze_time('2025-04-04 12:00:00')
+    @patch('odoo.addons.som_crm.models.crm_team.choice')
+    def test_team_exclude_member_absent_same_day_with_time_gap(self, mock_choice):
+        """A member with two leaves in same day must be excluded all day."""
+        morning_start = datetime(2025, 4, 4, 8, 0, 0)
+        morning_end = datetime(2025, 4, 4, 10, 0, 0)
+        evening_start = datetime(2025, 4, 4, 14, 0, 0)
+        evening_end = datetime(2025, 4, 4, 16, 0, 0)
+
+        self.env['hr.leave'].with_context(
+            mail_create_nolog=True, mail_notrack=True
+        ).with_user(self.user_member_2).create({
+            'name': 'Leave 2 morning',
+            'employee_id': self.user_member_2.employee_id.id,
+            'holiday_status_id': self.hr_leave_type_1.id,
+            'date_from': morning_start,
+            'date_to': morning_end,
+            'request_date_from': date(2025, 4, 4),
+            'request_date_to': date(2025, 4, 4),
+            'number_of_days': 1,
+        })
+        self.env['hr.leave'].with_context(
+            mail_create_nolog=True, mail_notrack=True
+        ).with_user(self.user_member_2).create({
+            'name': 'Leave 2 evening',
+            'employee_id': self.user_member_2.employee_id.id,
+            'holiday_status_id': self.hr_leave_type_1.id,
+            'date_from': evening_start,
+            'date_to': evening_end,
+            'request_date_from': date(2025, 4, 4),
+            'request_date_to': date(2025, 4, 4),
+            'number_of_days': 1,
+        })
+
+        mock_choice.return_value = self.user_leader
+        member = self.team_full.get_random_member(exclude_absent_members=True)
+
+        self.assertEqual(member, self.user_leader)
+        mock_choice.assert_called_once()
+        called_list = mock_choice.call_args[0][0]
+
+        self.assertNotIn(self.user_member_2, called_list,
+                         "Member 2 should be excluded for whole day.")
+        self.assertIn(self.user_leader, called_list)
+        self.assertIn(self.user_member_1, called_list)
 
     def test_team_members_capacity(self):
         """
