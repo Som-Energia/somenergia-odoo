@@ -46,16 +46,6 @@ Create a rule with:
 
 The partner field must be a `Many2one` to `res.partner`.
 
-## System parameters
-
-Advanced configuration can be done from Settings > Technical > Parameters > System Parameters.
-
-| Key | Default | Meaning |
-| --- | --- | --- |
-| `partner_communication_timeline.match_email_from` | `1` | Also match email messages by `email_from` and contact email. Set to `0` to disable. |
-| `partner_communication_timeline.message_types` | `email,comment` | Comma-separated `mail.message.message_type` values to show. |
-| `partner_communication_timeline.preview_limit` | `50` | Number of messages shown in the contact tab. Max 200. |
-
 ## Installation
 
 Copy the addon directory into your custom addons path, then update the apps list and install `Partner Communication Timeline`.
