@@ -15,7 +15,6 @@
                 <field name="pct_origin_model_label" string="Model origen"/>
                 <field name="pct_origin_display_name" string="Origen"/>
                 <field name="subtype_id"/>
-                <field name="partner_ids" string="Destinataris" widget="many2many_tags"/>
                 <field name="pct_body_preview" string="Vista previa"/>
             </tree>
         </field>
@@ -62,23 +61,6 @@
         </field>
     </record>
 
-    <record id="action_pct_global_communications" model="ir.actions.act_window">
-        <field name="name">Comunicacions</field>
-        <field name="res_model">mail.message</field>
-        <field name="view_mode">tree,form</field>
-        <field name="views" eval="[(ref('view_mail_message_partner_timeline_tree'), 'tree'), (ref('view_mail_message_partner_timeline_form'), 'form')]"/>
-        <field name="search_view_id" ref="view_mail_message_partner_timeline_search"/>
-        <field name="domain">[('message_type', 'in', ['email', 'comment'])]</field>
-        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
-    </record>
-
-    <menuitem
-        id="menu_pct_global_communications"
-        name="Comunicacions"
-        parent="crm.crm_menu_sales"
-        action="action_pct_global_communications"
-        sequence="20"/>
-
     <record id="view_mail_message_partner_timeline_search" model="ir.ui.view">
         <field name="name">mail.message.partner.timeline.search</field>
         <field name="model">mail.message</field>
@@ -105,4 +87,22 @@
             </search>
         </field>
     </record>
+
+    <record id="action_pct_global_communications" model="ir.actions.act_window">
+        <field name="name">Comunicacions</field>
+        <field name="res_model">mail.message</field>
+        <field name="view_mode">tree,form</field>
+        <field name="views" eval="[(ref('view_mail_message_partner_timeline_tree'), 'tree'), (ref('view_mail_message_partner_timeline_form'), 'form')]"/>
+        <field name="search_view_id" ref="view_mail_message_partner_timeline_search"/>
+        <field name="domain">[('message_type', 'in', ['email', 'comment'])]</field>
+        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+
+    <menuitem
+        id="menu_pct_global_communications"
+        name="Comunicacions"
+        parent="crm.crm_menu_sales"
+        action="action_pct_global_communications"
+        sequence="20"/>
+
 </odoo>
