@@ -83,10 +83,10 @@ class MailMessage(models.Model):
         for model_name, messages in by_model.items():
             if model_name == "res.partner":
                 for message in messages:
-                    message.pct_partner_id = partner_model.browse(message.res_id)
+                    message.pct_partner_id = partner_model.browse(message.res_id).exists()
             elif model_name in self._PCT_PARTNER_MODELS:
                 res_ids = [m.res_id for m in messages]
-                records = self.env[model_name].sudo().browse(res_ids)
+                records = self.env[model_name].sudo().browse(res_ids).exists()
                 by_id = {r.id: r.partner_id for r in records}
                 for message in messages:
                     message.pct_partner_id = by_id.get(message.res_id, False)
