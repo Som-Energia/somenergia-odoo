@@ -32,6 +32,9 @@ INDEXES = [
 
 
 def migrate(cr, version):
+    # Ensure pg_trgm extension is available (required for gin_trgm_ops indexes).
+    cr.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
+
     cr.execute("""
         SELECT indexname
         FROM pg_indexes
