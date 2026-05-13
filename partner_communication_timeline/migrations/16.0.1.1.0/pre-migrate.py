@@ -7,7 +7,8 @@ Indexes added:
 - mail_message_date_idx: speeds up ORDER BY date DESC (global timeline)
 - mail_message_message_type_idx: speeds up WHERE message_type IN (...)
 - mail_message_date_message_type_idx: composite for the most common query pattern
-- mail_message_email_from_idx: speeds up ILIKE searches on email_from (partner matching)
+- mail_message_email_from_gin_idx: GIN trigram index for ILIKE '%...%' searches on email_from
+  (B-tree on lower(email_from) would only help prefix matches, not substring patterns)
 """
 
 INDEXES = [
@@ -24,8 +25,8 @@ INDEXES = [
         "CREATE INDEX mail_message_date_message_type_idx ON mail_message (message_type, date DESC)",
     ),
     (
-        "mail_message_email_from_idx",
-        "CREATE INDEX mail_message_email_from_idx ON mail_message (lower(email_from))",
+        "mail_message_email_from_gin_idx",
+        "CREATE INDEX mail_message_email_from_gin_idx ON mail_message USING gin (email_from gin_trgm_ops)",
     ),
 ]
 
