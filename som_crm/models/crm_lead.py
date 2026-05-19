@@ -462,6 +462,104 @@ class Lead(models.Model):
 
         _logger.info(f"Leads moved to 'Won' stage: {found_ids}")
 
+    @api.model
+    def _erp_sync_check_inconsistencies(self, date_from=None):
+        """
+        Detect leads that are linked in the ERP (crm_lead_id != 0) but whose
+        corresponding Odoo lead has not been properly processed (missing
+        som_erp_lead_id or not in a won stage).
+
+        Args:
+            date_from (str, optional): Filter ERP leads created on or after
+                this date. Format: 'YYYY-MM-DD'. If None, all linked ERP
+                leads are checked.
+
+        Returns:
+            list[dict]: Each dict describes one inconsistency with keys:
+                - odoo_lead_id
+                - erp_lead_id
+                - odoo_lead_name
+                - issue: 'lead_not_found' | 'erp_id_missing' |
+                         'stage_not_won' | 'erp_id_missing_and_stage_not_won'
+        """
+        _logger.info("Starting ERP sync inconsistency check")
+
+        try:
+            erppeek_params = dict(
+                server=f"{config.get('erp_uri')}:{config.get('erp_port')}",
+                db=config.get('erp_dbname'),
+                user=config.get('erp_user'),
+                password=config.get('erp_pwd'),
+            )
+            c = Client(**erppeek_params)
+        except Exception as e:
+            _logger.error("Error connecting to ERP: %s", e)
+            return []
+
+        erp_lead_obj = c.model("giscedata.crm.lead")
+
+        erp_domain = [('crm_lead_id', '!=', 0)]
+        if date_from:
+            erp_domain.append(('create_date', '>=', date_from))
+
+        _logger.info("Fetching ERP leads with domain: %s", erp_domain)
+        try:
+            erp_lead_ids = erp_lead_obj.search(erp_domain)
+            if not erp_lead_ids:
+                _logger.info("No linked ERP leads found")
+                return []
+            erp_records = erp_lead_obj.read(erp_lead_ids, ['id', 'crm_lead_id'])
+        except Exception as e:
+            _logger.error("Error fetching ERP leads: %s", e)
+            return []
+
+        _logger.info("ERP leads to check: %d", len(erp_records))
+
+        # Map odoo_lead_id -> erp_lead_id for quick lookup
+        odoo_to_erp = {r['crm_lead_id']: r['id'] for r in erp_records}
+        odoo_ids = list(odoo_to_erp.keys())
+
+        # Single browse to fetch all Odoo leads at once
+        odoo_leads = self.env['crm.lead'].with_context(active_test=False).browse(odoo_ids)
+        odoo_leads_map = {lead.id: lead for lead in odoo_leads}
+
+        inconsistencies = []
+        for odoo_id, erp_id in odoo_to_erp.items():
+            lead = odoo_leads_map.get(odoo_id)
+
+            if not lead or not lead.exists():
+                issue = 'lead_not_found'
+                name = '(not found)'
+            else:
+                erp_id_missing = not lead.som_erp_lead_id
+                stage_not_won = not lead.stage_id.is_won
+                if erp_id_missing and stage_not_won:
+                    issue = 'erp_id_missing_and_stage_not_won'
+                elif erp_id_missing:
+                    issue = 'erp_id_missing'
+                elif stage_not_won:
+                    issue = 'stage_not_won'
+                else:
+                    continue  # No inconsistency
+                name = lead.name
+
+            inconsistencies.append({
+                'odoo_lead_id': odoo_id,
+                'erp_lead_id': erp_id,
+                'odoo_lead_name': name,
+                'issue': issue,
+            })
+            _logger.warning(
+                "Inconsistency found — odoo_lead_id: %s, erp_lead_id: %s, name: %s, issue: %s",
+                odoo_id, erp_id, name, issue,
+            )
+
+        _logger.info(
+            "Inconsistency check done — %d inconsistencies found out of %d ERP leads checked",
+            len(inconsistencies), len(erp_records),
+        )
+        return inconsistencies
+
     def button_open_phonecall(self):
         self.ensure_one()
         action = self.env["ir.actions.actions"]._for_xml_id(
