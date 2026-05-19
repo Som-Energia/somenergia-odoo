@@ -436,14 +436,22 @@ class Lead(models.Model):
             try:
                 erp_lead_id = lead_id.get_contract_in_erp(erp_lead_obj)
                 if erp_lead_id:
-                    with self.env.cr.savepoint():
-                        lead_id.write({
-                            'som_erp_lead_id': erp_lead_id,
-                            'stage_id': won_stage_id.id,
-                            'active': True
-                        })
+                    # Write to Odoo first so the lead is marked as won even if
+                    # the ERP write fails. This prevents to have the id in ERP but not in Odoo,
+                    # which would make it impossible to sync in the future.
+                    lead_id.write({
+                        'som_erp_lead_id': erp_lead_id,
+                        'stage_id': won_stage_id.id,
+                        'active': True
+                    })
+                    found_ids.append(lead_id.id)
+                    try:
                         erp_lead_obj.write(erp_lead_id, {'crm_lead_id': lead_id.id})
-                        found_ids.append(lead_id.id)
+                    except Exception as e:
+                        _logger.warning(
+                            "Lead %s updated in Odoo but failed to write crm_lead_id in ERP: %s",
+                            lead_id.id, e
+                        )
 
             except Exception as e:
                 _logger.error("Error syncing lead %s to ERP: %s", lead_id.id, e)
