@@ -560,6 +560,64 @@ class Lead(models.Model):
         )
         return inconsistencies
 
+    @api.model
+    def _erp_sync_fix_inconsistencies(self, inconsistencies=None):
+        """
+        Fix leads that are linked in the ERP but not properly processed in Odoo.
+        Handles all inconsistency types except 'lead_not_found'.
+
+        Args:
+            inconsistencies (list[dict], optional): Output from
+                _erp_sync_check_inconsistencies(). If None, the check is run
+                automatically with no date filter.
+
+        Returns:
+            list[int]: Odoo lead IDs that were successfully fixed.
+        """
+        if inconsistencies is None:
+            _logger.info("No inconsistencies provided, running check first")
+            inconsistencies = self._erp_sync_check_inconsistencies()
+
+        fixable = [i for i in inconsistencies if i['issue'] != 'lead_not_found']
+        if not fixable:
+            _logger.info("No fixable inconsistencies found")
+            return []
+
+        won_stage_id = self.get_won_stage()
+        if not won_stage_id:
+            _logger.warning("No 'won' stage found, cannot fix inconsistencies")
+            return []
+
+        _logger.info("Fixing %d inconsistencies", len(fixable))
+
+        fixed_ids = []
+        for item in fixable:
+            odoo_id = item['odoo_lead_id']
+            erp_id = item['erp_lead_id']
+            issue = item['issue']
+
+            try:
+                lead = self.env['crm.lead'].with_context(active_test=False).browse(odoo_id)
+                if not lead.exists():
+                    _logger.warning("Lead %s no longer exists, skipping", odoo_id)
+                    continue
+
+                vals = {'stage_id': won_stage_id.id, 'active': True}
+                if issue in ('erp_id_missing', 'erp_id_missing_and_stage_not_won'):
+                    vals['som_erp_lead_id'] = erp_id
+
+                lead.write(vals)
+                fixed_ids.append(odoo_id)
+                _logger.info(
+                    "Fixed lead %s (erp_lead_id: %s, issue: %s)",
+                    odoo_id, erp_id, issue,
+                )
+            except Exception as e:
+                _logger.error("Error fixing lead %s: %s", odoo_id, e)
+
+        _logger.info("Fixed %d leads out of %d fixable inconsistencies", len(fixed_ids), len(fixable))
+        return fixed_ids
+
     def button_open_phonecall(self):
         self.ensure_one()
         action = self.env["ir.actions.actions"]._for_xml_id(
