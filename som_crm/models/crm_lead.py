@@ -515,22 +515,25 @@ class Lead(models.Model):
 
         _logger.info("ERP leads to check: %d", len(erp_records))
 
-        # Map odoo_lead_id -> erp_lead_id for quick lookup
-        # erppeek returns many2one fields as (id, name) tuples — normalize to int
-        odoo_to_erp = {}
+        # Build (odoo_lead_id, erp_lead_id) pairs preserving duplicates — a dict
+        # would silently drop ERP leads sharing the same crm_lead_id.
+        # erppeek returns many2one fields as (id, name) tuples — normalize to int.
+        odoo_erp_pairs = []
         for r in erp_records:
             crm_lead_id = r['crm_lead_id']
             if isinstance(crm_lead_id, (list, tuple)):
                 crm_lead_id = crm_lead_id[0]
-            odoo_to_erp[crm_lead_id] = r['id']
-        odoo_ids = list(odoo_to_erp.keys())
+            odoo_erp_pairs.append((crm_lead_id, r['id']))
+
+        # Unique Odoo IDs for a single efficient browse
+        odoo_ids = list({pair[0] for pair in odoo_erp_pairs})
 
         # Single browse to fetch all Odoo leads at once
         odoo_leads = self.env['crm.lead'].with_context(active_test=False).browse(odoo_ids)
         odoo_leads_map = {lead.id: lead for lead in odoo_leads}
 
         inconsistencies = []
-        for odoo_id, erp_id in odoo_to_erp.items():
+        for odoo_id, erp_id in odoo_erp_pairs:
             lead = odoo_leads_map.get(odoo_id)
 
             if not lead or not lead.exists():
