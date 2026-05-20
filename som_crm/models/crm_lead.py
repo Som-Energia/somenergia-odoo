@@ -516,7 +516,13 @@ class Lead(models.Model):
         _logger.info("ERP leads to check: %d", len(erp_records))
 
         # Map odoo_lead_id -> erp_lead_id for quick lookup
-        odoo_to_erp = {r['crm_lead_id']: r['id'] for r in erp_records}
+        # erppeek returns many2one fields as (id, name) tuples — normalize to int
+        odoo_to_erp = {}
+        for r in erp_records:
+            crm_lead_id = r['crm_lead_id']
+            if isinstance(crm_lead_id, (list, tuple)):
+                crm_lead_id = crm_lead_id[0]
+            odoo_to_erp[crm_lead_id] = r['id']
         odoo_ids = list(odoo_to_erp.keys())
 
         # Single browse to fetch all Odoo leads at once
