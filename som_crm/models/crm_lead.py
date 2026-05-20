@@ -627,6 +627,86 @@ class Lead(models.Model):
         _logger.info("Fixed %d leads out of %d fixable inconsistencies", len(fixed_ids), len(fixable))
         return fixed_ids
 
+    def _debug_erp_sync(self):
+        """
+        Debug _erp_sync matching strategies for this lead using production
+        model methods directly. Intended for interactive use in the Odoo shell.
+
+        Usage (Odoo shell):
+            env['crm.lead'].browse(LEAD_ID)._debug_erp_sync()
+        """
+        self.ensure_one()
+
+        print("=" * 60)
+        print(f"ERP SYNC DEBUG — lead {self.id}: {self.name}")
+        print("=" * 60)
+        print(f"  som_cups   : {self.som_cups!r}")
+        print(f"  vat        : {self.vat!r}")
+        print(f"  email_from : {self.email_from!r}")
+        print(f"  phone      : {self.phone!r}")
+        print()
+
+        print("Connecting to ERP...")
+        try:
+            c = Client(
+                server=f"{config.get('erp_uri')}:{config.get('erp_port')}",
+                db=config.get('erp_dbname'),
+                user=config.get('erp_user'),
+                password=config.get('erp_pwd'),
+            )
+        except Exception as e:
+            print(f"Connection error: {e}")
+            return
+        print("Connection OK\n")
+
+        erp_lead_obj = c.model('giscedata.crm.lead')
+        base_domain = [('crm_lead_id', '=', 0)]
+
+        strategies = [
+            ('som_cups',   'CUPS',  self._erp_search_by_cups),
+            ('vat',        'VAT',   self._erp_search_by_vat),
+            ('email_from', 'EMAIL', self._erp_search_by_email),
+            ('phone',      'PHONE', self._erp_search_by_phone),
+        ]
+
+        for lead_field, label, strategy_fn in strategies:
+            value = getattr(self, lead_field, None)
+            print(f"[{label}]")
+
+            if not value:
+                print(f"  value: (empty) — strategy skipped\n")
+                continue
+
+            print(f"  value : {value!r}")
+
+            domain = list(base_domain)
+            result = strategy_fn(erp_lead_obj, domain, value)
+
+            # domain has been mutated in-place by the strategy
+            print(f"  domain: {domain}")
+
+            if result:
+                print(f"  result: {result} ✓ MATCH")
+                print(f"\n→ First matching strategy: [{label}] — would stop here.")
+                print("=" * 60)
+                return
+
+            print(f"  result: [] ✗ NO MATCH")
+
+            # Check without crm_lead_id=0 to detect false negatives
+            domain_no_filter = [d for d in domain if d != ('crm_lead_id', '=', 0)]
+            result_no_filter = erp_lead_obj.search(domain_no_filter)
+            if result_no_filter:
+                matching = erp_lead_obj.read(result_no_filter, ['id', 'crm_lead_id'])
+                crm_ids = [m.get('crm_lead_id') for m in matching]
+                print(f"  ⚠  Without crm_lead_id=0 filter → found: {result_no_filter}")
+                print(f"     crm_lead_id in ERP            : {crm_ids}")
+                print(f"     → Likely cause: ERP lead already has crm_lead_id set")
+            print()
+
+        print("→ No strategy matched.")
+        print("=" * 60)
+
     def button_open_phonecall(self):
         self.ensure_one()
         action = self.env["ir.actions.actions"]._for_xml_id(
