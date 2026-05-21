@@ -1206,7 +1206,7 @@ class Lead(models.Model):
             lead.duplicate_lead_count = len(duplicate_lead_ids)
 
     @api.model
-    def _send_welcome_email_cron(self, limit=50):
+    def _process_welcome_cron(self, limit=50):
         _logger.info("Starting welcome email cron")
         origin_stage = self.env.ref('crm.stage_lead1', raise_if_not_found=False)
         if not origin_stage:
@@ -1219,10 +1219,10 @@ class Lead(models.Model):
             ('email_from', '!=', False),
         ], limit=limit)
         _logger.info(f"Leads found for welcome email: {len(leads)}")
-        leads._send_welcome_email()
+        leads._process_welcome()
         _logger.info("Welcome email cron finished")
 
-    def _send_welcome_email(self):
+    def _process_welcome(self):
         company = self.env.company
         template_ca = company.som_crm_lead_welcome_template_id
         template_es = company.som_crm_lead_welcome_template_es_id
@@ -1244,6 +1244,7 @@ class Lead(models.Model):
                 is_spanish = lang_es and lang == lang_es.code
                 template = template_es if (is_spanish and template_es) else template_ca
                 template.send_mail(lead.id, force_send=True)
+                lead.activity_ids.unlink()
                 lead.stage_id = target_stage
                 _logger.info(f"Welcome email sent and stage updated for lead ID {lead.id}")
             except Exception as e:
