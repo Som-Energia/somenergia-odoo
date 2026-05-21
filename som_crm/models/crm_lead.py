@@ -436,14 +436,22 @@ class Lead(models.Model):
             try:
                 erp_lead_id = lead_id.get_contract_in_erp(erp_lead_obj)
                 if erp_lead_id:
-                    with self.env.cr.savepoint():
-                        lead_id.write({
-                            'som_erp_lead_id': erp_lead_id,
-                            'stage_id': won_stage_id.id,
-                            'active': True
-                        })
+                    # Write to Odoo first so the lead is marked as won even if
+                    # the ERP write fails. This prevents to have the id in ERP but not in Odoo,
+                    # which would make it impossible to sync in the future.
+                    lead_id.write({
+                        'som_erp_lead_id': erp_lead_id,
+                        'stage_id': won_stage_id.id,
+                        'active': True
+                    })
+                    found_ids.append(lead_id.id)
+                    try:
                         erp_lead_obj.write(erp_lead_id, {'crm_lead_id': lead_id.id})
-                        found_ids.append(lead_id.id)
+                    except Exception as e:
+                        _logger.warning(
+                            "Lead %s updated in Odoo but failed to write crm_lead_id in ERP: %s",
+                            lead_id.id, e
+                        )
 
             except Exception as e:
                 _logger.error("Error syncing lead %s to ERP: %s", lead_id.id, e)
@@ -453,6 +461,251 @@ class Lead(models.Model):
             return
 
         _logger.info(f"Leads moved to 'Won' stage: {found_ids}")
+
+    @api.model
+    def _erp_sync_check_inconsistencies(self, date_from=None):
+        """
+        Detect leads that are linked in the ERP (crm_lead_id != 0) but whose
+        corresponding Odoo lead has not been properly processed (missing
+        som_erp_lead_id or not in a won stage).
+
+        Args:
+            date_from (str, optional): Filter ERP leads created on or after
+                this date. Format: 'YYYY-MM-DD'. If None, all linked ERP
+                leads are checked.
+
+        Returns:
+            list[dict]: Each dict describes one inconsistency with keys:
+                - odoo_lead_id
+                - erp_lead_id
+                - odoo_lead_name
+                - issue: 'lead_not_found' | 'erp_id_missing' |
+                         'stage_not_won' | 'erp_id_missing_and_stage_not_won'
+        """
+        _logger.info("Starting ERP sync inconsistency check")
+
+        try:
+            erppeek_params = dict(
+                server=f"{config.get('erp_uri')}:{config.get('erp_port')}",
+                db=config.get('erp_dbname'),
+                user=config.get('erp_user'),
+                password=config.get('erp_pwd'),
+            )
+            c = Client(**erppeek_params)
+        except Exception as e:
+            _logger.error("Error connecting to ERP: %s", e)
+            return []
+
+        erp_lead_obj = c.model("giscedata.crm.lead")
+
+        erp_domain = [('crm_lead_id', '!=', 0)]
+        if date_from:
+            erp_domain.append(('create_date', '>=', date_from))
+
+        _logger.info("Fetching ERP leads with domain: %s", erp_domain)
+        try:
+            erp_lead_ids = erp_lead_obj.search(erp_domain)
+            if not erp_lead_ids:
+                _logger.info("No linked ERP leads found")
+                return []
+            erp_records = erp_lead_obj.read(erp_lead_ids, ['id', 'crm_lead_id'])
+        except Exception as e:
+            _logger.error("Error fetching ERP leads: %s", e)
+            return []
+
+        _logger.info("ERP leads to check: %d", len(erp_records))
+
+        # Build (odoo_lead_id, erp_lead_id) pairs preserving duplicates — a dict
+        # would silently drop ERP leads sharing the same crm_lead_id.
+        # erppeek returns many2one fields as (id, name) tuples — normalize to int.
+        odoo_erp_pairs = []
+        for r in erp_records:
+            crm_lead_id = r['crm_lead_id']
+            if isinstance(crm_lead_id, (list, tuple)):
+                crm_lead_id = crm_lead_id[0]
+            odoo_erp_pairs.append((crm_lead_id, r['id']))
+
+        # Unique Odoo IDs for a single efficient browse
+        odoo_ids = list({pair[0] for pair in odoo_erp_pairs})
+
+        # Single browse to fetch all Odoo leads at once
+        odoo_leads = self.env['crm.lead'].with_context(active_test=False).browse(odoo_ids)
+        odoo_leads_map = {lead.id: lead for lead in odoo_leads}
+
+        inconsistencies = []
+        for odoo_id, erp_id in odoo_erp_pairs:
+            lead = odoo_leads_map.get(odoo_id)
+
+            if not lead or not lead.exists():
+                issue = 'lead_not_found'
+                name = '(not found)'
+            else:
+                erp_id_missing = not lead.som_erp_lead_id
+                stage_not_won = not lead.stage_id.is_won
+                if erp_id_missing and stage_not_won:
+                    issue = 'erp_id_missing_and_stage_not_won'
+                elif erp_id_missing:
+                    issue = 'erp_id_missing'
+                elif stage_not_won:
+                    issue = 'stage_not_won'
+                else:
+                    continue  # No inconsistency
+                name = lead.name
+
+            inconsistencies.append({
+                'odoo_lead_id': odoo_id,
+                'erp_lead_id': erp_id,
+                'odoo_lead_name': name,
+                'issue': issue,
+            })
+            _logger.warning(
+                "Inconsistency found — odoo_lead_id: %s, erp_lead_id: %s, name: %s, issue: %s",
+                odoo_id, erp_id, name, issue,
+            )
+
+        _logger.info(
+            "Inconsistency check done — %d inconsistencies found out of %d ERP leads checked",
+            len(inconsistencies), len(erp_records),
+        )
+        return inconsistencies
+
+    @api.model
+    def _erp_sync_fix_inconsistencies(self, inconsistencies=None):
+        """
+        Fix leads that are linked in the ERP but not properly processed in Odoo.
+        Handles all inconsistency types except 'lead_not_found'.
+
+        Args:
+            inconsistencies (list[dict], optional): Output from
+                _erp_sync_check_inconsistencies(). If None, the check is run
+                automatically with no date filter.
+
+        Returns:
+            list[int]: Odoo lead IDs that were successfully fixed.
+        """
+        if inconsistencies is None:
+            _logger.info("No inconsistencies provided, running check first")
+            inconsistencies = self._erp_sync_check_inconsistencies()
+
+        fixable = [i for i in inconsistencies if i['issue'] != 'lead_not_found']
+        if not fixable:
+            _logger.info("No fixable inconsistencies found")
+            return []
+
+        won_stage_id = self.get_won_stage()
+        if not won_stage_id:
+            _logger.warning("No 'won' stage found, cannot fix inconsistencies")
+            return []
+
+        _logger.info("Fixing %d inconsistencies", len(fixable))
+
+        fixed_ids = []
+        for item in fixable:
+            odoo_id = item['odoo_lead_id']
+            erp_id = item['erp_lead_id']
+            issue = item['issue']
+
+            try:
+                lead = self.env['crm.lead'].with_context(active_test=False).browse(odoo_id)
+                if not lead.exists():
+                    _logger.warning("Lead %s no longer exists, skipping", odoo_id)
+                    continue
+
+                vals = {'stage_id': won_stage_id.id, 'active': True}
+                if issue in ('erp_id_missing', 'erp_id_missing_and_stage_not_won'):
+                    vals['som_erp_lead_id'] = erp_id
+
+                lead.write(vals)
+                fixed_ids.append(odoo_id)
+                _logger.info(
+                    "Fixed lead %s (erp_lead_id: %s, issue: %s)",
+                    odoo_id, erp_id, issue,
+                )
+            except Exception as e:
+                _logger.error("Error fixing lead %s: %s", odoo_id, e)
+
+        _logger.info("Fixed %d leads out of %d fixable inconsistencies", len(fixed_ids), len(fixable))
+        return fixed_ids
+
+    def _debug_erp_sync(self):
+        """
+        Debug _erp_sync matching strategies for this lead using production
+        model methods directly. Intended for interactive use in the Odoo shell.
+
+        Usage (Odoo shell):
+            env['crm.lead'].browse(LEAD_ID)._debug_erp_sync()
+        """
+        self.ensure_one()
+
+        print("=" * 60)
+        print(f"ERP SYNC DEBUG — lead {self.id}: {self.name}")
+        print("=" * 60)
+        print(f"  som_cups   : {self.som_cups!r}")
+        print(f"  vat        : {self.vat!r}")
+        print(f"  email_from : {self.email_from!r}")
+        print(f"  phone      : {self.phone!r}")
+        print()
+
+        print("Connecting to ERP...")
+        try:
+            c = Client(
+                server=f"{config.get('erp_uri')}:{config.get('erp_port')}",
+                db=config.get('erp_dbname'),
+                user=config.get('erp_user'),
+                password=config.get('erp_pwd'),
+            )
+        except Exception as e:
+            print(f"Connection error: {e}")
+            return
+        print("Connection OK\n")
+
+        erp_lead_obj = c.model('giscedata.crm.lead')
+        base_domain = [('crm_lead_id', '=', 0)]
+
+        strategies = [
+            ('som_cups',   'CUPS',  self._erp_search_by_cups),
+            ('vat',        'VAT',   self._erp_search_by_vat),
+            ('email_from', 'EMAIL', self._erp_search_by_email),
+            ('phone',      'PHONE', self._erp_search_by_phone),
+        ]
+
+        for lead_field, label, strategy_fn in strategies:
+            value = getattr(self, lead_field, None)
+            print(f"[{label}]")
+
+            if not value:
+                print(f"  value: (empty) — strategy skipped\n")
+                continue
+
+            print(f"  value : {value!r}")
+
+            domain = list(base_domain)
+            result = strategy_fn(erp_lead_obj, domain, value)
+
+            # domain has been mutated in-place by the strategy
+            print(f"  domain: {domain}")
+
+            if result:
+                print(f"  result: {result} ✓ MATCH")
+                print(f"\n→ First matching strategy: [{label}] — would stop here.")
+                print("=" * 60)
+                return
+
+            print(f"  result: [] ✗ NO MATCH")
+
+            # Check without crm_lead_id=0 to detect false negatives
+            domain_no_filter = [d for d in domain if d != ('crm_lead_id', '=', 0)]
+            result_no_filter = erp_lead_obj.search(domain_no_filter)
+            if result_no_filter:
+                matching = erp_lead_obj.read(result_no_filter, ['id', 'crm_lead_id'])
+                crm_ids = [m.get('crm_lead_id') for m in matching]
+                print(f"  ⚠  Without crm_lead_id=0 filter → found: {result_no_filter}")
+                print(f"     crm_lead_id in ERP            : {crm_ids}")
+                print(f"     → Likely cause: ERP lead already has crm_lead_id set")
+            print()
+
+        print("→ No strategy matched.")
+        print("=" * 60)
 
     def button_open_phonecall(self):
         self.ensure_one()
