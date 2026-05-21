@@ -24,6 +24,12 @@ class Task(models.Model):
         string="Transversal project"
     )
 
+    som_hide_partner = fields.Boolean(
+        related='project_id.som_hide_partner',
+        string='Hide partner',
+        store=False,
+    )
+
     def name_get(self):
         res = []
         for task_id in self:
