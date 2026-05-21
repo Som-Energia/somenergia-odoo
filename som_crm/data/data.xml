@@ -257,8 +257,8 @@
         </field>
     </record>
 
-    <record model="ir.cron" id="som_crm_lead_welcome_email">
-        <field name="name">Som - Send welcome email to new leads</field>
+    <record model="ir.cron" id="som_crm_lead_process_welcome">
+        <field name="name">Som - Process welcome for new leads</field>
         <field name="interval_number">1</field>
         <field name="interval_type">hours</field>
         <field name="numbercall">-1</field>
@@ -271,18 +271,21 @@
         <field name="model_id" ref="som_crm.model_crm_lead" />
         <field name="state">code</field>
         <field name="code">
-            model._send_welcome_email_cron()
+            model._process_welcome_cron()
         </field>
     </record>
-    <record id="som_crm_action_send_welcome_email" model="ir.actions.server">
-        <field name="name">Som - Send welcome email</field>
+    <record model="ir.cron" id="som_crm_lead_welcome_email">
+        <field name="active" eval="False" />
+    </record>
+    <record id="som_crm_action_process_welcome" model="ir.actions.server">
+        <field name="name">Som - Process welcome</field>
         <field name="type">ir.actions.server</field>
         <field name="model_id" ref="crm.model_crm_lead"/>
         <field name="binding_model_id" ref="crm.model_crm_lead"/>
         <field name="sequence">99</field>
         <field name="state">code</field>
         <field name="code">
-            records._send_welcome_email()
+            records._process_welcome()
         </field>
     </record>
 

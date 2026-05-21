@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import date
 from unittest.mock import patch
 from odoo.tests.common import TransactionCase, tagged
 
@@ -55,19 +56,19 @@ class TestSendWelcomeEmail(TransactionCase):
             'stage_id': (stage or self.origin_stage).id,
         })
 
-    # --- _send_welcome_email ---
+    # --- _process_welcome ---
 
     def test_ca_partner_uses_ca_template(self):
         lead = self._create_lead(self.partner_ca)
         with patch.object(type(self.template_ca), 'send_mail') as mock_send:
-            lead._send_welcome_email()
+            lead._process_welcome()
             mock_send.assert_called_once_with(lead.id, force_send=True)
         self.assertEqual(lead.stage_id, self.target_stage)
 
     def test_es_partner_uses_es_template(self):
         lead = self._create_lead(self.partner_es)
         with patch.object(type(self.template_es), 'send_mail') as mock_send:
-            lead._send_welcome_email()
+            lead._process_welcome()
             mock_send.assert_called_once_with(lead.id, force_send=True)
         self.assertEqual(lead.stage_id, self.target_stage)
 
@@ -75,7 +76,7 @@ class TestSendWelcomeEmail(TransactionCase):
         self.env.company.som_crm_lead_welcome_template_es_id = False
         lead = self._create_lead(self.partner_es)
         with patch.object(type(self.template_ca), 'send_mail') as mock_send:
-            lead._send_welcome_email()
+            lead._process_welcome()
             mock_send.assert_called_once_with(lead.id, force_send=True)
         self.assertEqual(lead.stage_id, self.target_stage)
         # restore
@@ -85,7 +86,7 @@ class TestSendWelcomeEmail(TransactionCase):
         lead = self._create_lead(self.partner_ca)
         lead.partner_id = False
         with patch.object(type(self.template_ca), 'send_mail') as mock_send:
-            lead._send_welcome_email()
+            lead._process_welcome()
             mock_send.assert_not_called()
         self.assertEqual(lead.stage_id, self.origin_stage)
 
@@ -93,14 +94,14 @@ class TestSendWelcomeEmail(TransactionCase):
         lead = self._create_lead(self.partner_no_email)
         lead.email_from = False
         with patch.object(type(self.template_ca), 'send_mail') as mock_send:
-            lead._send_welcome_email()
+            lead._process_welcome()
             mock_send.assert_not_called()
         self.assertEqual(lead.stage_id, self.origin_stage)
 
     def test_skips_lead_in_wrong_stage(self):
         lead = self._create_lead(self.partner_ca, stage=self.target_stage)
         with patch.object(type(self.template_ca), 'send_mail') as mock_send:
-            lead._send_welcome_email()
+            lead._process_welcome()
             mock_send.assert_not_called()
         self.assertEqual(lead.stage_id, self.target_stage)
 
@@ -108,7 +109,7 @@ class TestSendWelcomeEmail(TransactionCase):
         self.env.company.som_crm_lead_welcome_template_id = False
         lead = self._create_lead(self.partner_ca)
         with patch.object(type(self.template_ca), 'send_mail') as mock_send:
-            lead._send_welcome_email()
+            lead._process_welcome()
             mock_send.assert_not_called()
         # restore
         self.env.company.som_crm_lead_welcome_template_id = self.template_ca
@@ -117,7 +118,7 @@ class TestSendWelcomeEmail(TransactionCase):
         self.env.company.som_crm_lead_welcome_stage_id = False
         lead = self._create_lead(self.partner_ca)
         with patch.object(type(self.template_ca), 'send_mail') as mock_send:
-            lead._send_welcome_email()
+            lead._process_welcome()
             mock_send.assert_not_called()
         # restore
         self.env.company.som_crm_lead_welcome_stage_id = self.target_stage
@@ -132,17 +133,63 @@ class TestSendWelcomeEmail(TransactionCase):
 
         with patch.object(type(self.template_ca), 'send_mail', side_effect=mock_send), \
              patch.object(type(self.template_es), 'send_mail', side_effect=mock_send):
-            (lead_ca | lead_es)._send_welcome_email()
+            (lead_ca | lead_es)._process_welcome()
 
         self.assertEqual(lead_ca.stage_id, self.origin_stage)
         self.assertEqual(lead_es.stage_id, self.target_stage)
         self.assertEqual(lead_ca.stage_id, self.origin_stage)
         self.assertEqual(lead_es.stage_id, self.target_stage)
 
-    # --- _send_welcome_email_cron ---
+    # --- _process_welcome_cron ---
 
     def test_cron_finds_eligible_leads(self):
         lead = self._create_lead(self.partner_ca)
         with patch.object(type(self.template_ca), 'send_mail'):
-            self.env['crm.lead']._send_welcome_email_cron()
+            self.env['crm.lead']._process_welcome_cron()
         self.assertEqual(lead.stage_id, self.target_stage)
+
+    # --- activitats obertes ---
+
+    def _create_activity(self, lead):
+        activity_type = self.env.ref(
+            'mail.mail_activity_data_todo', raise_if_not_found=False
+        ) or self.env['mail.activity.type'].search([], limit=1)
+        return self.env['mail.activity'].create({
+            'res_model_id': self.env['ir.model']._get('crm.lead').id,
+            'res_id': lead.id,
+            'activity_type_id': activity_type.id,
+            'summary': 'Activitat de prova',
+            'user_id': self.env.user.id,
+            'date_deadline': date.today(),
+        })
+
+    def test_activities_marked_done_on_success(self):
+        lead = self._create_lead(self.partner_ca)
+        activity = self._create_activity(lead)
+        self.assertTrue(activity.exists())
+
+        with patch.object(type(self.template_ca), 'send_mail'):
+            lead._process_welcome()
+
+        self.assertFalse(activity.exists())
+        self.assertEqual(lead.stage_id, self.target_stage)
+
+    def test_no_activities_does_not_fail(self):
+        lead = self._create_lead(self.partner_ca)
+        lead.activity_ids.unlink()
+
+        with patch.object(type(self.template_ca), 'send_mail'):
+            lead._process_welcome()
+
+        self.assertEqual(lead.stage_id, self.target_stage)
+
+    def test_activities_not_marked_done_if_email_fails(self):
+        lead = self._create_lead(self.partner_ca)
+        activity = self._create_activity(lead)
+        self.assertTrue(activity.exists())
+
+        with patch.object(type(self.template_ca), 'send_mail', side_effect=Exception("SMTP error")):
+            lead._process_welcome()
+
+        self.assertTrue(activity.exists())
+        self.assertEqual(lead.stage_id, self.origin_stage)
