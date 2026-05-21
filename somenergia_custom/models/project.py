@@ -31,6 +31,11 @@ class Project(models.Model):
         store=True,
     )
 
+    som_hide_partner = fields.Boolean(
+        string='Hide partner on tasks',
+        default=True,
+    )
+
     def _load_default_tasks(self):
         user_somadmin_id = self.env['res.users'].search([
             ('login', '=', 'somadmin@somenergia.coop'),

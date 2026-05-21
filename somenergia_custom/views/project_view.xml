@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <record id="som_project_view_form_inherit" model="ir.ui.view">
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.edit_project"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='settings']//group[@name='extra_settings']" position="inside">
+                    <field name="som_hide_partner" widget="boolean_toggle"/>
+                </xpath>
+            </field>
+        </record>
+
         <record id="project.open_view_project_all" model="ir.actions.act_window">
             <field name="domain">[('is_internal_project', '=', False), ('som_is_internal_project', '=', False)]</field>
         </record>
