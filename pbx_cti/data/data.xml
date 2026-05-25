@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        pbx_cti.action_target — controls how the partner form opens on incoming call.
+        Valid values:
+          current   → replaces the current view (default)
+          new       → opens in a dialog/popup
+          fullscreen → opens fullscreen
+    -->
+    <record id="param_pbx_cti_action_target" model="ir.config_parameter">
+        <field name="key">pbx_cti.action_target</field>
+        <field name="value">current</field>
+    </record>
+</odoo>
