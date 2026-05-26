@@ -27,45 +27,37 @@ def _clean_phone(phone):
 class PbxCtiWebhook(http.Controller):
 
     @http.route(
-        "/pbx/ringring",
+        "/api/info/ringring",
         type="http",
         auth="none",
         methods=["POST"],
         csrf=False,
     )
     def ringring(self, **post):
-        # --- 1. Authenticate via API key ---
-        api_key = post.get("apikey") or request.httprequest.headers.get("X-PBX-Api-Key")
-        expected_key = (
-            request.env["ir.config_parameter"]
-            .sudo()
-            .get_param("pbx_cti.api_key")
-        )
-        if not expected_key or api_key != expected_key:
-            _logger.warning("pbx_cti: invalid or missing API key from %s", request.httprequest.remote_addr)
-            return request.make_response(
-                json.dumps({"error": "unauthorized"}),
-                headers=[("Content-Type", "application/json")],
-                status=401,
-            )
-
-        # --- 2. Parse params ---
+        # --- 1. Parse params ---
         phone_raw = post.get("phone", "")
         extension = post.get("extension") or post.get("ext", "")
         callid = post.get("callid", "")
         phone = _clean_phone(phone_raw)
 
         if not phone or not extension:
-            _logger.warning("pbx_cti: missing phone or extension — phone=%r ext=%r", phone_raw, extension)
+            _logger.warning(
+                "pbx_cti: missing phone or extension — phone=%r ext=%r", phone_raw, extension
+            )
             return request.make_response(
-                json.dumps({"error": "missing_params", "detail": "phone and extension are required"}),
+                json.dumps({
+                    "error": "missing_params",
+                    "detail": "phone and extension are required"
+                }),
                 headers=[("Content-Type", "application/json")],
                 status=400,
             )
 
-        _logger.info("pbx_cti: incoming call phone=%s extension=%s callid=%s", phone, extension, callid)
+        _logger.info(
+            "pbx_cti: incoming call phone=%s extension=%s callid=%s", phone, extension, callid
+        )
 
-        # --- 3. Resolve extension → user ---
+        # --- 2. Resolve extension → user ---
         user = request.env["res.users"].sudo().search(
             [("pbx_extension", "=", extension)], limit=1
         )
@@ -76,7 +68,7 @@ class PbxCtiWebhook(http.Controller):
                 headers=[("Content-Type", "application/json")],
             )
 
-        # --- 4. Resolve phone → partner ---
+        # --- 3. Resolve phone → partner ---
         partner = request.env["res.partner"].sudo().search(
             ["|", ("phone", "=", phone), ("mobile", "=", phone)],
             limit=1,
@@ -88,7 +80,7 @@ class PbxCtiWebhook(http.Controller):
                 headers=[("Content-Type", "application/json")],
             )
 
-        # --- 5. Push to user's browser via bus.bus ---
+        # --- 4. Push to user's browser via bus.bus ---
         channel = "{}{}".format(BUS_CHANNEL_PREFIX, user.id)
         request.env["bus.bus"].sudo()._sendone(
             channel,
