@@ -274,9 +274,6 @@
             model._process_welcome_cron()
         </field>
     </record>
-    <record model="ir.cron" id="som_crm_lead_welcome_email">
-        <field name="active" eval="False" />
-    </record>
     <record id="som_crm_action_process_welcome" model="ir.actions.server">
         <field name="name">Som - Process welcome</field>
         <field name="type">ir.actions.server</field>
