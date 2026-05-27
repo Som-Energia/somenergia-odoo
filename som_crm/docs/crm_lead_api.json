@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Som Energia CRM API",
-    "description": "API REST per a la creació de leads al CRM de Som Energia.\n\n## Autenticació\n\nTotes les peticions requereixen un API Key al header `X-API-Key`.\n\n## Comportament automàtic en crear un lead\n\nEn crear un lead el sistema executa automàticament:\n- Assignació d'usuari responsable (`auto_assign_user`)\n- Creació d'activitat programada per avui\n- Extracció de paràmetres UTM de `url_origin`\n- Assignació de partner si escau\n- Enviament d'email de confirmació al contacte\n\nL'etapa i canal del lead s'assignen segons si s'adjunten fitxers:\n- **Sense fitxers:** etapa `Lead` + canal `Webform`\n- **Amb fitxers:** etapa `Simulació` + canal `Webform simulació`\n",
+    "description": "API REST per a la creació de leads al CRM de Som Energia.\n\n## Autenticació\n\nTotes les peticions requereixen un API Key al header `X-API-Key`.\n\n## Comportament automàtic en crear un lead\n\nEn crear un lead el sistema executa automàticament:\n- Assignació d'usuari responsable (`auto_assign_user`)\n- Creació d'activitat programada per avui\n- Extracció de paràmetres UTM de `url_origin`\n- Assignació de partner si escau\n- Enviament d'email de confirmació al contacte\n\nL'etapa i canal del lead s'assignen segons si s'adjunten fitxers:\n- **Sense fitxers:** etapa `Lead` + canal `Webform`\n- **Amb fitxers:** etapa `Simulació` + canal `Webform simulació`\n\n## Notes importants\n\n- El camp `lang` admet `ca_ES` i `es_ES`.  Si s'envia un altre valor, la petició no retorna error i l'idioma no s'assigna.\n",
     "version": "1.0.0",
     "contact": {
       "name": "Som Energia — Equip de desenvolupament"
@@ -257,7 +257,7 @@
               "ca_ES",
               "es_ES"
             ],
-            "description": "Idioma preferit del contacte.",
+            "description": "Idioma preferit del contacte. Valors suportats: ca_ES i es_ES. Si s'envia un valor diferent, la peticio no falla i l'idioma no s'assigna.",
             "example": "ca_ES"
           },
           "url_origin": {
