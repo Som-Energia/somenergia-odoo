@@ -1,0 +1,419 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Som Energia CRM API",
+    "description": "API REST per a la creació de leads al CRM de Som Energia.\n\n## Autenticació\n\nTotes les peticions requereixen un API Key al header `X-API-Key`.\n\n## Comportament automàtic en crear un lead\n\nEn crear un lead el sistema executa automàticament:\n- Assignació d'usuari responsable (`auto_assign_user`)\n- Creació d'activitat programada per avui\n- Extracció de paràmetres UTM de `url_origin`\n- Assignació de partner si escau\n- Enviament d'email de confirmació al contacte\n\nL'etapa i canal del lead s'assignen segons si s'adjunten fitxers:\n- **Sense fitxers:** etapa `Lead` + canal `Webform`\n- **Amb fitxers:** etapa `Simulació` + canal `Webform simulació`\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Som Energia — Equip de desenvolupament"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://example.invalid",
+      "description": "Només documentació (endpoint no executable des d'aquest document)"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "paths": {
+    "/api/crm/lead": {
+      "post": {
+        "summary": "Crear un lead al CRM",
+        "description": "Crea un nou lead al CRM d'Odoo. Tots els camps del cos de la petició\nsón opcionals. Si s'adjunten fitxers, el lead s'associa al canal de\nsimulació i s'envia la confirmació indicant que s'han rebut documents.\n",
+        "operationId": "createLead",
+        "tags": [
+          "Leads"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeadRequest"
+              },
+              "examples": {
+                "sense_fitxers": {
+                  "summary": "Lead bàsic sense fitxers",
+                  "value": {
+                    "contact_name": "Maria Garcia",
+                    "email": "maria.garcia@example.com",
+                    "phone": "+34 612 345 678",
+                    "lang": "ca_ES",
+                    "url_origin": "https://www.somenergia.coop/ca/tarifes/?utm_source=google&utm_medium=cpc&utm_campaign=tarifes_2024",
+                    "comments": "Interessada en tarifa per a comunitat de veïns"
+                  }
+                },
+                "amb_fitxers": {
+                  "summary": "Lead amb documents adjunts",
+                  "value": {
+                    "contact_name": "Joan Puig",
+                    "email": "joan.puig@example.com",
+                    "phone": "+34 699 111 222",
+                    "lang": "es_ES",
+                    "url_origin": "https://www.somenergia.coop/es/simulacion/",
+                    "comments": "Adjunto factura per a simulació",
+                    "files": [
+                      {
+                        "filename": "factura_llum.pdf",
+                        "content": "JVBERi0xLjQKJ...",
+                        "mimetype": "application/pdf"
+                      },
+                      {
+                        "filename": "foto_comptador.jpg",
+                        "content": "/9j/4AAQSkZJRg...",
+                        "mimetype": "image/jpeg"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lead creat correctament",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateLeadResponse"
+                },
+                "examples": {
+                  "sense_fitxers": {
+                    "summary": "Resposta sense fitxers adjunts",
+                    "value": {
+                      "success": true,
+                      "message": "Lead successfully created",
+                      "lead_id": 123,
+                      "lead_name": "Maria Garcia",
+                      "lead_data": {
+                        "id": 123,
+                        "name": "Maria Garcia",
+                        "contact_name": "Maria Garcia",
+                        "email_from": "maria.garcia@example.com",
+                        "phone": "+34612345678",
+                        "create_date": "2026-05-27T10:00:00"
+                      }
+                    }
+                  },
+                  "amb_fitxers": {
+                    "summary": "Resposta amb fitxers adjunts",
+                    "value": {
+                      "success": true,
+                      "message": "Lead successfully created",
+                      "lead_id": 124,
+                      "lead_name": "Joan Puig",
+                      "lead_data": {
+                        "id": 124,
+                        "name": "Joan Puig",
+                        "contact_name": "Joan Puig",
+                        "email_from": "joan.puig@example.com",
+                        "phone": "+34699111222",
+                        "create_date": "2026-05-27T11:30:00"
+                      },
+                      "attachments": [
+                        {
+                          "id": 45,
+                          "name": "factura_llum.pdf",
+                          "mimetype": "application/pdf",
+                          "file_size": 102400
+                        },
+                        {
+                          "id": 46,
+                          "name": "foto_comptador.jpg",
+                          "mimetype": "image/jpeg",
+                          "file_size": 204800
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petició invàlida — JSON mal format o error de validació",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "json_invalid": {
+                    "summary": "JSON mal format",
+                    "value": {
+                      "success": false,
+                      "error": "Invalid JSON",
+                      "message": "The request body is not valid JSON"
+                    }
+                  },
+                  "validacio": {
+                    "summary": "Error de validació de camp",
+                    "value": {
+                      "success": false,
+                      "error": "Validation error",
+                      "message": "lang must be one of: ca_ES, es_ES"
+                    }
+                  },
+                  "fitxer_massa_gran": {
+                    "summary": "Fitxer supera el límit de mida",
+                    "value": {
+                      "success": false,
+                      "error": "Validation error",
+                      "message": "File 'document.pdf' exceeds maximum size of 10MB"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticat — falta la X-API-Key o és invàlida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error": "Authentication required",
+                "message": "Provide a valid X-API-Key in the request headers"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accés denegat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error": "Access error",
+                  "message": "You do not have permission to perform this action"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error intern del servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error": "Internal server error",
+                  "message": "An unexpected error occurred. Please contact support."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API Key proporcionada per Som Energia. Es configura al paràmetre de sistema `som_crm.api_key` de l'instància Odoo.\n"
+      }
+    },
+    "schemas": {
+      "CreateLeadRequest": {
+        "type": "object",
+        "description": "Tots els camps són opcionals. Es pot enviar un cos buit `{}` o fins i tot una petició sense cos.\n",
+        "properties": {
+          "contact_name": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "Nom complet del contacte. Es guarda en format Title Case (primera lletra de cada paraula en majúscula).\n",
+            "example": "Maria Garcia"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Adreça de correu electrònic del contacte. Es normalitza a minúscules i s'eliminen espais als extrems.\n",
+            "example": "maria.garcia@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Número de telèfon del contacte. S'eliminen tots els espais abans de desar-lo.\n",
+            "example": "+34 612 345 678"
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "ca_ES",
+              "es_ES"
+            ],
+            "description": "Idioma preferit del contacte.",
+            "example": "ca_ES"
+          },
+          "url_origin": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL de la pàgina d'origen de la petició. Els paràmetres UTM (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`) s'extreuen automàticament i s'associen al lead.\n",
+            "example": "https://www.somenergia.coop/ca/tarifes/?utm_source=google&utm_medium=cpc&utm_campaign=tarifes_2024"
+          },
+          "comments": {
+            "type": "string",
+            "description": "Comentaris lliures del contacte. S'afegeixen com a nota interna al xatter del lead.\n",
+            "example": "Interessada en tarifa per a comunitat de veïns"
+          },
+          "files": {
+            "type": "array",
+            "description": "Llista de fitxers adjunts. Restriccions:\n- Mida màxima per fitxer: **10 MB**\n- Mida total màxima de tots els fitxers: **50 MB**\n- Tipus MIME permesos: `image/jpeg`, `image/png`, `image/gif`,\n  `image/bmp`, `image/webp`, `application/pdf`,\n  `application/msword`,\n  `application/vnd.openxmlformats-officedocument.wordprocessingml.document`,\n  `application/vnd.ms-excel`,\n  `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`,\n  `application/vnd.ms-powerpoint`,\n  `application/vnd.openxmlformats-officedocument.presentationml.presentation`,\n  `text/plain`, `text/csv`, `application/zip`,\n  `application/x-rar-compressed`\n",
+            "items": {
+              "$ref": "#/components/schemas/FileObject"
+            }
+          }
+        }
+      },
+      "FileObject": {
+        "type": "object",
+        "required": [
+          "filename",
+          "content"
+        ],
+        "properties": {
+          "filename": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "Nom del fitxer incloent l'extensió.",
+            "example": "factura_llum.pdf"
+          },
+          "content": {
+            "type": "string",
+            "format": "byte",
+            "description": "Contingut del fitxer codificat en **Base64**. Mida màxima descodificada: 10 MB per fitxer.\n",
+            "example": "JVBERi0xLjQKJ..."
+          },
+          "mimetype": {
+            "type": "string",
+            "description": "Tipus MIME del fitxer. Si s'omet, el sistema intentarà detectar-lo automàticament a partir de l'extensió del `filename`.\n",
+            "example": "application/pdf"
+          }
+        }
+      },
+      "CreateLeadResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Lead successfully created"
+          },
+          "lead_id": {
+            "type": "integer",
+            "description": "Identificador intern del lead creat a Odoo.",
+            "example": 123
+          },
+          "lead_name": {
+            "type": "string",
+            "description": "Nom del lead tal com s'ha creat.",
+            "example": "Maria Garcia"
+          },
+          "lead_data": {
+            "$ref": "#/components/schemas/LeadData"
+          },
+          "attachments": {
+            "type": "array",
+            "description": "Només present si s'han adjuntat fitxers a la petició.\n",
+            "items": {
+              "$ref": "#/components/schemas/AttachmentInfo"
+            }
+          }
+        }
+      },
+      "LeadData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "example": "Maria Garcia"
+          },
+          "contact_name": {
+            "type": "string",
+            "example": "Maria Garcia"
+          },
+          "email_from": {
+            "type": "string",
+            "format": "email",
+            "example": "maria.garcia@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+34612345678"
+          },
+          "create_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data i hora de creació del lead en format ISO 8601 (UTC).",
+            "example": "2026-05-27T10:00:00"
+          }
+        }
+      },
+      "AttachmentInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Identificador intern de l'adjunt a Odoo.",
+            "example": 45
+          },
+          "name": {
+            "type": "string",
+            "description": "Nom del fitxer adjunt.",
+            "example": "factura_llum.pdf"
+          },
+          "mimetype": {
+            "type": "string",
+            "example": "application/pdf"
+          },
+          "file_size": {
+            "type": "integer",
+            "description": "Mida del fitxer en bytes.",
+            "example": 102400
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "string",
+            "description": "Codi d'error llegible per màquina.",
+            "example": "Validation error"
+          },
+          "message": {
+            "type": "string",
+            "description": "Descripció detallada de l'error per a humans.",
+            "example": "lang must be one of: ca_ES, es_ES"
+          }
+        }
+      }
+    }
+  }
+}
