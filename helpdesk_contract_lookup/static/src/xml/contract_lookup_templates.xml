@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="helpdesk_contract_lookup.ContractLookupAction" owl="1">
+        <div class="o_helpdesk_contract_lookup p-4" style="height: calc(100vh - 110px); overflow-y: auto;">
+            <div class="d-flex align-items-end gap-2 flex-wrap mb-3">
+                <div>
+                    <label class="form-label">Search field</label>
+                    <select class="form-select" t-model="state.field">
+                        <t t-foreach="fields" t-as="field" t-key="field">
+                            <option t-att-value="field"><t t-esc="field"/></option>
+                        </t>
+                    </select>
+                </div>
+                <div class="flex-grow-1">
+                    <label class="form-label">Search value</label>
+                    <input
+                        class="form-control"
+                        type="text"
+                        t-model="state.value"
+                        t-on-keydown="onSearchKeydown"
+                        placeholder="Type phone, NIF, contract, CUPS..."
+                    />
+                </div>
+                <button class="btn btn-primary" t-on-click="onSearch" t-att-disabled="state.loading">
+                    <t t-if="state.loading">Searching...</t>
+                    <t t-else="">Search</t>
+                </button>
+            </div>
+
+            <t t-if="state.error">
+                <div class="alert alert-danger" role="alert">
+                    <t t-esc="state.error"/>
+                </div>
+            </t>
+
+            <t t-if="state.result and state.result.status === 'no_info'">
+                <div class="alert alert-warning" role="alert">No information found.</div>
+            </t>
+
+            <t t-if="state.result and state.result.partners and state.result.partners.length">
+                <div class="alert alert-info mb-3">
+                    Results: <t t-esc="state.result.count"/>
+                    <t t-if="state.result.too_many"> (limited)</t>
+                </div>
+
+                <t t-foreach="state.result.partners" t-as="partner" t-key="partner.id">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title mb-1"><t t-esc="partner.name"/></h5>
+                            <div class="text-muted mb-3">
+                                <span>Partner ID: <t t-esc="partner.id"/> - </span>
+                                <span t-if="partner.member_code">Member: <t t-esc="partner.member_code"/> - </span>
+                                <span t-if="partner.vat">VAT: <t t-esc="partner.vat"/></span>
+                            </div>
+
+                            <t t-if="partner.contracts.length">
+                                <table class="table table-sm table-striped mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Contract</th>
+                                            <th>CUPS</th>
+                                            <th>Status</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="partner.contracts" t-as="contract" t-key="contract.number">
+                                            <tr>
+                                                <td><t t-esc="contract.number"/></td>
+                                                <td><t t-esc="contract.cups"/></td>
+                                                <td><t t-esc="contract.state"/></td>
+                                                <td>
+                                                    <button
+                                                        class="btn btn-outline-secondary btn-sm"
+                                                        t-on-click="() => this.loadContractDetails(contract.number)"
+                                                        t-att-disabled="state.loadingDetailsByContract[contract.number]"
+                                                    >
+                                                        <t t-if="state.loadingDetailsByContract[contract.number]">Loading...</t>
+                                                        <t t-else="">Load details</t>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr t-if="state.detailsByContract[contract.number]">
+                                                <td colspan="4">
+                                                    <div class="o-contract-detail">
+                                                        <strong>Invoices:</strong>
+                                                        <span t-esc="state.detailsByContract[contract.number].invoices.length"/>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </div>
+    </t>
+</templates>
