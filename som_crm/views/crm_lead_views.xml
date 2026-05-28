@@ -121,6 +121,11 @@
                 </button>
             </xpath>
 
+            <xpath expr="//widget[@name='web_ribbon']" position="after">
+                <widget name="web_ribbon" title="Duplicat ?" bg_color="bg-warning"
+                    attrs="{'invisible': [('duplicate_lead_count', '=', 0)]}"/>
+            </xpath>
+
         </field>
     </record>
 
