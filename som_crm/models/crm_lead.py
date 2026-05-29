@@ -1240,7 +1240,7 @@ class Lead(models.Model):
             lambda x: x.stage_id == origin_stage and x.partner_id and x.email_from
         ):
             try:
-                lang = lead.partner_id.lang or ''
+                lang = lead.lang_id.code or ''
                 is_spanish = lang_es and lang == lang_es.code
                 template = template_es if (is_spanish and template_es) else template_ca
                 template.send_mail(lead.id, force_send=True)
