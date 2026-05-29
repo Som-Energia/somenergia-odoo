@@ -8,16 +8,23 @@ class ContractLookupAction extends Component {
     setup() {
         this.notification = useService("notification");
         this.rpc = useService("rpc");
+        const params = (this.props.action && this.props.action.params) || {};
+        const initialField = this.fields.includes(params.field) ? params.field : "phone";
+        const initialValue = (params.value || "").toString();
         this.state = useState({
-            field: "phone",
-            value: "",
+            field: initialField,
+            value: initialValue,
             loading: false,
             error: "",
             result: null,
             detailsByContract: {},
             loadingDetailsByContract: {},
         });
-        onWillStart(() => Promise.resolve());
+        onWillStart(async () => {
+            if (params.auto_search && this.state.value.trim()) {
+                await this.onSearch();
+            }
+        });
     }
 
     get fields() {
