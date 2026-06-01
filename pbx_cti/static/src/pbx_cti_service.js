@@ -14,11 +14,13 @@ export const pbxCtiService = {
             for (const { payload, type } of notifications) {
                 if (type === "pbx_incoming_call") {
                     action.doAction({
-                        type: "ir.actions.act_window",
-                        res_model: payload.res_model,
-                        res_id: payload.res_id,
-                        views: [[false, "form"]],
-                        target: "new",
+                        type: "ir.actions.client",
+                        tag: "helpdesk_contract_lookup.main",
+                        params: {
+                            field: "phone",
+                            value: payload.phone,
+                            auto_search: true,
+                        },
                     });
                 }
             }

@@ -68,36 +68,22 @@ class PbxCtiWebhook(http.Controller):
                 headers=[("Content-Type", "application/json")],
             )
 
-        # --- 3. Resolve phone → partner ---
-        partner = request.env["res.partner"].sudo().search(
-            ["|", ("phone", "=", phone), ("mobile", "=", phone)],
-            limit=1,
-        )
-        if not partner:
-            _logger.info("pbx_cti: no partner found for phone %s (user %s)", phone, user.login)
-            return request.make_response(
-                json.dumps({"result": "no_partner", "phone": phone}),
-                headers=[("Content-Type", "application/json")],
-            )
-
-        # --- 4. Push to user's browser via bus.bus ---
+        # --- 3. Push to user's browser via bus.bus ---
         channel = "{}{}".format(BUS_CHANNEL_PREFIX, user.id)
         request.env["bus.bus"].sudo()._sendone(
             channel,
             BUS_MESSAGE_TYPE,
             {
-                "res_model": "res.partner",
-                "res_id": partner.id,
                 "phone": phone,
                 "callid": callid,
             },
         )
         _logger.info(
-            "pbx_cti: pushed to channel %s → partner %s (%s)",
-            channel, partner.name, partner.id,
+            "pbx_cti: pushed to channel %s — phone=%s callid=%s",
+            channel, phone, callid,
         )
 
         return request.make_response(
-            json.dumps({"result": "ok", "partner_id": partner.id, "partner_name": partner.name}),
+            json.dumps({"result": "ok", "phone": phone}),
             headers=[("Content-Type", "application/json")],
         )

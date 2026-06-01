@@ -6,7 +6,7 @@
     "author": "Som Energia SCCL",
     "website": "https://www.somenergia.coop",
     "license": "AGPL-3",
-    "depends": ["base", "bus"],
+    "depends": ["base", "bus", "helpdesk_contract_lookup"],
     "data": [
         "views/res_users_views.xml",
     ],
