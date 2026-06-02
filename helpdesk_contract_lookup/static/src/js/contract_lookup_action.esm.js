@@ -23,6 +23,7 @@ class ContractLookupAction extends Component {
             detailsByContract: {},
             loadingDetailsByContract: {},
             expandedContracts: {},
+            activeTabByContract: {},
             linkedPartnerId: null,
         });
         onWillStart(async () => {
@@ -56,6 +57,7 @@ class ContractLookupAction extends Component {
         this.state.result = null;
         this.state.detailsByContract = {};
         this.state.expandedContracts = {};
+        this.state.activeTabByContract = {};
         try {
             const result = await this._rpcSearch();
             this.state.result = result;
@@ -118,6 +120,21 @@ class ContractLookupAction extends Component {
             },
             { newWindow: true }
         );
+    }
+
+    atrStateBadge(state) {
+        if (state === 'open') return 'badge bg-warning text-dark';
+        if (state === 'done') return 'badge bg-success';
+        if (state === 'cancel') return 'badge bg-danger';
+        return 'badge bg-secondary';
+    }
+
+    getActiveTab(contractNumber) {
+        return this.state.activeTabByContract[contractNumber] || "invoices";
+    }
+
+    setActiveTab(contractNumber, tab) {
+        this.state.activeTabByContract[contractNumber] = tab;
     }
 
     invoiceStateBadge(state) {

@@ -357,6 +357,8 @@ class HelpdeskContractLookupService(models.AbstractModel):
             result_by_id[contract["id"]] = result[contract_name]
 
         self._fetch_invoices(client, contract_ids, result_by_id)
+        self._fetch_meter_readings(client, contract_ids, result_by_id)
+        self._fetch_atr_cases(client, contract_ids, result_by_id)
 
         return {"status": "ok", "contracts": result}
 
@@ -413,3 +415,98 @@ class HelpdeskContractLookupService(models.AbstractModel):
                 })
         for bucket in result_by_id.values():
             bucket["invoices"].sort(key=lambda x: x.get("invoice_date") or "", reverse=True)
+
+    def _fetch_meter_readings(self, client, contract_ids, result_by_id, limit=12):
+        """Fetch meter readings for the given contract ids and populate result_by_id buckets."""
+        meter_ids = self._execute_kw(
+            client,
+            "giscedata.lectures.comptador",
+            "search",
+            [[("polissa", "in", contract_ids), ("active", "=", True)]],
+            {},
+        )
+        if not meter_ids:
+            return
+
+        meters = self._execute_kw(
+            client,
+            "giscedata.lectures.comptador",
+            "read",
+            [meter_ids],
+            {"fields": ["lectures", "name", "polissa"]},
+        )
+
+        meter2contract = {
+            meter["id"]: meter["polissa"][0]
+            for meter in meters
+            if meter.get("polissa")
+        }
+
+        reading_ids = []
+        for meter in meters:
+            meter_readings = meter.get("lectures") or []
+            reading_ids.extend(meter_readings[:limit])
+
+        if not reading_ids:
+            return
+
+        readings = self._execute_kw(
+            client,
+            "giscedata.lectures.lectura",
+            "read",
+            [reading_ids],
+            {"fields": ["name", "lectura", "origen_id", "periode", "comptador"]},
+        )
+
+        for reading in readings:
+            comptador = reading.get("comptador")
+            if not comptador:
+                continue
+            contract_id = meter2contract.get(comptador[0])
+            bucket = result_by_id.get(contract_id)
+            if bucket is not None:
+                periode = reading.get("periode")
+                origen = reading.get("origen_id")
+                bucket["meter_readings"].append({
+                    "meter": comptador[1],
+                    "date": reading.get("name"),
+                    "period": periode[1] if periode else "",
+                    "reading": reading.get("lectura"),
+                    "origin": origen[1] if origen else "",
+                })
+
+        for bucket in result_by_id.values():
+            bucket["meter_readings"].sort(key=lambda x: x.get("date") or "", reverse=True)
+
+    def _fetch_atr_cases(self, client, contract_ids, result_by_id):
+        """Fetch ATR switching cases for the given contract ids and populate result_by_id buckets."""
+        case_ids = self._execute_kw(
+            client,
+            "giscedata.switching",
+            "search",
+            [[("cups_polissa_id", "in", contract_ids)]],
+            {},
+        )
+        if not case_ids:
+            return
+        cases = self._execute_kw(
+            client,
+            "giscedata.switching",
+            "read",
+            [case_ids],
+            {"fields": ["date", "proces_id", "step_id", "state", "additional_info", "cups_polissa_id"]},
+        )
+        for case in cases:
+            polissa = case.get("cups_polissa_id")
+            contract_id = polissa[0] if polissa else None
+            bucket = result_by_id.get(contract_id)
+            if bucket is not None:
+                bucket["atr_cases"].append({
+                    "date": case.get("date"),
+                    "process": (case.get("proces_id") or [False, ""])[1],
+                    "step": (case.get("step_id") or [False, ""])[1],
+                    "state": case.get("state") or "",
+                    "additional_info": case.get("additional_info") or "",
+                })
+        for bucket in result_by_id.values():
+            bucket["atr_cases"].sort(key=lambda x: x.get("date") or "", reverse=True)
