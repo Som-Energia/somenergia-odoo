@@ -2,6 +2,12 @@
 <templates xml:space="preserve">
     <t t-name="helpdesk_contract_lookup.ContractLookupAction" owl="1">
         <div class="o_helpdesk_contract_lookup p-4" style="height: calc(100vh - 110px); overflow-y: auto;">
+            <div t-if="callInfo" class="alert alert-info d-flex gap-3 align-items-center mb-2">
+                <i class="fa fa-phone"/>
+                <span><strong>Phone:</strong> <t t-esc="callInfo.phone"/></span>
+                <span><strong>Call ID:</strong> <t t-esc="callInfo.callid"/></span>
+                <span><strong>Time:</strong> <t t-esc="callInfo.created_at"/></span>
+            </div>
             <div t-if="phonecallId" class="mb-3">
                 <button class="btn btn-outline-primary" t-on-click="openPhonecall">
                     <i class="fa fa-phone me-1"/> Open Call

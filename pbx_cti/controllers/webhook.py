@@ -3,6 +3,8 @@ import json
 import logging
 import re
 
+import pytz
+
 from odoo import http
 from odoo.http import request
 
@@ -81,6 +83,10 @@ class PbxCtiWebhook(http.Controller):
         })
 
         # --- 4. Push to user's browser via bus.bus ---
+        user_tz = pytz.timezone(user.tz or "UTC")
+        created_at_local = pytz.utc.localize(phonecall.create_date).astimezone(user_tz)
+        created_at_str = created_at_local.strftime("%H:%M:%S")
+
         channel = "{}{}".format(BUS_CHANNEL_PREFIX, user.id)
         request.env["bus.bus"].sudo()._sendone(
             channel,
@@ -89,6 +95,7 @@ class PbxCtiWebhook(http.Controller):
                 "phone": phone,
                 "callid": callid,
                 "phonecall_id": phonecall.id,
+                "created_at": created_at_str,
             },
         )
         _logger.info(

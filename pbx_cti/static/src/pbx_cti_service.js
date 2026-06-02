@@ -23,6 +23,11 @@ export const pbxCtiService = {
                                     value: payload.phone,
                                     auto_search: true,
                                     phonecall_id: payload.phonecall_id,
+                                    call_info: {
+                                        phone: payload.phone,
+                                        callid: payload.callid,
+                                        created_at: payload.created_at,
+                                    },
                                 },
                             },
                             { stackPosition: "push" }
