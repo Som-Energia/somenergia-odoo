@@ -68,7 +68,19 @@ class PbxCtiWebhook(http.Controller):
                 headers=[("Content-Type", "application/json")],
             )
 
-        # --- 3. Push to user's browser via bus.bus ---
+        # --- 3. Create crm.phonecall ---
+        phonecall = request.env["crm.phonecall"].sudo().create({
+            "name": "Incoming call %s" % phone,
+            "som_phone": phone,
+            "partner_phone": phone,
+            "som_pbx_call_id": callid,
+            "som_operator": extension,
+            "user_id": user.id,
+            "direction": "in",
+            "state": "open",
+        })
+
+        # --- 4. Push to user's browser via bus.bus ---
         channel = "{}{}".format(BUS_CHANNEL_PREFIX, user.id)
         request.env["bus.bus"].sudo()._sendone(
             channel,
@@ -76,6 +88,7 @@ class PbxCtiWebhook(http.Controller):
             {
                 "phone": phone,
                 "callid": callid,
+                "phonecall_id": phonecall.id,
             },
         )
         _logger.info(

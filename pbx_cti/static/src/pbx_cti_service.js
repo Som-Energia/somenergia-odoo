@@ -22,6 +22,7 @@ export const pbxCtiService = {
                                     field: "phone",
                                     value: payload.phone,
                                     auto_search: true,
+                                    phonecall_id: payload.phonecall_id,
                                 },
                             },
                             { stackPosition: "push" }

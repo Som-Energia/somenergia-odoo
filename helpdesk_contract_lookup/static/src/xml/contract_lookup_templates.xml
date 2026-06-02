@@ -2,6 +2,11 @@
 <templates xml:space="preserve">
     <t t-name="helpdesk_contract_lookup.ContractLookupAction" owl="1">
         <div class="o_helpdesk_contract_lookup p-4" style="height: calc(100vh - 110px); overflow-y: auto;">
+            <div t-if="phonecallId" class="mb-3">
+                <button class="btn btn-outline-primary" t-on-click="openPhonecall">
+                    <i class="fa fa-phone me-1"/> Open Call
+                </button>
+            </div>
             <div class="d-flex align-items-end gap-2 flex-wrap mb-3">
                 <div>
                     <label class="form-label">Search field</label>

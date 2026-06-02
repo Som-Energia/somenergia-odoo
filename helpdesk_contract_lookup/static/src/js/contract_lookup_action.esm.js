@@ -8,9 +8,11 @@ class ContractLookupAction extends Component {
     setup() {
         this.notification = useService("notification");
         this.rpc = useService("rpc");
+        this.action = useService("action");
         const params = (this.props.action && this.props.action.params) || {};
         const initialField = this.fields.includes(params.field) ? params.field : "phone";
         const initialValue = (params.value || "").toString();
+        this.phonecallId = params.phonecall_id || null;
         this.state = useState({
             field: initialField,
             value: initialValue,
@@ -61,6 +63,19 @@ class ContractLookupAction extends Component {
             value: this.state.value,
             limit: 20,
         });
+    }
+
+    openPhonecall() {
+        this.action.doAction(
+            {
+                type: "ir.actions.act_window",
+                res_model: "crm.phonecall",
+                res_id: this.phonecallId,
+                views: [[false, "form"]],
+                target: "current",
+            },
+            { newWindow: true }
+        );
     }
 
     async loadContractDetails(contractNumber) {
