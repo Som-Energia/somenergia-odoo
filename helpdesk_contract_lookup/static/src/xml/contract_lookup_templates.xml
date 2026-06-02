@@ -12,7 +12,7 @@
                     <label class="form-label">Search field</label>
                     <select class="form-select" t-model="state.field">
                         <t t-foreach="fields" t-as="field" t-key="field">
-                            <option t-att-value="field"><t t-esc="field"/></option>
+                            <option t-att-value="field"><t t-esc="fieldLabels[field] || field"/></option>
                         </t>
                     </select>
                 </div>

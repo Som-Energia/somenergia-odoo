@@ -22,6 +22,7 @@ class HelpdeskContractLookupService(models.AbstractModel):
         "email",
         "contract",
         "cups",
+        "partner_id",
         "all",
     }
 
@@ -109,6 +110,16 @@ class HelpdeskContractLookupService(models.AbstractModel):
         if field == "email":
             address_ids = self._address_ids_by_email(client, value)
             return self._partner_ids_by_address_ids(client, address_ids)
+
+        if field == "partner_id":
+            try:
+                pid = int(value)
+            except (TypeError, ValueError):
+                raise ValidationError(_("partner_id must be a numeric value."))
+            return self._execute_kw(
+                client, "res.partner", "search",
+                [[("id", "=", pid)]],
+            )
 
         partner_domain_by_field = {
             "name": [("name", "ilike", value)],

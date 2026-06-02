@@ -31,7 +31,21 @@ class ContractLookupAction extends Component {
     }
 
     get fields() {
-        return ["phone", "name", "nif", "soci", "email", "contract", "cups", "all"];
+        return ["phone", "name", "nif", "soci", "email", "contract", "cups", "partner_id", "all"];
+    }
+
+    get fieldLabels() {
+        return {
+            phone: "Phone",
+            name: "Name",
+            nif: "NIF",
+            soci: "Member code",
+            email: "Email",
+            contract: "Contract",
+            cups: "CUPS",
+            partner_id: "Partner ID",
+            all: "All",
+        };
     }
 
     async onSearch() {
