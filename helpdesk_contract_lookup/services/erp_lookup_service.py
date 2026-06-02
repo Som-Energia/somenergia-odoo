@@ -73,13 +73,47 @@ class HelpdeskContractLookupService(models.AbstractModel):
         erp_model = client.model(model)
         return getattr(erp_model, method)(*args, **kwargs)
 
+    def _address_ids_by_phone(self, client, phone):
+        return self._execute_kw(
+            client,
+            "res.partner.address",
+            "search",
+            [["|", ("phone", "like", phone), ("mobile", "like", phone)]],
+        )
+
+    def _address_ids_by_email(self, client, email):
+        return self._execute_kw(
+            client,
+            "res.partner.address",
+            "search",
+            [[("email", "ilike", email)]],
+        )
+
+    def _partner_ids_by_address_ids(self, client, address_ids):
+        if not address_ids:
+            return []
+        addresses = self._execute_kw(
+            client,
+            "res.partner.address",
+            "read",
+            [address_ids],
+            {"fields": ["partner_id"]},
+        )
+        return [a["partner_id"][0] for a in addresses if a.get("partner_id")]
+
     def _search_partner_ids(self, client, field, value, limit):
+        if field == "phone":
+            address_ids = self._address_ids_by_phone(client, value)
+            return self._partner_ids_by_address_ids(client, address_ids)
+
+        if field == "email":
+            address_ids = self._address_ids_by_email(client, value)
+            return self._partner_ids_by_address_ids(client, address_ids)
+
         partner_domain_by_field = {
             "name": [("name", "ilike", value)],
             "nif": [("vat", "ilike", value)],
             "soci": [("ref", "ilike", value)],
-            "email": [("email", "ilike", value)],
-            "phone": ["|", ("phone", "ilike", value), ("mobile", "ilike", value)],
         }
         if field in partner_domain_by_field:
             return self._execute_kw(
@@ -91,13 +125,22 @@ class HelpdeskContractLookupService(models.AbstractModel):
             )
 
         if field == "all":
-            return self._execute_kw(
+            address_ids = self._address_ids_by_phone(client, value)
+            address_ids += self._address_ids_by_email(client, value)
+            partner_ids = set(self._partner_ids_by_address_ids(client, address_ids))
+            partner_ids.update(self._execute_kw(
                 client,
                 "res.partner",
                 "search",
-                [["|", "|", "|", ("name", "ilike", value), ("vat", "ilike", value), ("ref", "ilike", value), ("email", "ilike", value)]],
+                [["|", "|", "|",
+                    ("name", "ilike", value),
+                    ("vat", "ilike", value),
+                    ("ref", "ilike", value),
+                    ("email", "ilike", value),
+                ]],
                 {"limit": limit},
-            )
+            ))
+            return list(partner_ids)
 
         return []
 
