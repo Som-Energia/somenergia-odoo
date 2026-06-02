@@ -21,6 +21,7 @@ class ContractLookupAction extends Component {
             result: null,
             detailsByContract: {},
             loadingDetailsByContract: {},
+            linkedPartnerId: null,
         });
         onWillStart(async () => {
             if (params.auto_search && this.state.value.trim()) {
@@ -63,6 +64,30 @@ class ContractLookupAction extends Component {
             value: this.state.value,
             limit: 20,
         });
+    }
+
+    async linkPartnerToCall(partnerId, partnerName, partnerVat) {
+        try {
+            await this.rpc("/helpdesk_contract_lookup/link_partner_to_call", {
+                phonecall_id: this.phonecallId,
+                partner_id: partnerId,
+                partner_name: partnerName,
+                partner_vat: partnerVat,
+            });
+            this.notification.add(
+                `Partner "${partnerName}" linked to call.`,
+                { type: "success" }
+            );
+            this.state.linkedPartnerId = partnerId;
+        } catch (error) {
+            const message = error.message || "Unexpected error linking partner to call.";
+            this.notification.add(message, { type: "danger" });
+        }
+    }
+
+    async linkPartnerToCallAndOpen(partnerId, partnerName, partnerVat) {
+        await this.linkPartnerToCall(partnerId, partnerName, partnerVat);
+        this.openPhonecall();
     }
 
     openPhonecall() {

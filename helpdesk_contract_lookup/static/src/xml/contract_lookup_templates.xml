@@ -49,13 +49,30 @@
                 </div>
 
                 <t t-foreach="state.result.partners" t-as="partner" t-key="partner.id">
-                    <div class="card mb-3">
+                    <div t-attf-class="card mb-3 {{ state.linkedPartnerId === partner.id ? 'border-success' : '' }}">
                         <div class="card-body">
-                            <h5 class="card-title mb-1"><t t-esc="partner.name"/></h5>
-                            <div class="text-muted mb-3">
-                                <span>Partner ID: <t t-esc="partner.id"/> - </span>
-                                <span t-if="partner.member_code">Member: <t t-esc="partner.member_code"/> - </span>
-                                <span t-if="partner.vat">VAT: <t t-esc="partner.vat"/></span>
+                            <h5 class="card-title mb-1">
+                                <t t-esc="partner.name"/>
+                                <span t-if="state.linkedPartnerId === partner.id" class="badge bg-success ms-2">Linked</span>
+                            </h5>
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="text-muted">
+                                    <span>Partner ID: <t t-esc="partner.id"/> - </span>
+                                    <span t-if="partner.member_code">Member: <t t-esc="partner.member_code"/> - </span>
+                                    <span t-if="partner.vat">VAT: <t t-esc="partner.vat"/></span>
+                                </div>
+                                <div t-if="phonecallId" class="d-flex gap-2">
+                                    <button
+                                        class="btn btn-sm btn-outline-success"
+                                        t-on-click="() => this.linkPartnerToCall(partner.id, partner.name, partner.vat)">
+                                        <i class="fa fa-link me-1"/> Link to Call
+                                    </button>
+                                    <button
+                                        class="btn btn-sm btn-success"
+                                        t-on-click="() => this.linkPartnerToCallAndOpen(partner.id, partner.name, partner.vat)">
+                                        <i class="fa fa-link me-1"/> Link to Call and Open
+                                    </button>
+                                </div>
                             </div>
 
                             <t t-if="partner.contracts.length">
