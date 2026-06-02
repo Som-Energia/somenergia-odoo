@@ -243,18 +243,52 @@ class HelpdeskContractLookupService(models.AbstractModel):
                         "titular",
                         "pagador",
                         "soci",
+                        "tarifa",
+                        "bank",
+                        "data_alta",
+                        "data_baixa",
                     ]
                 },
             )
 
+        # Bulk fetch CUPS address data
+        cups_ids = list({
+            contract["cups"][0]
+            for contract in contracts
+            if contract.get("cups")
+        })
+        cups_by_id = {}
+        if cups_ids:
+            cups_data = self._execute_kw(
+                client,
+                "giscedata.cups.ps",
+                "read",
+                [cups_ids],
+                {"fields": ["direccio", "id_municipi"]},
+            )
+            cups_by_id = {c["id"]: c for c in cups_data}
+
         partner_contracts = {partner_id: {} for partner_id in partner_ids}
         for contract in contracts:
             contract_number = contract.get("name")
+            cups = contract.get("cups")
+            cups_info = cups_by_id.get(cups[0], {}) if cups else {}
+            cups_address_parts = [
+                cups_info.get("direccio") or "",
+                (cups_info.get("id_municipi") or [False, ""])[1] or "",
+            ]
+            cups_address = ", ".join(p for p in cups_address_parts if p)
             contract_data = {
                 "number": contract_number,
                 "state": contract.get("state"),
                 "active": contract.get("active"),
-                "cups": (contract.get("cups") or [False, ""])[1],
+                "cups": (cups or [False, ""])[1],
+                "cups_address": cups_address,
+                "titular": (contract.get("titular") or [False, ""])[1],
+                "tarifa": (contract.get("tarifa") or [False, ""])[1],
+                "iban": (contract.get("bank") or [False, ""])[1],
+                "start_date": contract.get("data_alta") or "",
+                "end_date": contract.get("data_baixa") or "",
             }
             for rel_field in ["titular", "pagador", "soci"]:
                 rel_value = contract.get(rel_field)

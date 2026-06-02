@@ -106,9 +106,24 @@
                                     </thead>
                                     <tbody>
                                         <t t-foreach="partner.contracts" t-as="contract" t-key="contract.number">
-                                            <tr>
+                                            <tr t-att-style="contract_index % 2 !== 0 ? 'background-color: #e8f4fd;' : ''">
+                                                <td colspan="4" class="py-1 px-3">
+                                                    <div class="d-flex gap-4 small text-muted flex-wrap">
+                                                        <i class="fa fa-bolt me-1"/>
+                                                        <span><strong>Titular:</strong> <t t-esc="contract.titular || '—'"/></span>
+                                                        <span><strong>Tarifa:</strong> <t t-esc="contract.tarifa || '—'"/></span>
+                                                        <span><strong>IBAN:</strong> <t t-esc="contract.iban || '—'"/></span>
+                                                        <span><strong>Start:</strong> <t t-esc="contract.start_date || '—'"/></span>
+                                                        <span t-if="contract.end_date"><strong>End:</strong> <t t-esc="contract.end_date"/></span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr t-att-style="contract_index % 2 !== 0 ? 'background-color: #e8f4fd;' : ''">
                                                 <td><t t-esc="contract.number"/></td>
-                                                <td><t t-esc="contract.cups"/></td>
+                                                <td>
+                                                    <div class="small"><t t-esc="contract.cups"/></div>
+                                                    <div class="text-muted" style="font-size:0.75rem"><t t-esc="contract.cups_address"/></div>
+                                                </td>
                                                 <td><t t-esc="contract.state"/></td>
                                                 <td>
                                                     <button
@@ -122,7 +137,8 @@
                                                     </button>
                                                 </td>
                                             </tr>
-                                            <tr t-if="state.expandedContracts[contract.number]">
+                                            <tr t-if="state.expandedContracts[contract.number]"
+                                                t-att-style="contract_index % 2 !== 0 ? 'background-color: #e8f4fd;' : ''">
                                                 <td colspan="4" class="p-0">
                                                     <ul class="nav nav-tabs px-2 pt-2 bg-light">
                                                         <li class="nav-item">
