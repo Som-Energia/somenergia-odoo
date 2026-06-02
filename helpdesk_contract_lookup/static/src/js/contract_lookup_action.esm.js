@@ -22,6 +22,7 @@ class ContractLookupAction extends Component {
             result: null,
             detailsByContract: {},
             loadingDetailsByContract: {},
+            expandedContracts: {},
             linkedPartnerId: null,
         });
         onWillStart(async () => {
@@ -54,6 +55,7 @@ class ContractLookupAction extends Component {
         this.state.error = "";
         this.state.result = null;
         this.state.detailsByContract = {};
+        this.state.expandedContracts = {};
         try {
             const result = await this._rpcSearch();
             this.state.result = result;
@@ -118,11 +120,34 @@ class ContractLookupAction extends Component {
         );
     }
 
+    invoiceStateBadge(state) {
+        if (state === 'open') return 'badge bg-warning text-dark';
+        if (state === 'paid') return 'badge bg-success';
+        if (state === 'cancel') return 'badge bg-danger';
+        return 'badge bg-secondary';
+    }
+
+    invoiceStateIcon(state) {
+        if (state === 'open') return 'fa fa-clock-o';
+        if (state === 'paid') return 'fa fa-check';
+        if (state === 'cancel') return 'fa fa-times';
+        return 'fa fa-question';
+    }
+
+    invoiceStateLabel(state) {
+        if (state === 'open') return 'Open';
+        if (state === 'paid') return 'Paid';
+        if (state === 'cancel') return 'Cancelled';
+        return state || '—';
+    }
+
     async loadContractDetails(contractNumber) {
         if (!contractNumber) {
             return;
         }
+        // If already loaded, just toggle visibility
         if (this.state.detailsByContract[contractNumber]) {
+            this.state.expandedContracts[contractNumber] = !this.state.expandedContracts[contractNumber];
             return;
         }
         this.state.loadingDetailsByContract[contractNumber] = true;
@@ -135,6 +160,7 @@ class ContractLookupAction extends Component {
                 atr_cases: [],
                 meter_readings: [],
             };
+            this.state.expandedContracts[contractNumber] = true;
         } catch (error) {
             const message = error.message || "Unexpected details error.";
             this.notification.add(message, { type: "danger" });

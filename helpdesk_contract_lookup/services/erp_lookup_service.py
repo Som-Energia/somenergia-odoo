@@ -344,45 +344,72 @@ class HelpdeskContractLookupService(models.AbstractModel):
             {"fields": ["name"]},
         )
 
+        # Build result indexed by contract id for efficient lookup
+        result_by_id = {}
         result = {}
         for contract in contracts:
-            result[contract.get("name")] = {
+            contract_name = contract.get("name")
+            result[contract_name] = {
                 "invoices": [],
                 "atr_cases": [],
                 "meter_readings": [],
             }
+            result_by_id[contract["id"]] = result[contract_name]
 
+        self._fetch_invoices(client, contract_ids, result_by_id)
+
+        return {"status": "ok", "contracts": result}
+
+    def _fetch_invoices(self, client, contract_ids, result_by_id):
+        """Fetch invoices for the given contract ids and populate result_by_id buckets."""
+        # Use search + read (two steps) instead of search_reader:
+        # search_reader builds raw SQL and cannot resolve functional fields like 'number'.
+        invoice_ids = self._execute_kw(
+            client,
+            "giscedata.facturacio.factura",
+            "search",
+            [[
+                ("polissa_id", "in", contract_ids),
+                ("state", "!=", "draft"),
+                ("type", "in", ["out_invoice", "out_refund"]),
+            ]],
+            {"context": {"active_test": False}},
+        )
+        if not invoice_ids:
+            return
         invoices = self._execute_kw(
             client,
             "giscedata.facturacio.factura",
-            "search_reader",
-            [
-                [("polissa_id", "in", contract_ids), ("state", "!=", "draft")],
-                [
-                    "number",
-                    "date_invoice",
-                    "date_due",
-                    "amount_total",
-                    "state",
-                    "polissa_id",
-                ],
-                0,
-                200,
-                None,
-                {"active_test": False},
-            ],
+            "read",
+            [invoice_ids],
+            {"fields": [
+                "number",
+                "data_inici",
+                "data_final",
+                "amount_total",
+                "energia_kwh",
+                "dies",
+                "date_invoice",
+                "date_due",
+                "state",
+                "polissa_id",
+            ]},
         )
         for invoice in invoices:
-            contract_name = (invoice.get("polissa_id") or [False, ""])[1]
-            if contract_name in result:
-                result[contract_name]["invoices"].append(
-                    {
-                        "number": invoice.get("number") or "",
-                        "invoice_date": invoice.get("date_invoice"),
-                        "due_date": invoice.get("date_due"),
-                        "amount": invoice.get("amount_total"),
-                        "state": invoice.get("state"),
-                    }
-                )
-
-        return {"status": "ok", "contracts": result}
+            polissa = invoice.get("polissa_id")
+            contract_id = polissa[0] if polissa else None
+            bucket = result_by_id.get(contract_id)
+            if bucket is not None:
+                bucket["invoices"].append({
+                    "number": invoice.get("number") or "",
+                    "initial_date": invoice.get("data_inici"),
+                    "final_date": invoice.get("data_final"),
+                    "invoice_date": invoice.get("date_invoice"),
+                    "due_date": invoice.get("date_due"),
+                    "amount": invoice.get("amount_total"),
+                    "energy_kwh": invoice.get("energia_kwh") or 0,
+                    "days": invoice.get("dies"),
+                    "state": invoice.get("state"),
+                })
+        for bucket in result_by_id.values():
+            bucket["invoices"].sort(key=lambda x: x.get("invoice_date") or "", reverse=True)
