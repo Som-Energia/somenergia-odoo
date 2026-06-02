@@ -71,9 +71,40 @@ class HelpdeskContractLookupController(http.Controller):
         phonecall = request.env["crm.phonecall"].sudo().browse(phonecall_id)
         if not phonecall.exists():
             raise ValidationError("Phone call record not found.")
+
+        # Resolve or create Odoo partner if som_erp_id field is available
+        partner_model = request.env["res.partner"]
+        odoo_partner = None
+
+        if "som_erp_id" in partner_model.sudo()._fields:
+            odoo_partner = partner_model.sudo().search(
+                [("som_erp_id", "=", partner_id)], limit=1
+            )
+            if not odoo_partner:
+                odoo_partner = partner_model.sudo().create({
+                    "name": partner_name,
+                    "vat": partner_vat,
+                    "som_erp_id": partner_id,
+                    "type": "contact",
+                })
+                _logger.info(
+                    "Created new Odoo partner %s from ERP id %s",
+                    odoo_partner.id, partner_id,
+                )
+            else:
+                _logger.info(
+                    "Found existing Odoo partner %s for ERP id %s",
+                    odoo_partner.id, partner_id,
+                )
+        else:
+            _logger.warning(
+                "som_erp_id field not found on res.partner, skipping Odoo partner link"
+            )
+
         phonecall.write({
             "som_caller_erp_id": partner_id,
             "som_caller_name": partner_name or False,
             "som_caller_vat": partner_vat or False,
+            "partner_id": odoo_partner.id if odoo_partner else False,
         })
         return {"status": "ok"}
