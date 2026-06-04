@@ -127,7 +127,16 @@
                                                 </td>
                                             </tr>
                                             <tr t-att-style="contract_index % 2 !== 0 ? 'background-color: #e8f4fd;' : ''">
-                                                <td><t t-esc="contract.number"/></td>
+                                                <td>
+                                                    <t t-if="contract.contract_url">
+                                                        <a t-att-href="contract.contract_url" target="_blank" class="text-decoration-none">
+                                                            <t t-esc="contract.number"/>
+                                                        </a>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <t t-esc="contract.number"/>
+                                                    </t>
+                                                </td>
                                                 <td>
                                                     <div class="small"><t t-esc="contract.cups"/></div>
                                                     <div class="text-muted" style="font-size:0.75rem"><t t-esc="contract.cups_address"/></div>
@@ -192,7 +201,16 @@
                                                                 <tbody>
                                                                     <t t-foreach="state.detailsByContract[contract.number].invoices" t-as="invoice" t-key="invoice.number">
                                                                         <tr>
-                                                                            <td><t t-esc="invoice.number"/></td>
+                                                                            <td>
+                                                                                <t t-if="invoice.invoice_url">
+                                                                                    <a t-att-href="invoice.invoice_url" target="_blank" class="text-decoration-none">
+                                                                                        <t t-esc="invoice.number"/>
+                                                                                    </a>
+                                                                                </t>
+                                                                                <t t-else="">
+                                                                                    <t t-esc="invoice.number"/>
+                                                                                </t>
+                                                                            </td>
                                                                             <td><t t-esc="invoice.initial_date"/> – <t t-esc="invoice.final_date"/></td>
                                                                             <td><t t-esc="invoice.invoice_date"/></td>
                                                                             <td><t t-esc="invoice.due_date"/></td>

@@ -34,6 +34,18 @@ class HelpdeskContractLookupService(models.AbstractModel):
             return ""
         return template.replace("{res_id}", str(res_id))
 
+    def _build_erp_contract_url(self, res_id):
+        template = self._get_param("helpdesk_contract_lookup.erp_contract_url_template", "") or ""
+        if not template:
+            return ""
+        return template.replace("{res_id}", str(res_id))
+
+    def _build_erp_invoice_url(self, res_id):
+        template = self._get_param("helpdesk_contract_lookup.erp_invoice_url_template", "") or ""
+        if not template:
+            return ""
+        return template.replace("{res_id}", str(res_id))
+
     def _get_search_limit(self, provided_limit):
         if provided_limit:
             try:
@@ -284,6 +296,7 @@ class HelpdeskContractLookupService(models.AbstractModel):
             ]
             cups_address = ", ".join(p for p in cups_address_parts if p)
             contract_data = {
+                "contract_id": contract["id"],
                 "number": contract_number,
                 "state": contract.get("state"),
                 "active": contract.get("active"),
@@ -294,6 +307,7 @@ class HelpdeskContractLookupService(models.AbstractModel):
                 "iban": (contract.get("bank") or [False, ""])[1],
                 "start_date": contract.get("data_alta") or "",
                 "end_date": contract.get("data_baixa") or "",
+                "contract_url": self._build_erp_contract_url(contract["id"]),
             }
             for rel_field in ["titular", "pagador", "soci"]:
                 rel_value = contract.get(rel_field)
@@ -443,16 +457,18 @@ class HelpdeskContractLookupService(models.AbstractModel):
             bucket = result_by_id.get(contract_id)
             if bucket is not None:
                 bucket["invoices"].append({
-                    "number": invoice.get("number") or "",
-                    "initial_date": invoice.get("data_inici"),
-                    "final_date": invoice.get("data_final"),
-                    "invoice_date": invoice.get("date_invoice"),
-                    "due_date": invoice.get("date_due"),
-                    "amount": invoice.get("amount_total"),
-                    "energy_kwh": invoice.get("energia_kwh") or 0,
-                    "days": invoice.get("dies"),
-                    "state": invoice.get("state"),
-                })
+                "number": invoice.get("number") or "",
+                "invoice_id": invoice["id"],
+                "initial_date": invoice.get("data_inici"),
+                "final_date": invoice.get("data_final"),
+                "invoice_date": invoice.get("date_invoice"),
+                "due_date": invoice.get("date_due"),
+                "amount": invoice.get("amount_total"),
+                "energy_kwh": invoice.get("energia_kwh") or 0,
+                "days": invoice.get("dies"),
+                "state": invoice.get("state"),
+                "invoice_url": self._build_erp_invoice_url(invoice["id"]),
+            })
         for bucket in result_by_id.values():
             bucket["invoices"].sort(key=lambda x: x.get("invoice_date") or "", reverse=True)
 

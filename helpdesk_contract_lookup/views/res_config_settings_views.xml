@@ -23,6 +23,20 @@
                                 <field name="helpdesk_contract_lookup_erp_partner_url_template" placeholder="Paste the ERP partner action URL template using {res_id}"/>
                             </div>
                         </div>
+                        <div class="col-12 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <span class="o_form_label">ERP Contract URL Template</span>
+                                <field name="helpdesk_contract_lookup_erp_contract_url_template" placeholder="Paste the ERP contract action URL template using {res_id}"/>
+                            </div>
+                        </div>
+                        <div class="col-12 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <span class="o_form_label">ERP Invoice URL Template</span>
+                                <field name="helpdesk_contract_lookup_erp_invoice_url_template" placeholder="Paste the ERP invoice action URL template using {res_id}"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </xpath>

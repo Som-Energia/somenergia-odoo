@@ -14,3 +14,13 @@ class ResConfigSettings(models.TransientModel):
         string="ERP Partner URL Template",
         config_parameter="helpdesk_contract_lookup.erp_partner_url_template",
     )
+
+    helpdesk_contract_lookup_erp_contract_url_template = fields.Char(
+        string="ERP Contract URL Template",
+        config_parameter="helpdesk_contract_lookup.erp_contract_url_template",
+    )
+
+    helpdesk_contract_lookup_erp_invoice_url_template = fields.Char(
+        string="ERP Invoice URL Template",
+        config_parameter="helpdesk_contract_lookup.erp_invoice_url_template",
+    )
