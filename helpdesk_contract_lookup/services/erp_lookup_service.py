@@ -1,5 +1,4 @@
 import logging
-
 from erppeek import Client
 
 from odoo import _, models
@@ -28,6 +27,12 @@ class HelpdeskContractLookupService(models.AbstractModel):
 
     def _get_param(self, key, default=False):
         return self.env["ir.config_parameter"].sudo().get_param(key, default)
+
+    def _build_erp_partner_url(self, res_id):
+        template = self._get_param("helpdesk_contract_lookup.erp_partner_url_template", "") or ""
+        if not template:
+            return ""
+        return template.replace("{res_id}", str(res_id))
 
     def _get_search_limit(self, provided_limit):
         if provided_limit:
@@ -311,6 +316,7 @@ class HelpdeskContractLookupService(models.AbstractModel):
                     "postalcode": partner.get("www_zip") or "",
                     "state": (partner.get("www_provincia") or [False, {}])[1].get("name", "") if partner.get("www_provincia") else "",
                     "ov": bool(partner.get("empowering_token")),
+                    "erp_url": self._build_erp_partner_url(partner_id),
                     "lang": partner.get("lang") or "",
                     "comment": partner.get("comment") or "",
                     "contracts": sorted(

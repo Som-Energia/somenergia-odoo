@@ -61,6 +61,9 @@
                                 <t t-esc="partner.name"/>
                                 <span t-if="state.linkedPartnerId === partner.id" class="badge bg-success ms-2">Linked</span>
                                 <span t-if="partner.ov" class="badge bg-info ms-2">OV</span>
+                                <a t-if="partner.erp_url" t-att-href="partner.erp_url" target="_blank" class="ms-2 text-decoration-none" title="Open in ERP">
+                                    <i class="fa fa-external-link"/>
+                                </a>
                             </h5>
                             <div class="text-muted small mb-2">
                                 <span t-if="partner.address"><t t-esc="partner.address"/>, </span>
@@ -76,7 +79,12 @@
                             </div>
                             <div class="d-flex align-items-center justify-content-between mb-3">
                                 <div class="text-muted">
-                                    <span>Partner ID: <t t-esc="partner.id"/> - </span>
+                                    <span>Partner ID: </span>
+                                    <a t-if="partner.erp_url" t-att-href="partner.erp_url" target="_blank" class="text-decoration-none">
+                                        <t t-esc="partner.id"/>
+                                    </a>
+                                    <t t-else=""><t t-esc="partner.id"/></t>
+                                    <span> - </span>
                                     <span t-if="partner.member_code">Member: <t t-esc="partner.member_code"/> - </span>
                                     <span t-if="partner.vat">VAT: <t t-esc="partner.vat"/></span>
                                 </div>
