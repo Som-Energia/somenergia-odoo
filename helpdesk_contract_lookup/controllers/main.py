@@ -15,6 +15,37 @@ class HelpdeskContractLookupController(http.Controller):
         if not user.has_group(_HELPDESK_GROUP):
             raise AccessError("You do not have access to Contract Lookup.")
 
+    def _get_or_create_odoo_partner(self, partner_id, partner_name, partner_vat):
+        partner_model = request.env["res.partner"]
+        odoo_partner = None
+
+        if "som_erp_id" in partner_model.sudo()._fields:
+            odoo_partner = partner_model.sudo().search(
+                [("som_erp_id", "=", partner_id)], limit=1
+            )
+            if not odoo_partner:
+                odoo_partner = partner_model.sudo().create({
+                    "name": partner_name,
+                    "vat": partner_vat,
+                    "som_erp_id": partner_id,
+                    "type": "contact",
+                })
+                _logger.info(
+                    "Created new Odoo partner %s from ERP id %s",
+                    odoo_partner.id, partner_id,
+                )
+            else:
+                _logger.info(
+                    "Found existing Odoo partner %s for ERP id %s",
+                    odoo_partner.id, partner_id,
+                )
+        else:
+            _logger.warning(
+                "som_erp_id field not found on res.partner, skipping Odoo partner link"
+            )
+
+        return odoo_partner
+
     @http.route(
         "/helpdesk_contract_lookup/search",
         type="json",
@@ -72,34 +103,7 @@ class HelpdeskContractLookupController(http.Controller):
         if not phonecall.exists():
             raise ValidationError("Phone call record not found.")
 
-        # Resolve or create Odoo partner if som_erp_id field is available
-        partner_model = request.env["res.partner"]
-        odoo_partner = None
-
-        if "som_erp_id" in partner_model.sudo()._fields:
-            odoo_partner = partner_model.sudo().search(
-                [("som_erp_id", "=", partner_id)], limit=1
-            )
-            if not odoo_partner:
-                odoo_partner = partner_model.sudo().create({
-                    "name": partner_name,
-                    "vat": partner_vat,
-                    "som_erp_id": partner_id,
-                    "type": "contact",
-                })
-                _logger.info(
-                    "Created new Odoo partner %s from ERP id %s",
-                    odoo_partner.id, partner_id,
-                )
-            else:
-                _logger.info(
-                    "Found existing Odoo partner %s for ERP id %s",
-                    odoo_partner.id, partner_id,
-                )
-        else:
-            _logger.warning(
-                "som_erp_id field not found on res.partner, skipping Odoo partner link"
-            )
+        odoo_partner = self._get_or_create_odoo_partner(partner_id, partner_name, partner_vat)
 
         phonecall.write({
             "som_caller_erp_id": partner_id,
@@ -108,3 +112,21 @@ class HelpdeskContractLookupController(http.Controller):
             "partner_id": odoo_partner.id if odoo_partner else False,
         })
         return {"status": "ok"}
+
+    @http.route(
+        "/helpdesk_contract_lookup/open_partner_in_odoo",
+        type="json",
+        auth="user",
+        methods=["POST"],
+        csrf=False,
+    )
+    def open_partner_in_odoo(self, partner_id=None, partner_name=None, partner_vat=None):
+        self._check_access()
+        if not partner_id:
+            raise ValidationError("partner_id is required.")
+
+        odoo_partner = self._get_or_create_odoo_partner(partner_id, partner_name, partner_vat)
+        if not odoo_partner:
+            raise UserError("Could not resolve Odoo partner.")
+
+        return {"status": "ok", "odoo_partner_id": odoo_partner.id}

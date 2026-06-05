@@ -61,9 +61,16 @@
                                 <t t-esc="partner.name"/>
                                 <span t-if="state.linkedPartnerId === partner.id" class="badge bg-success ms-2">Linked</span>
                                 <span t-if="partner.ov" class="badge bg-info ms-2">OV</span>
-                                <a t-if="partner.erp_url" t-att-href="partner.erp_url" target="_blank" class="ms-2 text-decoration-none" title="Open in ERP">
-                                    <i class="fa fa-external-link"/>
-                                </a>
+                                <div class="d-inline-flex gap-2 ms-2 align-middle">
+                                    <a t-if="partner.erp_url" t-att-href="partner.erp_url" target="_blank" class="btn btn-sm btn-outline-secondary py-0">
+                                        <i class="fa fa-external-link me-1"/>Open in ERP
+                                    </a>
+                                    <button
+                                        class="btn btn-sm btn-outline-primary py-0"
+                                        t-on-click="() => this.openPartnerInOdoo(partner.id, partner.name, partner.vat)">
+                                        <i class="fa fa-user me-1"/>Open in Odoo
+                                    </button>
+                                </div>
                             </h5>
                             <div class="text-muted small mb-2">
                                 <span t-if="partner.address"><t t-esc="partner.address"/>, </span>
