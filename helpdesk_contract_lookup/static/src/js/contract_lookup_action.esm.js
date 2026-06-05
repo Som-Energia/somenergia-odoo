@@ -165,6 +165,31 @@ class ContractLookupAction extends Component {
         }
     }
 
+    async registerIncomingCall(partnerId, partnerName, partnerVat, partnerPhone) {
+        try {
+            const response = await this.rpc("/helpdesk_contract_lookup/register_incoming_call", {
+                partner_id: partnerId,
+                partner_name: partnerName,
+                partner_vat: partnerVat,
+                partner_phone: partnerPhone,
+            });
+            this._saveReturnSearch();
+            this.action.doAction(
+                {
+                    type: "ir.actions.act_window",
+                    res_model: "crm.phonecall",
+                    res_id: response.phonecall_id,
+                    views: [[false, "form"]],
+                    target: "current",
+                },
+                { stackPosition: "push" }
+            );
+        } catch (error) {
+            const message = error.message || "Unexpected error registering incoming call.";
+            this.notification.add(message, { type: "danger" });
+        }
+    }
+
     openPhonecall() {
         this.action.doAction(
             {

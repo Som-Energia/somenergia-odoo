@@ -107,6 +107,13 @@
                                         <i class="fa fa-link me-1"/> Link to Call and Open
                                     </button>
                                 </div>
+                                <div t-else="" class="d-flex gap-2">
+                                    <button
+                                        class="btn btn-sm btn-success"
+                                        t-on-click="() => this.registerIncomingCall(partner.id, partner.name, partner.vat, partner.primary_phone)">
+                                        <i class="fa fa-phone me-1"/> Register Incoming Call
+                                    </button>
+                                </div>
                             </div>
 
                             <t t-if="partner.contracts.length">

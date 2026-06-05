@@ -130,3 +130,37 @@ class HelpdeskContractLookupController(http.Controller):
             raise UserError("Could not resolve Odoo partner.")
 
         return {"status": "ok", "odoo_partner_id": odoo_partner.id}
+
+    @http.route(
+        "/helpdesk_contract_lookup/register_incoming_call",
+        type="json",
+        auth="user",
+        methods=["POST"],
+        csrf=False,
+    )
+    def register_incoming_call(
+        self, partner_id=None, partner_name=None, partner_vat=None, partner_phone=None
+    ):
+        self._check_access()
+        if not partner_id:
+            raise ValidationError("partner_id is required.")
+
+        odoo_partner = self._get_or_create_odoo_partner(partner_id, partner_name, partner_vat)
+        if not odoo_partner:
+            raise UserError("Could not resolve Odoo partner.")
+
+        display_name = partner_phone or partner_name or partner_id
+        phonecall = request.env["crm.phonecall"].sudo().create({
+            "name": "Incoming call %s" % display_name,
+            "partner_id": odoo_partner.id,
+            "som_phone": partner_phone or False,
+            "partner_phone": partner_phone or False,
+            "som_caller_erp_id": partner_id,
+            "som_caller_name": partner_name or False,
+            "som_caller_vat": partner_vat or False,
+            "user_id": request.env.user.id,
+            "direction": "in",
+            "state": "open",
+        })
+
+        return {"status": "ok", "phonecall_id": phonecall.id}
