@@ -317,6 +317,9 @@ class HelpdeskContractLookupService(models.AbstractModel):
         result = []
         for partner in partners:
             partner_id = partner["id"]
+            partner_phones = list(dict.fromkeys(
+                x for x in [partner.get("www_phone"), partner.get("www_mobile")] if x
+            ))
             primary_phone = partner.get("www_phone") or partner.get("www_mobile") or ""
             result.append(
                 {
@@ -325,7 +328,7 @@ class HelpdeskContractLookupService(models.AbstractModel):
                     "member_code": partner.get("ref") or "",
                     "vat": partner.get("vat") or "",
                     "email": partner.get("www_email") or "",
-                    "phones": [x for x in [partner.get("www_phone"), partner.get("www_mobile")] if x],
+                    "phones": partner_phones,
                     "primary_phone": primary_phone,
                     "address": partner.get("www_street") or "",
                     "city": (partner.get("www_municipi") or [False, {}])[1].get("name", "") if partner.get("www_municipi") else "",
