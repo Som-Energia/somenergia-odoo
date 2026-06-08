@@ -153,7 +153,7 @@
                                                 </td>
                                                 <td>
                                                     <div class="small"><t t-esc="contract.cups"/></div>
-                                                    <div class="text-muted" style="font-size:0.75rem"><t t-esc="contract.cups_address"/></div>
+                                                    <div class="text-muted o-contract-secondary-text"><t t-esc="contract.cups_address"/></div>
                                                 </td>
                                                 <td><t t-esc="contract.state"/></td>
                                                 <td>
