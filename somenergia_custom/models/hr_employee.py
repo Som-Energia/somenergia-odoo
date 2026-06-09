@@ -120,6 +120,14 @@ class HrEmployeeBase(models.AbstractModel):
         string='Disabled restrictions for attendance to date',
     )
 
+    som_lock_bypass_date_from = fields.Date(
+        string='Timesheet lock bypass from',
+    )
+
+    som_lock_bypass_date_to = fields.Date(
+        string='Timesheet lock bypass to',
+    )
+
     som_manager_ids = fields.Many2many(
         string='Managers',
         comodel_name='hr.employee',

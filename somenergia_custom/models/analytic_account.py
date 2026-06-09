@@ -107,7 +107,19 @@ class AccountAnalyticLine(models.Model):
                 if timesheet_week_id and timesheet_add_id:
                     timesheet_week_id.som_timesheet_add_id = timesheet_add_id.id
 
+    def _check_period_lock(self):
+        """Raises UserError if any non-cumulative record in self is in a locked period."""
+        company = self.env.company
+        for record in self:
+            if record.som_is_cumulative or not record.date:
+                continue
+            if company._is_period_locked(record.date, employee=record.employee_id):
+                raise exceptions.UserError(_(
+                    "The timesheet entry dated '%s' belongs to a locked period."
+                ) % record.date)
+
     def unlink(self):
+        self._check_period_lock()
         for record in self:
             if record.som_is_cumulative:
                 return False
@@ -117,8 +129,17 @@ class AccountAnalyticLine(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        company = self.env.company
         flag_match = False
         for values in vals_list:
+            # Period lock check (skip cumulative lines, they are system-generated)
+            if not values.get('som_is_cumulative') and values.get('date'):
+                employee = self.env['hr.employee'].browse(values['employee_id']) \
+                    if values.get('employee_id') else self.env['hr.employee']
+                if company._is_period_locked(values['date'], employee=employee):
+                    raise exceptions.UserError(_(
+                        "Cannot create a timesheet entry in a locked period (%s)."
+                    ) % values['date'])
             # when creating from project.task
             if values.get('task_id'):
                 # We get the project area from employee's department
@@ -169,6 +190,8 @@ class AccountAnalyticLine(models.Model):
         return res
 
     def write(self, vals):
+        # Period lock check (skip cumulative lines, they are system-generated)
+        self._check_period_lock()
         if self.task_id and (vals.get('date_time', False) or vals.get('employee_id', False)):
             for record in self:
                 date_time = vals.get('date_time', record.date_time)

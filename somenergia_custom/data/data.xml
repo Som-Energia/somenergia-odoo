@@ -246,5 +246,24 @@
             </field>
         </record>
 
+        <!--Tancament automàtic de períodes d'imputació (dia 10 de cada mes)-->
+        <record model="ir.cron" id="som_update_timesheet_lock_date">
+            <field name="name">Som - Update timesheet lock date</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">months</field>
+            <field name="numbercall">-1</field>
+            <field
+                name="nextcall"
+                eval="(DateTime.now().replace(day=10) if DateTime.now().day &lt; 10 else (DateTime.now() + timedelta(days=25)).replace(day=10)).strftime('%Y-%m-%d 06:00:00')"
+            />
+            <field name="doall" eval="False" />
+            <field name="active" eval="False" />
+            <field name="model_id" ref="base.model_res_company" />
+            <field name="state">code</field>
+            <field name="code">
+                model._do_update_timesheet_lock_date()
+            </field>
+        </record>
+
     </data>
 </odoo>

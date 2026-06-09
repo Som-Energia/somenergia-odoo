@@ -34,3 +34,18 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.som_attendance_limit_checkout',
         readonly=False,
     )
+
+    som_timesheet_lock_date = fields.Date(
+        related='company_id.som_timesheet_lock_date',
+        readonly=False,
+    )
+
+    som_timesheet_lock_bypass_date_from = fields.Date(
+        related='company_id.som_timesheet_lock_bypass_date_from',
+        readonly=False,
+    )
+
+    som_timesheet_lock_bypass_date_to = fields.Date(
+        related='company_id.som_timesheet_lock_bypass_date_to',
+        readonly=False,
+    )
