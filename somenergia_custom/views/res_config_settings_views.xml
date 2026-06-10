@@ -142,6 +142,18 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane"/>
+                        <div class="o_setting_right_pane">
+                            <label for="som_worked_week_help_url" string="URL d'ajuda de worked week"/>
+                            <div class="text-muted">
+                                Enllaç que s'obrirà des del botó d'ajuda del formulari de worked week.
+                            </div>
+                            <div class="content-group mt8">
+                                <field name="som_worked_week_help_url" placeholder="https://..."/>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </xpath>
         </field>

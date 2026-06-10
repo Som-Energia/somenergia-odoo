@@ -66,6 +66,11 @@
                 <form string="Worked Week">
                     <header>
                         <field name="som_is_locked" invisible="1"/>
+                        <button name="action_open_help_url"
+                                type="object"
+                                string="Ajuda"
+                                icon="fa-question-circle"
+                                class="btn btn-secondary"/>
                         <span class="badge rounded-pill text-bg-warning ms-2"
                               attrs="{'invisible': [('som_is_locked', '=', False)]}">
                             Periode tancat

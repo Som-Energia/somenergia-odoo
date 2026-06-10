@@ -136,6 +136,21 @@ class SomWorkedWeek(models.Model):
         self._check_period_lock()
         return super().write(vals)
 
+    def action_open_help_url(self):
+        self.ensure_one()
+        help_url = self.env['ir.config_parameter'].sudo().get_param(
+            'somenergia_custom.som_worked_week_help_url'
+        )
+        if not help_url:
+            raise exceptions.UserError(_(
+                "No help URL is configured for worked weeks."
+            ))
+        return {
+            'type': 'ir.actions.act_url',
+            'url': help_url,
+            'target': 'new',
+        }
+
     def get_incomplete_worked_weeks(self):
         reference_day = datetime.now() - timedelta(days=datetime.now().weekday() + 1)
         domain = [
