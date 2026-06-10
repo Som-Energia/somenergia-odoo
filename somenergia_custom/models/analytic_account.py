@@ -192,6 +192,21 @@ class AccountAnalyticLine(models.Model):
     def write(self, vals):
         # Period lock check (skip cumulative lines, they are system-generated)
         self._check_period_lock()
+        # Also check the resulting state: moving to a locked date or a narrower-bypass employee
+        if 'date' in vals or 'employee_id' in vals:
+            company = self.env.company
+            for record in self:
+                if record.som_is_cumulative:
+                    continue
+                new_date = vals.get('date', record.date)
+                new_employee = (
+                    self.env['hr.employee'].browse(vals['employee_id'])
+                    if 'employee_id' in vals else record.employee_id
+                )
+                if new_date and company._is_period_locked(new_date, employee=new_employee):
+                    raise exceptions.UserError(_(
+                        "Cannot move timesheet entry to a locked period (%s)."
+                    ) % new_date)
         if self.task_id and (vals.get('date_time', False) or vals.get('employee_id', False)):
             for record in self:
                 date_time = vals.get('date_time', record.date_time)
