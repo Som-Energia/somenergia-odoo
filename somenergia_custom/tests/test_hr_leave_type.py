@@ -4,16 +4,20 @@ from odoo.addons.mail.tests.common import mail_new_test_user
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from freezegun import freeze_time
+from odoo.tests.common import tagged
 
 from odoo.exceptions import UserError, ValidationError
 
 from odoo.addons.hr_holidays.tests.common import TestHrHolidaysCommon
 
 
+@tagged('som_hr_leave_type')
 class TestHrLeaveType(TestHrHolidaysCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+
+        cls.env.company.som_timesheet_lock_date = False
 
         leave_start_datetime = datetime(2024, 11, 27, 7, 0, 0, 0)
         leave_end_datetime = leave_start_datetime + relativedelta(days=3)
