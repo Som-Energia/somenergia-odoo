@@ -121,6 +121,31 @@ Important: `.agents/skill-registry.md` references some convention files under `.
 - When changing business behavior, search the addon's `tests/` directory for coverage gaps.
 - For imported/community addons, minimize divergence unless Som Energia explicitly owns the customization.
 
+## Good programming practices
+
+### Odoo / Python
+
+- Prefer small, explicit model methods over large multi-purpose functions.
+- Keep business rules in models/services, not hidden in XML side effects.
+- Reuse Odoo ORM patterns (`create`, `write`, `unlink`, computed fields, constraints, onchange) instead of bypassing them.
+- Avoid hardcoded IDs, raw SQL, and context-dependent hacks unless there is a proven need.
+- Keep method names intention-revealing and module-scoped.
+- When overriding framework methods, preserve super-calls and document why the override exists.
+- Validate security impact whenever changing access rules, record rules, or fields shown in views.
+- Follow existing test and naming style inside the target addon before introducing a new pattern.
+
+### TDD
+
+- Prefer **test-first** changes when behavior is being added or fixed.
+- Start by writing or extending a failing test in the target addon's `tests/` directory.
+- Make the smallest code change needed to pass.
+- Refactor only after the test is green.
+- For bug fixes, encode the bug with a regression test before changing production code whenever feasible.
+- Use `--test-tags` to keep feedback loops short while iterating.
+- Do not claim a behavior change is finished if it is not covered by an automated test, unless the user explicitly accepts that tradeoff.
+
+Reference mindset: keep the loop **red -> green -> refactor** and align with standard Odoo addon testing, not generic standalone pytest workflows.
+
 ## Useful discovery commands
 
 ```bash
