@@ -52,3 +52,5 @@ package.json
 
 # config
 scripts/config.json
+scripts/*.local.json
+scripts/secrets*.json
