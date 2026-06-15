@@ -9,5 +9,6 @@ from . import test_hr_attendance_hours_limit
 from . import test_hr_employee
 from . import test_hr_appraisal
 from . import test_timesheets_analysis
+from . import test_timesheet_visible_projects
 from . import test_analytic_account_line
 from . import test_timesheet_period_lock

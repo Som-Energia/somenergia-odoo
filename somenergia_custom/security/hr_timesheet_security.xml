@@ -9,6 +9,12 @@
             <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
 
+        <record id="som_group_hr_timesheet_visible_projects" model="res.groups">
+            <field name="name">User: visible projects timesheets</field>
+            <field name="category_id" ref="base.module_category_services_timesheets"/>
+            <field name="implied_ids" eval="[(4, ref('hr_timesheet.group_hr_timesheet_user'))]"/>
+        </record>
+
         <record id="som_timesheet_analysis_report_department" model="ir.rule">
             <field name="name">Som Timesheets Analysis Report department</field>
             <field name="model_id" ref="hr_timesheet.model_timesheets_analysis_report"/>
@@ -17,6 +23,42 @@
                 ]
             </field>
             <field name="groups" eval="[(4, ref('som_group_hr_timesheet_department'))]"/>
+        </record>
+
+        <record id="som_timesheet_line_visible_projects_read" model="ir.rule">
+            <field name="name">Som Timesheet line visible projects read</field>
+            <field name="model_id" ref="analytic.model_account_analytic_line"/>
+            <field name="domain_force">[
+                ('project_id', '!=', False),
+                '|', '|', '|',
+                    ('project_id.privacy_visibility', '!=', 'followers'),
+                    ('project_id.message_partner_ids', 'in', [user.partner_id.id]),
+                    ('task_id.message_partner_ids', 'in', [user.partner_id.id]),
+                    ('task_id.user_ids', 'in', user.id)
+            ]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+            <field name="groups" eval="[(4, ref('som_group_hr_timesheet_visible_projects'))]"/>
+        </record>
+
+        <record id="som_timesheet_analysis_report_visible_projects_read" model="ir.rule">
+            <field name="name">Som Timesheets Analysis Report visible projects read</field>
+            <field name="model_id" ref="hr_timesheet.model_timesheets_analysis_report"/>
+            <field name="domain_force">[
+                ('project_id', '!=', False),
+                '|', '|', '|',
+                    ('project_id.privacy_visibility', '!=', 'followers'),
+                    ('project_id.message_partner_ids', 'in', [user.partner_id.id]),
+                    ('task_id.message_partner_ids', 'in', [user.partner_id.id]),
+                    ('task_id.user_ids', 'in', user.id)
+            ]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+            <field name="groups" eval="[(4, ref('som_group_hr_timesheet_visible_projects'))]"/>
         </record>
 
     </data>
