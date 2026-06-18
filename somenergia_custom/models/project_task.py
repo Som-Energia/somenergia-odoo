@@ -64,12 +64,25 @@ class Task(models.Model):
         return result
 
     def write(self, vals):
+        if 'som_project_id' in vals:
+            id_new_service_project = vals.get('som_project_id', False)
+            for task_id in self:
+                current_service_project = task_id.som_project_id
+                flag_changing_som_project_id = current_service_project.id != id_new_service_project
+                timesheet_with_current_service_project_ids = task_id.timesheet_ids.filtered(
+                    lambda x: x.project_id.id == current_service_project.id
+                )
+                if flag_changing_som_project_id and timesheet_with_current_service_project_ids:
+                    raise ValidationError(_(
+                        "No pots modificar la 'Tasca Servei' d'aquesta tasca perquè ja hi ha "
+                        "parts d'hores vinculats."
+                    ))
+
         # we don't allow to change 'som_additional_project_id'
         # if the task has timesheet lines linked to it
         # to avoid inconsistencies in the timesheet entries
         if 'som_additional_project_id' in vals:
             id_new_ap = vals.get('som_additional_project_id', False)
-            timesheet_line_obj = self.env['account.analytic.line']
             for task_id in self:
                 current_ap_id = task_id.som_additional_project_id
                 flag_changing_som_additional_project_id = (

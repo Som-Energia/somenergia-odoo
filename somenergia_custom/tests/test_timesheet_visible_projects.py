@@ -32,10 +32,12 @@ class TestTimesheetVisibleProjects(TransactionCase):
         cls.task_public = cls.env['project.task'].create({
             'name': 'Public Task',
             'project_id': cls.project_public.id,
+            'som_project_id': cls.project_public.id,
         })
         cls.task_private = cls.env['project.task'].create({
             'name': 'Private Task',
             'project_id': cls.project_private.id,
+            'som_project_id': cls.project_private.id,
         })
 
         cls.line_visible_public = cls._create_timesheet(

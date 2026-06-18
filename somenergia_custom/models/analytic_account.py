@@ -142,17 +142,10 @@ class AccountAnalyticLine(models.Model):
                     ) % values['date'])
             # when creating from project.task
             if values.get('task_id'):
-                # We get the project area from employee's department
-                id_employee = values.get('employee_id', False)
-                if id_employee:
-                    employee_id = self.env['hr.employee'].browse(id_employee)
-                    if employee_id.department_id and employee_id.department_id.som_project_area_id:
-                        values['project_id'] = employee_id.department_id.som_project_area_id.id
+                # If the task defines a service project, it takes precedence.
                 task_id = self.env['project.task'].browse(values.get('task_id'))
-
-                # Auto-fill som_additional_project_id based on task's som_additional_project_id
-                if task_id and task_id.som_additional_project_id:
-                    values['som_additional_project_id'] = task_id.som_additional_project_id.id
+                if task_id and task_id.som_project_id:
+                    values['project_id'] = task_id.som_project_id.id
 
                 # Auto-fill som_week_id and som_worked_week_id based on date
                 if values.get('date_time') and not values.get('som_week_id'):
