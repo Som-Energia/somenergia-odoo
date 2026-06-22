@@ -12,6 +12,14 @@ class SomWorkedWeek(models.Model):
     _inherit = ["som.common.project", "mail.thread", "mail.activity.mixin"]
     _description = "Som Worked Week"
 
+    @api.depends('som_cw_date_rel')
+    def _compute_project_type_domain_ids(self):
+        for record in self:
+            reference_date = fields.Date.to_date(record.som_cw_date_rel) if record.som_cw_date_rel else False
+            project_area_ids, project_transversal_ids = record._get_project_type_domain_ids(reference_date)
+            record.som_project_area_domain_ids = project_area_ids
+            record.som_additional_project_domain_ids = project_transversal_ids
+
     @api.depends('som_timesheet_ids', 'som_timesheet_ids.unit_amount')
     def _compute_totals(self):
         for record in self:

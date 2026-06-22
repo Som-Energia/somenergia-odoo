@@ -14,6 +14,26 @@ class AccountAnalyticAccount(models.Model):
 class AccountAnalyticLine(models.Model):
     _inherit = "account.analytic.line"
 
+    @api.depends(
+        'som_week_id',
+        'som_week_id.som_cw_date',
+        'som_worked_week_id',
+        'som_worked_week_id.som_cw_date_rel')
+    def _compute_project_area_domain_ids(self):
+        project_domain_helper = self.env['som.common.project']
+        for record in self:
+            reference_date = False
+            if record.som_week_id and record.som_week_id.som_cw_date:
+                reference_date = fields.Date.to_date(record.som_week_id.som_cw_date)
+            elif record.som_worked_week_id and record.som_worked_week_id.som_cw_date_rel:
+                reference_date = fields.Date.to_date(record.som_worked_week_id.som_cw_date_rel)
+
+            project_area_ids, project_transversal_ids = (
+                project_domain_helper._get_project_type_domain_ids(reference_date)
+            )
+            record.som_project_area_domain_ids = project_area_ids
+            record.som_additional_project_domain_ids = project_transversal_ids
+
     name = fields.Char(
         default="/"
     )
@@ -34,11 +54,13 @@ class AccountAnalyticLine(models.Model):
 
     som_project_area_domain_ids = fields.Many2many(
         "project.project",
+        compute="_compute_project_area_domain_ids",
         store=False,
     )
 
     som_additional_project_domain_ids = fields.Many2many(
         "project.project",
+        compute="_compute_project_area_domain_ids",
         store=False,
     )
 

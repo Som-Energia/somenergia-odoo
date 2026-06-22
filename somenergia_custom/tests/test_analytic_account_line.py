@@ -405,3 +405,124 @@ class TestAnalyticAccountLine(TransactionCase):
             self.project_service.id,
             "writing the same som_project_id should not be blocked"
         )
+
+    def test_worked_week_project_domain_uses_week_start_date(self):
+        area_tag = self.env.ref('somenergia_custom.som_project_tag_area')
+        old_project = self.env['project.project'].create({
+            'name': 'Old Area Project',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date': fields.Date.to_date(self.test_date) - timedelta(days=1),
+        })
+        current_project = self.env['project.project'].create({
+            'name': 'Current Area Project',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date),
+        })
+        future_project = self.env['project.project'].create({
+            'name': 'Future Area Project',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date) + timedelta(days=7),
+        })
+
+        self.worked_week._compute_project_type_domain_ids()
+
+        self.assertNotIn(old_project, self.worked_week.som_project_area_domain_ids)
+        self.assertIn(current_project, self.worked_week.som_project_area_domain_ids)
+        self.assertNotIn(future_project, self.worked_week.som_project_area_domain_ids)
+
+    def test_timesheet_project_domain_uses_week_start_date(self):
+        area_tag = self.env.ref('somenergia_custom.som_project_tag_area')
+        old_project = self.env['project.project'].create({
+            'name': 'Old Area Project Line',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date': fields.Date.to_date(self.test_date) - timedelta(days=1),
+        })
+        current_project = self.env['project.project'].create({
+            'name': 'Current Area Project Line',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date),
+        })
+        future_project = self.env['project.project'].create({
+            'name': 'Future Area Project Line',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date) + timedelta(days=7),
+        })
+
+        timesheet = self.env['account.analytic.line'].create({
+            'name': 'Week Based Domain',
+            'project_id': self.project_main.id,
+            'employee_id': self.employee.id,
+            'date': fields.Date.to_date(self.test_date),
+            'som_week_id': self.calendar_week.id,
+            'unit_amount': 1.0,
+        })
+
+        self.assertNotIn(old_project, timesheet.som_project_area_domain_ids)
+        self.assertIn(current_project, timesheet.som_project_area_domain_ids)
+        self.assertNotIn(future_project, timesheet.som_project_area_domain_ids)
+
+    def test_worked_week_project_domain_includes_projects_without_dates(self):
+        area_tag = self.env.ref('somenergia_custom.som_project_tag_area')
+        timeless_project = self.env['project.project'].create({
+            'name': 'Timeless Area Project',
+            'tag_ids': [(6, 0, [area_tag.id])],
+        })
+
+        self.worked_week._compute_project_type_domain_ids()
+
+        self.assertIn(timeless_project, self.worked_week.som_project_area_domain_ids)
+
+    def test_worked_week_project_domain_date_start_is_inclusive(self):
+        area_tag = self.env.ref('somenergia_custom.som_project_tag_area')
+        starts_this_week = self.env['project.project'].create({
+            'name': 'Starts This Week',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date),
+        })
+
+        self.worked_week._compute_project_type_domain_ids()
+
+        self.assertIn(starts_this_week, self.worked_week.som_project_area_domain_ids)
+
+    def test_worked_week_project_domain_end_date_is_inclusive(self):
+        area_tag = self.env.ref('somenergia_custom.som_project_tag_area')
+        ends_this_week = self.env['project.project'].create({
+            'name': 'Ends This Week',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date': fields.Date.to_date(self.test_date),
+        })
+        ended_before_week = self.env['project.project'].create({
+            'name': 'Ended Before Week',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date': fields.Date.to_date(self.test_date) - timedelta(days=1),
+        })
+
+        self.worked_week._compute_project_type_domain_ids()
+
+        self.assertIn(ends_this_week, self.worked_week.som_project_area_domain_ids)
+        self.assertNotIn(ended_before_week, self.worked_week.som_project_area_domain_ids)
+
+    def test_timesheet_project_domain_falls_back_to_worked_week_start_date(self):
+        area_tag = self.env.ref('somenergia_custom.som_project_tag_area')
+        old_project = self.env['project.project'].create({
+            'name': 'Old Area Project Fallback',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date': fields.Date.to_date(self.test_date) - timedelta(days=1),
+        })
+        current_project = self.env['project.project'].create({
+            'name': 'Current Area Project Fallback',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date),
+        })
+
+        timesheet = self.env['account.analytic.line'].create({
+            'name': 'Worked Week Fallback Domain',
+            'project_id': self.project_main.id,
+            'employee_id': self.employee.id,
+            'date': fields.Date.to_date(self.test_date),
+            'som_worked_week_id': self.worked_week.id,
+            'unit_amount': 1.0,
+        })
+
+        self.assertNotIn(old_project, timesheet.som_project_area_domain_ids)
+        self.assertIn(current_project, timesheet.som_project_area_domain_ids)
