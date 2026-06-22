@@ -68,8 +68,8 @@
                 </xpath>
                 <xpath expr="//kanban/field[@name='allow_milestones']" position="after">
                     <field name="som_department_ids"/>
-                    <field name="som_project_id" invisible="1"/>
-                    <field name="som_additional_project_id"/>
+                    <field name="som_project_id"/>
+                    <field name="som_additional_project_id" invisible="1"/>
                 </xpath>
                 <xpath expr="//strong[hasclass('o_kanban_record_title')]" position="replace">
                     <strong class="o_kanban_record_title">
@@ -97,8 +97,8 @@
             <field name="arch" type="xml">
                 <field name="user_ids" position="after">
                     <field name="som_department_ids" widget="many2many_tags" optional="show"/>
-                    <field name="som_project_id" invisible="1"/>
-                    <field name="som_additional_project_id" optional="show"/>
+                    <field name="som_project_id" optional="show"/>
+                    <field name="som_additional_project_id" invisible="1"/>
                 </field>
             </field>
         </record>
