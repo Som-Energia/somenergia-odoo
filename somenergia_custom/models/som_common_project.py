@@ -9,16 +9,16 @@ class SomCommonProject(models.AbstractModel):
     _description = 'Som Common Project'
 
     def _get_project_type_domain_ids(self, reference_date=False):
+        reference_date = reference_date or fields.Date.today()
         tag_area_id = self.env.ref("somenergia_custom.som_project_tag_area")
         tag_transversal_id = self.env.ref("somenergia_custom.som_project_tag_transversal_project")
 
         area_domain = [("tag_ids", "in", tag_area_id.ids)]
         transversal_domain = [("tag_ids", "in", tag_transversal_id.ids)]
-        if reference_date:
-            area_domain += [
-                '|', ('date_start', '=', False), ('date_start', '<=', reference_date),
-                '|', ('date', '=', False), ('date', '>=', reference_date),
-            ]
+        area_domain += [
+            '|', ('date_start', '=', False), ('date_start', '<=', reference_date),
+            '|', ('date', '=', False), ('date', '>=', reference_date),
+        ]
 
         project_area_ids = self.env['project.project'].search(area_domain)
         project_transversal_ids = self.env['project.project'].search(transversal_domain)
