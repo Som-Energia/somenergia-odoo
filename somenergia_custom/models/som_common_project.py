@@ -15,10 +15,13 @@ class SomCommonProject(models.AbstractModel):
 
         area_domain = [("tag_ids", "in", tag_area_id.ids)]
         transversal_domain = [("tag_ids", "in", tag_transversal_id.ids)]
-        area_domain += [
+        date_domain = [
             '|', ('date_start', '=', False), ('date_start', '<=', reference_date),
             '|', ('date', '=', False), ('date', '>=', reference_date),
         ]
+
+        area_domain += date_domain
+        transversal_domain += date_domain
 
         project_area_ids = self.env['project.project'].search(area_domain)
         project_transversal_ids = self.env['project.project'].search(transversal_domain)

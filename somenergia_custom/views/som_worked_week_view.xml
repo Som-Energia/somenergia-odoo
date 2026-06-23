@@ -121,8 +121,9 @@
                                        required="False"
                                        string="Projecte"
                                        domain="[('id', 'in', som_additional_project_domain_ids)]"
-                                       invisible="1"
-                                       readonly="0"/>
+                                       invisible="0"
+                                       readonly="0"
+                                       optional="hide"/>
                                 <field name='task_id' readonly="1" optional="show"/>
                                 <field name="name"
                                        attrs="{'readonly': [('som_is_cumulative', '=', True)]}"/>

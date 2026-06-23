@@ -526,3 +526,58 @@ class TestAnalyticAccountLine(TransactionCase):
 
         self.assertNotIn(old_project, timesheet.som_project_area_domain_ids)
         self.assertIn(current_project, timesheet.som_project_area_domain_ids)
+
+    def test_worked_week_transversal_domain_uses_week_start_date(self):
+        transversal_tag = self.env.ref('somenergia_custom.som_project_tag_transversal_project')
+        old_project = self.env['project.project'].create({
+            'name': 'Old Transversal Project',
+            'tag_ids': [(6, 0, [transversal_tag.id])],
+            'date': fields.Date.to_date(self.test_date) - timedelta(days=1),
+        })
+        current_project = self.env['project.project'].create({
+            'name': 'Current Transversal Project',
+            'tag_ids': [(6, 0, [transversal_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date),
+        })
+        future_project = self.env['project.project'].create({
+            'name': 'Future Transversal Project',
+            'tag_ids': [(6, 0, [transversal_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date) + timedelta(days=7),
+        })
+
+        self.worked_week._compute_project_type_domain_ids()
+
+        self.assertNotIn(old_project, self.worked_week.som_additional_project_domain_ids)
+        self.assertIn(current_project, self.worked_week.som_additional_project_domain_ids)
+        self.assertNotIn(future_project, self.worked_week.som_additional_project_domain_ids)
+
+    def test_timesheet_transversal_domain_uses_week_start_date(self):
+        transversal_tag = self.env.ref('somenergia_custom.som_project_tag_transversal_project')
+        old_project = self.env['project.project'].create({
+            'name': 'Old Transversal Project Line',
+            'tag_ids': [(6, 0, [transversal_tag.id])],
+            'date': fields.Date.to_date(self.test_date) - timedelta(days=1),
+        })
+        current_project = self.env['project.project'].create({
+            'name': 'Current Transversal Project Line',
+            'tag_ids': [(6, 0, [transversal_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date),
+        })
+        future_project = self.env['project.project'].create({
+            'name': 'Future Transversal Project Line',
+            'tag_ids': [(6, 0, [transversal_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date) + timedelta(days=7),
+        })
+
+        timesheet = self.env['account.analytic.line'].create({
+            'name': 'Week Based Transversal Domain',
+            'project_id': self.project_main.id,
+            'employee_id': self.employee.id,
+            'date': fields.Date.to_date(self.test_date),
+            'som_week_id': self.calendar_week.id,
+            'unit_amount': 1.0,
+        })
+
+        self.assertNotIn(old_project, timesheet.som_additional_project_domain_ids)
+        self.assertIn(current_project, timesheet.som_additional_project_domain_ids)
+        self.assertNotIn(future_project, timesheet.som_additional_project_domain_ids)
