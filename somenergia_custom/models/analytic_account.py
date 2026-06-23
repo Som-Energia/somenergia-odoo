@@ -14,6 +14,9 @@ class AccountAnalyticAccount(models.Model):
 class AccountAnalyticLine(models.Model):
     _inherit = "account.analytic.line"
 
+    def _unlink_linked_timesheet(self):
+        self.with_context(skip_linked_timesheet_lock=True).unlink()
+
     @api.depends(
         'som_week_id',
         'som_week_id.som_cw_date',
@@ -131,6 +134,8 @@ class AccountAnalyticLine(models.Model):
 
     def _check_period_lock(self):
         """Raises UserError if any non-cumulative record in self is in a locked period."""
+        if self.env.context.get('skip_linked_timesheet_lock'):
+            return
         company = self.env.company
         for record in self:
             if record.som_is_cumulative or not record.date:
@@ -263,7 +268,7 @@ class AccountAnalyticLine(models.Model):
             # remove linked timesheet
             for record in self:
                 if record.som_timesheet_add_id and record.som_timesheet_add_id.id not in timesheet_ids.ids:
-                    record.som_timesheet_add_id.unlink()
+                    record.som_timesheet_add_id._unlink_linked_timesheet()
 
         return super().write(vals)
 

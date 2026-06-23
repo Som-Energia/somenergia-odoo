@@ -6,8 +6,8 @@ from odoo.api import Environment, SUPERUSER_ID
 _logger = logging.getLogger(__name__)
 
 
-OLD_PROJECT_END_DATE = '2026-06-10'
-NEW_PROJECT_START_DATE = '2026-06-13'
+OLD_PROJECT_END_DATE = '2026-07-10'
+NEW_PROJECT_START_DATE = '2026-07-13'
 NEW_PROJECT_MANAGER_ID = 281
 NEW_AREA_PROJECT_NAMES = [
     'Trobades ET',
@@ -103,7 +103,18 @@ def _close_legacy_projects(env, area_tag, transversal_tag, excluded_project):
         legacy_projects.write({'date': OLD_PROJECT_END_DATE})
 
 
-def _create_or_align_new_area_projects(env, area_tag, transversal_tag):
+def _get_new_project_manager_id(env):
+    manager = env['res.users'].browse(NEW_PROJECT_MANAGER_ID).exists()
+    if not manager:
+        _logger.warning(
+            "User %s not found. New rollout projects will be created without user_id.",
+            NEW_PROJECT_MANAGER_ID,
+        )
+        return False
+    return manager.id
+
+
+def _create_or_align_new_area_projects(env, area_tag, transversal_tag, manager_id):
     Project = env['project.project']
     existing_projects = Project.search([('name', 'in', NEW_AREA_PROJECT_NAMES)])
     existing_by_name = {project.name: project for project in existing_projects}
@@ -121,20 +132,23 @@ def _create_or_align_new_area_projects(env, area_tag, transversal_tag):
                 'date_start': NEW_PROJECT_START_DATE,
                 'date': False,
                 'allow_timesheets': True,
-                'user_id': NEW_PROJECT_MANAGER_ID,
             }
+            if manager_id:
+                vals['user_id'] = manager_id
             if commands:
                 vals['tag_ids'] = commands
             project.write(vals)
             continue
 
-        to_create.append({
+        vals = {
             'name': name,
             'allow_timesheets': True,
             'date_start': NEW_PROJECT_START_DATE,
-            'user_id': NEW_PROJECT_MANAGER_ID,
             'tag_ids': [(6, 0, [area_tag.id])],
-        })
+        }
+        if manager_id:
+            vals['user_id'] = manager_id
+        to_create.append(vals)
 
     if to_create:
         _logger.info("Creating %s new area projects", len(to_create))
@@ -146,8 +160,9 @@ def migrate(cr, version):
     area_tag = env.ref('somenergia_custom.som_project_tag_area')
     transversal_tag = env.ref('somenergia_custom.som_project_tag_transversal_project')
     excluded_project = env.ref('somenergia_custom.som_cumulative_hours_project', raise_if_not_found=False)
+    manager_id = _get_new_project_manager_id(env)
 
     _logger.info("Applying project validity rollout migration 16.0.1.1.0")
     _close_legacy_projects(env, area_tag, transversal_tag, excluded_project)
-    _create_or_align_new_area_projects(env, area_tag, transversal_tag)
+    _create_or_align_new_area_projects(env, area_tag, transversal_tag, manager_id)
     _logger.info("Project validity rollout migration finished")
