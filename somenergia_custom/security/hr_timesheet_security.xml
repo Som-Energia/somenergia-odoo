@@ -34,7 +34,7 @@
                     ('project_id.privacy_visibility', '!=', 'followers'),
                     ('project_id.message_partner_ids', 'in', [user.partner_id.id]),
                     ('task_id.message_partner_ids', 'in', [user.partner_id.id]),
-                    ('task_id.user_ids', 'in', user.id)
+                    ('task_id.user_ids', 'in', [user.id])
             ]</field>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="False"/>
@@ -52,7 +52,7 @@
                     ('project_id.privacy_visibility', '!=', 'followers'),
                     ('project_id.message_partner_ids', 'in', [user.partner_id.id]),
                     ('task_id.message_partner_ids', 'in', [user.partner_id.id]),
-                    ('task_id.user_ids', 'in', user.id)
+                    ('task_id.user_ids', 'in', [user.id])
             ]</field>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="False"/>
