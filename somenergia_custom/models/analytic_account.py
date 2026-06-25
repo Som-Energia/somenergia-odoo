@@ -151,7 +151,7 @@ class AccountAnalyticLine(models.Model):
             if record.som_is_cumulative:
                 return False
             if record.som_worked_week_id and record.som_timesheet_add_id:
-                record.som_timesheet_add_id.unlink()
+                record.som_timesheet_add_id._unlink_linked_timesheet()
         return super().unlink()
 
     @api.model_create_multi

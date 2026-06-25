@@ -281,6 +281,19 @@ class TestTimesheetPeriodLock(TransactionCase):
         ])
         self.assertFalse(linked_line_exists)
 
+    def test_unlink_open_main_line_deletes_linked_locked_line(self):
+        """Deleting an open line can also delete its locked linked transversal line."""
+        main_line = self._make_line(OPEN_DATE)
+        linked_line = self._make_line(LOCKED_DATE)
+        main_line.write({'som_timesheet_add_id': linked_line.id})
+
+        main_line.with_user(self.regular_user).sudo().unlink()
+
+        linked_line_exists = self.env['account.analytic.line'].with_context(active_test=False).search([
+            ('id', '=', linked_line.id),
+        ])
+        self.assertFalse(linked_line_exists)
+
     # ── Group 6 — som.worked.week.write() ─────────────────────────────────────
 
     def test_worked_week_write_locked_raises(self):
