@@ -17,31 +17,25 @@ class HelpdeskContractLookupController(http.Controller):
 
     def _get_or_create_odoo_partner(self, partner_id, partner_name, partner_vat):
         partner_model = request.env["res.partner"]
-        odoo_partner = None
 
-        if "som_erp_id" in partner_model.sudo()._fields:
-            odoo_partner = partner_model.sudo().search(
-                [("som_erp_id", "=", partner_id)], limit=1
+        odoo_partner = partner_model.sudo().search(
+            [("som_erp_id", "=", partner_id)], limit=1
+        )
+        if not odoo_partner:
+            odoo_partner = partner_model.sudo().create({
+                "name": partner_name,
+                "vat": partner_vat,
+                "som_erp_id": partner_id,
+                "type": "contact",
+            })
+            _logger.info(
+                "Created new Odoo partner %s from ERP id %s",
+                odoo_partner.id, partner_id,
             )
-            if not odoo_partner:
-                odoo_partner = partner_model.sudo().create({
-                    "name": partner_name,
-                    "vat": partner_vat,
-                    "som_erp_id": partner_id,
-                    "type": "contact",
-                })
-                _logger.info(
-                    "Created new Odoo partner %s from ERP id %s",
-                    odoo_partner.id, partner_id,
-                )
-            else:
-                _logger.info(
-                    "Found existing Odoo partner %s for ERP id %s",
-                    odoo_partner.id, partner_id,
-                )
         else:
-            _logger.warning(
-                "som_erp_id field not found on res.partner, skipping Odoo partner link"
+            _logger.info(
+                "Found existing Odoo partner %s for ERP id %s",
+                odoo_partner.id, partner_id,
             )
 
         return odoo_partner
@@ -164,3 +158,53 @@ class HelpdeskContractLookupController(http.Controller):
         })
 
         return {"status": "ok", "phonecall_id": phonecall.id}
+
+    @http.route(
+        "/helpdesk_contract_lookup/partner_phonecalls",
+        type="json",
+        auth="user",
+        methods=["POST"],
+        csrf=False,
+    )
+    def partner_phonecalls(self, partner_id=None):
+        self._check_access()
+        if not partner_id:
+            raise ValidationError("partner_id is required.")
+
+        partner_model = request.env["res.partner"]
+
+        odoo_partner = partner_model.sudo().search(
+            [("som_erp_id", "=", partner_id)], limit=1
+        )
+        if not odoo_partner:
+            return {"phonecalls": [], "odoo_partner_found": False}
+
+        calls = request.env["crm.phonecall"].sudo().search(
+            [("partner_id", "=", odoo_partner.id)],
+            order="date desc",
+        )
+
+        result = []
+        for call in calls:
+            # Format duration (float minutes) as MM:SS
+            total_seconds = int((call.duration or 0) * 60)
+            minutes = total_seconds // 60
+            seconds = total_seconds % 60
+            duration_str = "%d:%02d" % (minutes, seconds) if call.duration else ""
+
+            categories = [cat.name for cat in call.som_category_ids]
+
+            result.append({
+                "id": call.id,
+                "name": call.name or "",
+                "date": call.date.strftime("%Y-%m-%d %H:%M") if call.date else "",
+                "state": call.state or "",
+                "direction": call.direction or "",
+                "phone": call.partner_phone or "",
+                "duration": duration_str,
+                "agent": call.user_id.name if call.user_id else "",
+                "description": call.description or "",
+                "categories": categories,
+            })
+
+        return {"phonecalls": result, "odoo_partner_found": True}

@@ -11,6 +11,7 @@
         "base",
         "web",
         "helpdesk_mgmt",
+        "odoo_callinfo",
     ],
     "data": [
         "security/lookup_security.xml",

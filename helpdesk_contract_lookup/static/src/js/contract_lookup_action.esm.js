@@ -32,6 +32,8 @@ class ContractLookupAction extends Component {
             expandedContracts: {},
             activeTabByContract: {},
             linkedPartnerId: null,
+            phonecallsByPartner: {},
+            loadingPhonecallsByPartner: {},
         });
         onWillStart(async () => {
             if (this.state.value.trim()) {
@@ -90,9 +92,17 @@ class ContractLookupAction extends Component {
         this.state.detailsByContract = {};
         this.state.expandedContracts = {};
         this.state.activeTabByContract = {};
+        this.state.phonecallsByPartner = {};
+        this.state.loadingPhonecallsByPartner = {};
         try {
             const result = await this._rpcSearch();
             this.state.result = result;
+            // Auto-load phonecalls for all found partners (fire and forget)
+            if (result && result.partners) {
+                for (const partner of result.partners) {
+                    this.loadPartnerPhonecalls(partner.id);
+                }
+            }
         } catch (error) {
             this.state.error = error.message || "Unexpected search error.";
             this.notification.add(this.state.error, { type: "danger" });
@@ -237,6 +247,67 @@ class ContractLookupAction extends Component {
         if (state === 'paid') return 'Paid';
         if (state === 'cancel') return 'Cancelled';
         return state || '—';
+    }
+
+    async loadPartnerPhonecalls(partnerId) {
+        // Skip if already loaded or currently loading
+        if (
+            this.state.phonecallsByPartner[partnerId] !== undefined ||
+            this.state.loadingPhonecallsByPartner[partnerId]
+        ) {
+            return;
+        }
+        this.state.loadingPhonecallsByPartner[partnerId] = true;
+        try {
+            const response = await this.rpc("/helpdesk_contract_lookup/partner_phonecalls", {
+                partner_id: partnerId,
+            });
+            this.state.phonecallsByPartner[partnerId] = {
+                phonecalls: response.phonecalls || [],
+                odoo_partner_found: response.odoo_partner_found,
+            };
+        } catch (error) {
+            const message = error.message || "Unexpected error loading phone calls.";
+            this.notification.add(message, { type: "danger" });
+        } finally {
+            this.state.loadingPhonecallsByPartner[partnerId] = false;
+        }
+    }
+
+    openCall(callId) {
+        this._saveReturnSearch();
+        this.action.doAction(
+            {
+                type: "ir.actions.act_window",
+                res_model: "crm.phonecall",
+                res_id: callId,
+                views: [[false, "form"]],
+                target: "current",
+            },
+            { stackPosition: "push" }
+        );
+    }
+
+    callStateBadge(state) {
+        if (state === "open") return "badge bg-warning text-dark";
+        if (state === "done") return "badge bg-success";
+        if (state === "cancel") return "badge bg-danger";
+        if (state === "pending") return "badge bg-info text-dark";
+        return "badge bg-secondary";
+    }
+
+    callStateLabel(state) {
+        if (state === "open") return "Confirmed";
+        if (state === "done") return "Held";
+        if (state === "cancel") return "Cancelled";
+        if (state === "pending") return "Pending";
+        return state || "—";
+    }
+
+    callDirectionIcon(direction) {
+        if (direction === "in") return "fa fa-arrow-down text-primary";
+        if (direction === "out") return "fa fa-arrow-up text-success";
+        return "fa fa-phone";
     }
 
     async loadContractDetails(contractNumber) {
