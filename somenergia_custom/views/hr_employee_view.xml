@@ -92,6 +92,14 @@
                     attrs="{'invisible': [('som_disable_att_restrictions', '=', False)], 'required': [('som_disable_att_restrictions', '=', True)]}"/>
                 <field name="som_disable_att_restrictions_date_to"
                     attrs="{'invisible': [('som_disable_att_restrictions', '=', False)], 'required': [('som_disable_att_restrictions', '=', True)]}"/>
+                <field name="som_lock_bypass_date_from"
+                       string="Bypass tancament des de"
+                       groups="hr_timesheet.group_timesheet_manager"
+                       help="Permet editar períodes tancats a partir d'aquesta data (inclusive)."/>
+                <field name="som_lock_bypass_date_to"
+                       string="Bypass tancament fins a"
+                       groups="hr_timesheet.group_timesheet_manager"
+                       help="Permet editar períodes tancats fins a aquesta data (inclusive)."/>
             </xpath>
         </field>
     </record>

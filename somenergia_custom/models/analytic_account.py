@@ -14,6 +14,29 @@ class AccountAnalyticAccount(models.Model):
 class AccountAnalyticLine(models.Model):
     _inherit = "account.analytic.line"
 
+    def _unlink_linked_timesheet(self):
+        self.with_context(skip_linked_timesheet_lock=True).unlink()
+
+    @api.depends(
+        'som_week_id',
+        'som_week_id.som_cw_date',
+        'som_worked_week_id',
+        'som_worked_week_id.som_cw_date_rel')
+    def _compute_project_area_domain_ids(self):
+        project_domain_helper = self.env['som.common.project']
+        for record in self:
+            reference_date = False
+            if record.som_week_id and record.som_week_id.som_cw_date:
+                reference_date = fields.Date.to_date(record.som_week_id.som_cw_date)
+            elif record.som_worked_week_id and record.som_worked_week_id.som_cw_date_rel:
+                reference_date = fields.Date.to_date(record.som_worked_week_id.som_cw_date_rel)
+
+            project_area_ids, project_transversal_ids = (
+                project_domain_helper._get_project_type_domain_ids(reference_date)
+            )
+            record.som_project_area_domain_ids = project_area_ids
+            record.som_additional_project_domain_ids = project_transversal_ids
+
     name = fields.Char(
         default="/"
     )
@@ -34,11 +57,13 @@ class AccountAnalyticLine(models.Model):
 
     som_project_area_domain_ids = fields.Many2many(
         "project.project",
+        compute="_compute_project_area_domain_ids",
         store=False,
     )
 
     som_additional_project_domain_ids = fields.Many2many(
         "project.project",
+        compute="_compute_project_area_domain_ids",
         store=False,
     )
 
@@ -107,31 +132,47 @@ class AccountAnalyticLine(models.Model):
                 if timesheet_week_id and timesheet_add_id:
                     timesheet_week_id.som_timesheet_add_id = timesheet_add_id.id
 
+    def _check_period_lock(self):
+        """Raises UserError if any non-cumulative record in self is in a locked period."""
+        if self.env.context.get('skip_linked_timesheet_lock'):
+            return
+        company = self.env.company
+        for record in self:
+            if record.som_is_cumulative or not record.date:
+                continue
+            if company._is_period_locked(record.date, employee=record.employee_id):
+                raise exceptions.UserError(_(
+                    "The timesheet entry dated '%s' belongs to a locked period."
+                ) % record.date)
+
     def unlink(self):
+        self._check_period_lock()
         for record in self:
             if record.som_is_cumulative:
                 return False
             if record.som_worked_week_id and record.som_timesheet_add_id:
-                record.som_timesheet_add_id.unlink()
+                record.som_timesheet_add_id._unlink_linked_timesheet()
         return super().unlink()
 
     @api.model_create_multi
     def create(self, vals_list):
+        company = self.env.company
         flag_match = False
         for values in vals_list:
+            # Period lock check (skip cumulative lines, they are system-generated)
+            if not values.get('som_is_cumulative') and values.get('date'):
+                employee = self.env['hr.employee'].browse(values['employee_id']) \
+                    if values.get('employee_id') else self.env['hr.employee']
+                if company._is_period_locked(values['date'], employee=employee):
+                    raise exceptions.UserError(_(
+                        "Cannot create a timesheet entry in a locked period (%s)."
+                    ) % values['date'])
             # when creating from project.task
             if values.get('task_id'):
-                # We get the project area from employee's department
-                id_employee = values.get('employee_id', False)
-                if id_employee:
-                    employee_id = self.env['hr.employee'].browse(id_employee)
-                    if employee_id.department_id and employee_id.department_id.som_project_area_id:
-                        values['project_id'] = employee_id.department_id.som_project_area_id.id
+                # If the task defines a service project, it takes precedence.
                 task_id = self.env['project.task'].browse(values.get('task_id'))
-
-                # Auto-fill som_additional_project_id based on task's som_additional_project_id
-                if task_id and task_id.som_additional_project_id:
-                    values['som_additional_project_id'] = task_id.som_additional_project_id.id
+                if task_id and task_id.som_project_id:
+                    values['project_id'] = task_id.som_project_id.id
 
                 # Auto-fill som_week_id and som_worked_week_id based on date
                 if values.get('date_time') and not values.get('som_week_id'):
@@ -169,6 +210,23 @@ class AccountAnalyticLine(models.Model):
         return res
 
     def write(self, vals):
+        # Period lock check (skip cumulative lines, they are system-generated)
+        self._check_period_lock()
+        # Also check the resulting state: moving to a locked date or a narrower-bypass employee
+        if 'date' in vals or 'employee_id' in vals:
+            company = self.env.company
+            for record in self:
+                if record.som_is_cumulative:
+                    continue
+                new_date = vals.get('date', record.date)
+                new_employee = (
+                    self.env['hr.employee'].browse(vals['employee_id'])
+                    if 'employee_id' in vals else record.employee_id
+                )
+                if new_date and company._is_period_locked(new_date, employee=new_employee):
+                    raise exceptions.UserError(_(
+                        "Cannot move timesheet entry to a locked period (%s)."
+                    ) % new_date)
         if self.task_id and (vals.get('date_time', False) or vals.get('employee_id', False)):
             for record in self:
                 date_time = vals.get('date_time', record.date_time)
@@ -210,7 +268,7 @@ class AccountAnalyticLine(models.Model):
             # remove linked timesheet
             for record in self:
                 if record.som_timesheet_add_id and record.som_timesheet_add_id.id not in timesheet_ids.ids:
-                    record.som_timesheet_add_id.unlink()
+                    record.som_timesheet_add_id._unlink_linked_timesheet()
 
         return super().write(vals)
 

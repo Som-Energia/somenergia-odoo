@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import fields
+from odoo.exceptions import ValidationError
 from odoo.tests.common import tagged, TransactionCase
 from datetime import datetime, timedelta
 
@@ -15,11 +16,10 @@ class TestAnalyticAccountLine(TransactionCase):
             'name': 'Test Department',
         })
 
-        # Create project area for the department
-        cls.project_area = cls.env['project.project'].create({
-            'name': 'Test Project Area',
+        # Create service project used by task timesheets
+        cls.project_service = cls.env['project.project'].create({
+            'name': 'Test Service Project',
         })
-        cls.department.som_project_area_id = cls.project_area.id
 
         # Create employee
         cls.employee = cls.env['hr.employee'].create({
@@ -31,14 +31,12 @@ class TestAnalyticAccountLine(TransactionCase):
         cls.project_main = cls.env['project.project'].create({
             'name': 'Main Project',
         })
-        cls.project_transversal = cls.env['project.project'].create({
-            'name': 'Transversal Project',
-        })
 
         # Create task
         cls.task = cls.env['project.task'].create({
             'name': 'Test Task',
             'project_id': cls.project_main.id,
+            'som_project_id': cls.project_service.id,
         })
 
         # Create a calendar week
@@ -114,8 +112,8 @@ class TestAnalyticAccountLine(TransactionCase):
             "Both timesheets in same week should share the same worked_week"
         )
 
-    def test_create_timesheet_sets_project_from_department_area(self):
-        """Test that project_id is set from employee's department project area"""
+    def test_create_timesheet_sets_project_from_task_service_project(self):
+        """Test that project_id is set from the task service project."""
         timesheet = self.env['account.analytic.line'].create({
             'name': 'Test Timesheet',
             'task_id': self.task.id,
@@ -126,16 +124,12 @@ class TestAnalyticAccountLine(TransactionCase):
 
         self.assertEqual(
             timesheet.project_id.id,
-            self.project_area.id,
-            "project_id should be set from employee's department project area"
+            self.project_service.id,
+            "project_id should be set from the task service project"
         )
 
-    def test_create_timesheet_with_additional_project(self):
-        """Test creating timesheet with som_additional_project_id creates linked timesheet"""
-        # Set additional project on task
-        self.task.write({'som_additional_project_id': self.project_transversal.id})
-
-        timesheet_ids = self.env['account.analytic.line'].create({
+    def test_create_timesheet_overrides_incoming_project_with_task_service_project(self):
+        timesheet = self.env['account.analytic.line'].create({
             'name': 'Test Timesheet',
             'task_id': self.task.id,
             'project_id': self.project_main.id,
@@ -145,65 +139,27 @@ class TestAnalyticAccountLine(TransactionCase):
         })
 
         self.assertEqual(
-            len(timesheet_ids),
-            2,
-            "Creating timesheet with som_additional_project_id should create 2 timesheets"
+            timesheet.project_id.id,
+            self.project_service.id,
+            "task service project should take precedence over the provided project_id"
         )
 
-        timesheets_project_area_id = timesheet_ids.filtered(
-            lambda x: x.project_id.id == self.department.som_project_area_id.id)
+    def test_create_timesheet_without_task_service_project_keeps_given_project(self):
+        self.task.som_project_id = False
 
-        self.assertTrue(
-            timesheets_project_area_id,
-            "One of the timesheets should be linked to the department's project area"
-        )
-        self.assertEqual(
-            timesheets_project_area_id.project_id.id,
-            self.department.som_project_area_id.id,
-            "One of the timesheets should be linked to the department's project area"
-        )
-        self.assertEqual(
-            timesheets_project_area_id.som_additional_project_id.id,
-            self.project_transversal.id,
-            "The timesheet linked to the project area should have "
-            "the transversal project as additional project"
-        )
-
-        timesheet_additional_id = timesheet_ids.filtered(
-            lambda x: x.project_id.id == self.project_transversal.id)
-
-        self.assertTrue(
-            timesheet_additional_id,
-            "One of the timesheets should be linked to the transversal project"
-        )
-        self.assertEqual(
-            timesheet_additional_id.project_id.id,
-            self.project_transversal.id,
-            "One of the timesheets should be linked to the transversal project"
-        )
+        timesheet = self.env['account.analytic.line'].create({
+            'name': 'Test Timesheet',
+            'task_id': self.task.id,
+            'project_id': self.project_main.id,
+            'employee_id': self.employee.id,
+            'date_time': self.test_date,
+            'unit_amount': 2.0,
+        })
 
         self.assertEqual(
-            timesheet_additional_id.unit_amount,
-            2.0,
-            "The timesheet linked to the transversal project should have "
-            "the same hours as the main timesheet"
-        )
-
-        # # Verify UUID hook is set
-        self.assertTrue(
-            timesheets_project_area_id.som_timesheet_uuid_hook,
-            "UUID hook should be set on the timesheet linked to the project area"
-        )
-
-        self.assertTrue(
-            timesheet_additional_id.som_timesheet_uuid_hook,
-            "UUID hook should be set on the timesheet linked to the transversal project"
-        )
-
-        self.assertEqual(
-            timesheets_project_area_id.som_timesheet_uuid_hook,
-            timesheet_additional_id.som_timesheet_uuid_hook,
-            "Both timesheets should share the same UUID hook"
+            timesheet.project_id.id,
+            self.project_main.id,
+            "Timesheets should keep the provided project when the task has no service project"
         )
 
     def test_write_timesheet_updates_week_when_date_changes(self):
@@ -267,132 +223,6 @@ class TestAnalyticAccountLine(TransactionCase):
             timesheet.som_worked_week_id.id,
             initial_worked_week_id,
             "som_worked_week_id should be updated to new worked week"
-        )
-
-    def test_write_timesheet_updates_linked_hours(self):
-        """Test that updating hours also updates linked timesheet"""
-        # Set additional project on task
-        self.task.som_additional_project_id = self.project_transversal.id
-
-        timesheet = self.env['account.analytic.line'].create({
-            'name': 'Test Timesheet',
-            'task_id': self.task.id,
-            'project_id': self.project_main.id,
-            'employee_id': self.employee.id,
-            'date_time': self.test_date,
-            'unit_amount': 2.0,
-        })
-
-        linked_timesheet = timesheet.som_timesheet_add_id
-
-        # Update hours
-        timesheet.write({
-            'unit_amount': 5.0,
-        })
-
-        self.assertEqual(
-            linked_timesheet.unit_amount,
-            5.0,
-            "Linked timesheet hours should be updated"
-        )
-
-    def test_write_add_additional_project_creates_link(self):
-        """Test adding som_additional_project_id creates linked timesheet"""
-        timesheet = self.env['account.analytic.line'].create({
-            'name': 'Test Timesheet',
-            'task_id': self.task.id,
-            'project_id': self.project_main.id,
-            'employee_id': self.employee.id,
-            'date_time': self.test_date,
-            'unit_amount': 2.0,
-        })
-
-        self.assertFalse(
-            timesheet.som_timesheet_add_id,
-            "No linked timesheet should exist initially"
-        )
-
-        # Add additional project
-        timesheet.write({
-            'som_additional_project_id': self.project_transversal.id,
-        })
-
-        self.assertTrue(
-            timesheet.som_timesheet_add_id,
-            "Linked timesheet should be created"
-        )
-        self.assertEqual(
-            timesheet.som_timesheet_add_id.project_id.id,
-            self.project_transversal.id,
-            "Linked timesheet should have the transversal project"
-        )
-
-    def test_write_change_additional_project_updates_link(self):
-        """Test changing som_additional_project_id updates linked timesheet project"""
-        # Create another transversal project
-        project_transversal_2 = self.env['project.project'].create({
-            'name': 'Transversal Project 2',
-        })
-
-        # Set additional project on task
-        self.task.som_additional_project_id = self.project_transversal.id
-
-        timesheet = self.env['account.analytic.line'].create({
-            'name': 'Test Timesheet',
-            'task_id': self.task.id,
-            'project_id': self.project_main.id,
-            'employee_id': self.employee.id,
-            'date_time': self.test_date,
-            'unit_amount': 2.0,
-        })
-
-        linked_timesheet = timesheet.som_timesheet_add_id
-
-        # Change additional project
-        timesheet.write({
-            'som_additional_project_id': project_transversal_2.id,
-        })
-
-        self.assertEqual(
-            linked_timesheet.project_id.id,
-            project_transversal_2.id,
-            "Linked timesheet project should be updated"
-        )
-
-    def test_write_remove_additional_project_deletes_link(self):
-        """Test removing som_additional_project_id deletes linked timesheet"""
-        # Set additional project on task
-        self.task.som_additional_project_id = self.project_transversal.id
-
-        timesheet_ids = self.env['account.analytic.line'].create({
-            'name': 'Test Timesheet',
-            'task_id': self.task.id,
-            'project_id': self.project_main.id,
-            'employee_id': self.employee.id,
-            'date_time': self.test_date,
-            'unit_amount': 2.0,
-        })
-
-        timesheets_project_area_id = timesheet_ids.filtered(
-            lambda x: x.project_id.id == self.department.som_project_area_id.id)
-
-        timesheet_additional_id = timesheet_ids.filtered(
-            lambda x: x.project_id.id == self.project_transversal.id)
-
-        id_additional_tsh = timesheet_additional_id.id
-
-        # Remove additional project
-        timesheets_project_area_id.write({
-            'som_additional_project_id': False,
-        })
-
-        # Check linked timesheet is deleted
-        deleted = self.env['account.analytic.line'].with_context(active_test=False).search([
-            ('id', '=', id_additional_tsh),
-        ])
-        self.assertFalse(
-            deleted,
-            "Linked timesheet should be deleted"
         )
 
     def test_create_without_task_doesnt_auto_fill(self):
@@ -482,37 +312,272 @@ class TestAnalyticAccountLine(TransactionCase):
             "som_worked_week_id should change to the one of the new employee"
         )
 
-    def test_write_task_change_additional_project_not_allowed(self):
-        """
-        Test that changing task's som_additional_project_id is not allowed
-        when it has timesheets linked
-        """
-        # Set additional project on task
-        self.task.som_additional_project_id = self.project_transversal.id
-        timesheet_ids = self.env['account.analytic.line'].create({
-            'name': 'Test Timesheet',
-            'task_id': self.task.id,
+    def test_create_without_task_keeps_explicit_project(self):
+        timesheet = self.env['account.analytic.line'].create({
+            'name': 'Test Timesheet Direct',
             'project_id': self.project_main.id,
+            'employee_id': self.employee.id,
+            'date': fields.Date.today(),
+            'unit_amount': 2.0,
+        })
+
+        self.assertEqual(
+            timesheet.project_id.id,
+            self.project_main.id,
+            "Timesheets without task_id should keep the provided project"
+        )
+
+    def test_write_task_service_project_allowed_without_timesheets(self):
+        new_service_project = self.env['project.project'].create({
+            'name': 'New Service Project',
+        })
+
+        self.task.write({
+            'som_project_id': new_service_project.id,
+        })
+
+        self.assertEqual(
+            self.task.som_project_id.id,
+            new_service_project.id,
+            "som_project_id should be updated when there are no linked timesheets"
+        )
+
+    def test_write_task_service_project_allowed_when_timesheets_use_other_project(self):
+        other_service_project = self.env['project.project'].create({
+            'name': 'Other Service Project',
+        })
+        new_service_project = self.env['project.project'].create({
+            'name': 'Replacement Service Project',
+        })
+
+        timesheet = self.env['account.analytic.line'].create({
+            'name': 'Manual Timesheet',
+            'task_id': self.task.id,
             'employee_id': self.employee.id,
             'date_time': self.test_date,
             'unit_amount': 2.0,
         })
-        # Try to change additional project
-        with self.assertRaises(Exception):
+        timesheet.write({'project_id': other_service_project.id})
+
+        self.task.write({
+            'som_project_id': new_service_project.id,
+        })
+
+        self.assertEqual(
+            self.task.som_project_id.id,
+            new_service_project.id,
+            "som_project_id should be updated when existing timesheets use another project"
+        )
+
+    def test_write_task_service_project_blocked_with_linked_timesheets(self):
+        new_service_project = self.env['project.project'].create({
+            'name': 'Blocked Service Project',
+        })
+
+        self.env['account.analytic.line'].create({
+            'name': 'Service Timesheet',
+            'task_id': self.task.id,
+            'employee_id': self.employee.id,
+            'date_time': self.test_date,
+            'unit_amount': 2.0,
+        })
+
+        with self.assertRaises(ValidationError):
             self.task.write({
-                'som_additional_project_id': False,
+                'som_project_id': new_service_project.id,
             })
 
-    def test_write_task_change_additional_project_allowed(self):
-        """
-        Test that changing task's som_additional_project_id is allowed
-        """
-        # Set additional project on task
-        self.task.som_additional_project_id = self.project_transversal.id
-        self.task.write({
-            'som_additional_project_id': False,
+    def test_write_task_service_project_same_value_is_allowed(self):
+        self.env['account.analytic.line'].create({
+            'name': 'Service Timesheet',
+            'task_id': self.task.id,
+            'employee_id': self.employee.id,
+            'date_time': self.test_date,
+            'unit_amount': 2.0,
         })
-        self.assertFalse(
-            self.task.som_additional_project_id,
-            "som_additional_project_id should be removed successfully after unlinking timesheets"
+
+        self.task.write({
+            'som_project_id': self.project_service.id,
+        })
+
+        self.assertEqual(
+            self.task.som_project_id.id,
+            self.project_service.id,
+            "writing the same som_project_id should not be blocked"
         )
+
+    def test_worked_week_project_domain_uses_week_start_date(self):
+        area_tag = self.env.ref('somenergia_custom.som_project_tag_area')
+        old_project = self.env['project.project'].create({
+            'name': 'Old Area Project',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date': fields.Date.to_date(self.test_date) - timedelta(days=1),
+        })
+        current_project = self.env['project.project'].create({
+            'name': 'Current Area Project',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date),
+        })
+        future_project = self.env['project.project'].create({
+            'name': 'Future Area Project',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date) + timedelta(days=7),
+        })
+
+        self.worked_week._compute_project_type_domain_ids()
+
+        self.assertNotIn(old_project, self.worked_week.som_project_area_domain_ids)
+        self.assertIn(current_project, self.worked_week.som_project_area_domain_ids)
+        self.assertNotIn(future_project, self.worked_week.som_project_area_domain_ids)
+
+    def test_timesheet_project_domain_uses_week_start_date(self):
+        area_tag = self.env.ref('somenergia_custom.som_project_tag_area')
+        old_project = self.env['project.project'].create({
+            'name': 'Old Area Project Line',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date': fields.Date.to_date(self.test_date) - timedelta(days=1),
+        })
+        current_project = self.env['project.project'].create({
+            'name': 'Current Area Project Line',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date),
+        })
+        future_project = self.env['project.project'].create({
+            'name': 'Future Area Project Line',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date) + timedelta(days=7),
+        })
+
+        timesheet = self.env['account.analytic.line'].create({
+            'name': 'Week Based Domain',
+            'project_id': self.project_main.id,
+            'employee_id': self.employee.id,
+            'date': fields.Date.to_date(self.test_date),
+            'som_week_id': self.calendar_week.id,
+            'unit_amount': 1.0,
+        })
+
+        self.assertNotIn(old_project, timesheet.som_project_area_domain_ids)
+        self.assertIn(current_project, timesheet.som_project_area_domain_ids)
+        self.assertNotIn(future_project, timesheet.som_project_area_domain_ids)
+
+    def test_worked_week_project_domain_includes_projects_without_dates(self):
+        area_tag = self.env.ref('somenergia_custom.som_project_tag_area')
+        timeless_project = self.env['project.project'].create({
+            'name': 'Timeless Area Project',
+            'tag_ids': [(6, 0, [area_tag.id])],
+        })
+
+        self.worked_week._compute_project_type_domain_ids()
+
+        self.assertIn(timeless_project, self.worked_week.som_project_area_domain_ids)
+
+    def test_worked_week_project_domain_date_start_is_inclusive(self):
+        area_tag = self.env.ref('somenergia_custom.som_project_tag_area')
+        starts_this_week = self.env['project.project'].create({
+            'name': 'Starts This Week',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date),
+        })
+
+        self.worked_week._compute_project_type_domain_ids()
+
+        self.assertIn(starts_this_week, self.worked_week.som_project_area_domain_ids)
+
+    def test_worked_week_project_domain_end_date_is_inclusive(self):
+        area_tag = self.env.ref('somenergia_custom.som_project_tag_area')
+        ends_this_week = self.env['project.project'].create({
+            'name': 'Ends This Week',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date': fields.Date.to_date(self.test_date),
+        })
+        ended_before_week = self.env['project.project'].create({
+            'name': 'Ended Before Week',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date': fields.Date.to_date(self.test_date) - timedelta(days=1),
+        })
+
+        self.worked_week._compute_project_type_domain_ids()
+
+        self.assertIn(ends_this_week, self.worked_week.som_project_area_domain_ids)
+        self.assertNotIn(ended_before_week, self.worked_week.som_project_area_domain_ids)
+
+    def test_timesheet_project_domain_falls_back_to_worked_week_start_date(self):
+        area_tag = self.env.ref('somenergia_custom.som_project_tag_area')
+        old_project = self.env['project.project'].create({
+            'name': 'Old Area Project Fallback',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date': fields.Date.to_date(self.test_date) - timedelta(days=1),
+        })
+        current_project = self.env['project.project'].create({
+            'name': 'Current Area Project Fallback',
+            'tag_ids': [(6, 0, [area_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date),
+        })
+
+        timesheet = self.env['account.analytic.line'].create({
+            'name': 'Worked Week Fallback Domain',
+            'project_id': self.project_main.id,
+            'employee_id': self.employee.id,
+            'date': fields.Date.to_date(self.test_date),
+            'som_worked_week_id': self.worked_week.id,
+            'unit_amount': 1.0,
+        })
+
+        self.assertNotIn(old_project, timesheet.som_project_area_domain_ids)
+        self.assertIn(current_project, timesheet.som_project_area_domain_ids)
+
+    def test_worked_week_transversal_domain_uses_week_start_date(self):
+        transversal_tag = self.env.ref('somenergia_custom.som_project_tag_transversal_project')
+        old_project = self.env['project.project'].create({
+            'name': 'Old Transversal Project',
+            'tag_ids': [(6, 0, [transversal_tag.id])],
+            'date': fields.Date.to_date(self.test_date) - timedelta(days=1),
+        })
+        current_project = self.env['project.project'].create({
+            'name': 'Current Transversal Project',
+            'tag_ids': [(6, 0, [transversal_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date),
+        })
+        future_project = self.env['project.project'].create({
+            'name': 'Future Transversal Project',
+            'tag_ids': [(6, 0, [transversal_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date) + timedelta(days=7),
+        })
+
+        self.worked_week._compute_project_type_domain_ids()
+
+        self.assertNotIn(old_project, self.worked_week.som_additional_project_domain_ids)
+        self.assertIn(current_project, self.worked_week.som_additional_project_domain_ids)
+        self.assertNotIn(future_project, self.worked_week.som_additional_project_domain_ids)
+
+    def test_timesheet_transversal_domain_uses_week_start_date(self):
+        transversal_tag = self.env.ref('somenergia_custom.som_project_tag_transversal_project')
+        old_project = self.env['project.project'].create({
+            'name': 'Old Transversal Project Line',
+            'tag_ids': [(6, 0, [transversal_tag.id])],
+            'date': fields.Date.to_date(self.test_date) - timedelta(days=1),
+        })
+        current_project = self.env['project.project'].create({
+            'name': 'Current Transversal Project Line',
+            'tag_ids': [(6, 0, [transversal_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date),
+        })
+        future_project = self.env['project.project'].create({
+            'name': 'Future Transversal Project Line',
+            'tag_ids': [(6, 0, [transversal_tag.id])],
+            'date_start': fields.Date.to_date(self.test_date) + timedelta(days=7),
+        })
+
+        timesheet = self.env['account.analytic.line'].create({
+            'name': 'Week Based Transversal Domain',
+            'project_id': self.project_main.id,
+            'employee_id': self.employee.id,
+            'date': fields.Date.to_date(self.test_date),
+            'som_week_id': self.calendar_week.id,
+            'unit_amount': 1.0,
+        })
+
+        self.assertNotIn(old_project, timesheet.som_additional_project_domain_ids)
+        self.assertIn(current_project, timesheet.som_additional_project_domain_ids)
+        self.assertNotIn(future_project, timesheet.som_additional_project_domain_ids)

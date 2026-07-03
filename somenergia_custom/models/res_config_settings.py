@@ -5,6 +5,11 @@ from odoo import api, fields, models
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
+    som_worked_week_help_url = fields.Char(
+        string='Worked week help URL',
+        config_parameter='somenergia_custom.som_worked_week_help_url',
+    )
+
     som_restrictive_stress_days = fields.Boolean(
         related='company_id.som_restrictive_stress_days',
         readonly=False,
@@ -32,5 +37,20 @@ class ResConfigSettings(models.TransientModel):
 
     som_attendance_limit_checkout = fields.Float(
         related='company_id.som_attendance_limit_checkout',
+        readonly=False,
+    )
+
+    som_timesheet_lock_date = fields.Date(
+        related='company_id.som_timesheet_lock_date',
+        readonly=False,
+    )
+
+    som_timesheet_lock_bypass_date_from = fields.Date(
+        related='company_id.som_timesheet_lock_bypass_date_from',
+        readonly=False,
+    )
+
+    som_timesheet_lock_bypass_date_to = fields.Date(
+        related='company_id.som_timesheet_lock_bypass_date_to',
         readonly=False,
     )

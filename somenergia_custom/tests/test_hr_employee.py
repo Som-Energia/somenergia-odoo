@@ -17,6 +17,8 @@ class TestEmployeeIsPresent(TestHrHolidaysCommon):
     def setUpClass(cls):
         super().setUpClass()
 
+        cls.env.company.som_timesheet_lock_date = False
+
         leave_start_datetime = datetime(2025, 4, 1, 8, 0, 0, 0)
         leave_end_datetime = datetime(2025, 4, 3, 15, 0, 0, 0)
         # leave_end_datetime = leave_start_datetime + relativedelta(days=2)
