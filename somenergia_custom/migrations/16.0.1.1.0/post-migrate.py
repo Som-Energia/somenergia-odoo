@@ -6,8 +6,8 @@ from odoo.api import Environment, SUPERUSER_ID
 _logger = logging.getLogger(__name__)
 
 
-OLD_PROJECT_END_DATE = '2026-07-10'
-NEW_PROJECT_START_DATE = '2026-07-13'
+OLD_PROJECT_END_DATE = '2026-07-05'
+NEW_PROJECT_START_DATE = '2026-07-06'
 NEW_PROJECT_MANAGER_ID = 281
 NEW_AREA_PROJECT_NAMES = [
     'Trobades ET',
@@ -76,7 +76,7 @@ NEW_AREA_PROJECT_NAMES = [
     'Assemblea General',
     'Gran Conversa',
     'Trobada Sòcies Activistes',
-    'Parcicipació sòcies',
+    'Participació sòcies',
     'Formació a les sòcies',
     'Lobby',
     'Representació intercoop',
