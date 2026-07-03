@@ -71,12 +71,12 @@
                                 string="Ajuda"
                                 icon="fa-question-circle"
                                 class="btn btn-secondary"/>
-                        <span class="badge rounded-pill text-bg-warning ms-2"
-                              attrs="{'invisible': [('som_is_locked', '=', False)]}">
-                            Període tancat
-                        </span>
                     </header>
                     <sheet>
+                        <widget name="web_ribbon"
+                                title="Període tancat"
+                                bg_color="bg-warning"
+                                attrs="{'invisible': [('som_is_locked', '=', False)]}"/>
                         <group>
                             <group>
                                 <field name="som_week_id"
