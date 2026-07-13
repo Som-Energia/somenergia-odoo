@@ -12,7 +12,7 @@ class ContractLookupAction extends Component {
         const params = (this.props.action && this.props.action.params) || {};
         const initialField = this.fields.includes(params.field) ? params.field : "phone";
         const initialValue = (params.value || "").toString();
-        this.phonecallId = params.phonecall_id || null;
+        this.phonecallId = params.phonecall_id ? parseInt(params.phonecall_id, 10) : null;
         this.callInfo = params.call_info || null;
         this.state = useState({
             field: initialField,

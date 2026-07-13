@@ -205,6 +205,7 @@ class HelpdeskContractLookupController(http.Controller):
                 "agent": call.user_id.name if call.user_id else "",
                 "description": call.description or "",
                 "categories": categories,
+                "pbx_call_id": call.som_pbx_call_id or "",
             })
 
         return {"phonecalls": result, "odoo_partner_found": True}

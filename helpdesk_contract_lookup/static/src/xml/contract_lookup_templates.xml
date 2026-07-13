@@ -345,19 +345,20 @@
                                     <t t-elif="state.phonecallsByPartner[partner.id] and state.phonecallsByPartner[partner.id].phonecalls.length > 0">
                                         <div style="max-height: 320px; overflow-y: auto;">
                                             <t t-foreach="state.phonecallsByPartner[partner.id].phonecalls" t-as="call" t-key="call.id">
-                                                <div class="border-bottom pb-2 mb-2">
+                                                <div t-att-class="'border-bottom pb-2 mb-2' + (call.id === phonecallId ? ' bg-light border-start border-primary border-3 ps-2' : '')">
                                                     <div class="d-flex align-items-center justify-content-between gap-1">
                                                         <div class="d-flex align-items-center gap-1 flex-wrap">
                                                             <i t-att-class="callDirectionIcon(call.direction)" t-att-title="call.direction"/>
                                                             <span t-att-class="callStateBadge(call.state)">
                                                                 <t t-esc="callStateLabel(call.state)"/>
                                                             </span>
-                                                            <span class="text-muted small text-nowrap"><t t-esc="call.date"/></span>
+                                                            <span t-if="call.pbx_call_id" class="text-muted small text-nowrap"><i class="fa fa-hashtag me-1"/><t t-esc="call.pbx_call_id"/></span>
+                                                            <span class="text-muted small text-nowrap"><i class="fa fa-clock-o me-1"/><t t-esc="call.date"/></span>
                                                         </div>
                                                         <button
-                                                            class="btn btn-sm btn-outline-primary py-0 flex-shrink-0"
+                                                            class="btn btn-sm btn-outline-primary flex-shrink-0"
                                                             t-on-click="() => this.openCall(call.id, partner.id)">
-                                                            <i class="fa fa-external-link"/>
+                                                            <i class="fa fa-external-link me-1"/> Open
                                                         </button>
                                                     </div>
                                                     <div class="small mt-1"><t t-esc="call.name"/></div>
@@ -368,7 +369,7 @@
                                                     </div>
                                                     <div t-if="call.categories and call.categories.length" class="d-flex flex-wrap gap-1 mt-1">
                                                         <t t-foreach="call.categories" t-as="cat" t-key="cat">
-                                                            <span class="badge bg-light text-dark border small"><t t-esc="cat"/></span>
+                                                            <span class="small text-muted" style="background:#f0f0f0;border-radius:3px;padding:1px 6px;pointer-events:none;"><t t-esc="cat"/></span>
                                                         </t>
                                                     </div>
                                                     <div t-if="call.description" class="text-muted small mt-1 fst-italic" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" t-att-title="call.description">
