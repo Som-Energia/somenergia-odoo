@@ -116,10 +116,12 @@ class ContractLookupAction extends Component {
     }
 
     _reloadAllPhonecalls() {
-        const partners = this.state.result && this.state.result.partners || [];
+        const partners = (this.state.result && this.state.result.partners) || [];
         for (const partner of partners) {
-            delete this.state.phonecallsByPartner[partner.id];
-            this.loadPartnerPhonecalls(partner.id);
+            const pid = partner.id;
+            if (!pid) continue;
+            delete this.state.phonecallsByPartner[pid];
+            this.loadPartnerPhonecalls(pid);
         }
     }
 
@@ -240,6 +242,7 @@ class ContractLookupAction extends Component {
     }
 
     async loadPartnerPhonecalls(partnerId) {
+        if (!partnerId || typeof partnerId !== "number") return;
         // Skip if already loaded or currently loading
         if (
             this.state.phonecallsByPartner[partnerId] !== undefined ||

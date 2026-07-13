@@ -8,6 +8,11 @@
                 <span><strong>Call ID:</strong> <t t-esc="callInfo.callid"/></span>
                 <span><strong>Time:</strong> <t t-esc="callInfo.created_at"/></span>
             </div>
+            <div t-if="phonecallId" class="mb-3">
+                <button class="btn btn-outline-primary" t-on-click="openPhonecall">
+                    <i class="fa fa-phone me-1"/> Open Call
+                </button>
+            </div>
             <div class="d-flex align-items-end gap-2 flex-wrap mb-3">
                 <div>
                     <label class="form-label">Search field</label>
