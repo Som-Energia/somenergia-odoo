@@ -25,6 +25,7 @@ class ContractLookupAction extends Component {
             expandedContracts: {},
             activeTabByContract: {},
             linkedPartnerId: null,
+            linkedContractNumber: null,
             phonecallsByPartner: {},
             loadingPhonecallsByPartner: {},
         });
@@ -95,19 +96,21 @@ class ContractLookupAction extends Component {
         });
     }
 
-    async linkPartnerToCall(partnerId, partnerName, partnerVat) {
+    async linkPartnerToCall(partnerId, partnerName, partnerVat, contractName) {
         try {
             await this.rpc("/helpdesk_contract_lookup/link_partner_to_call", {
                 phonecall_id: this.phonecallId,
                 partner_id: partnerId,
                 partner_name: partnerName,
                 partner_vat: partnerVat,
+                contract_name: contractName || null,
             });
-            this.notification.add(
-                `Partner "${partnerName}" linked to call.`,
-                { type: "success" }
-            );
+            const label = contractName
+                ? `Partner "${partnerName}" / Contract "${contractName}" linked to call.`
+                : `Partner "${partnerName}" linked to call.`;
+            this.notification.add(label, { type: "success" });
             this.state.linkedPartnerId = partnerId;
+            this.state.linkedContractNumber = contractName || null;
             this._reloadAllPhonecalls();
         } catch (error) {
             const message = error.message || "Unexpected error linking partner to call.";
@@ -125,8 +128,8 @@ class ContractLookupAction extends Component {
         }
     }
 
-    async linkPartnerToCallAndOpen(partnerId, partnerName, partnerVat) {
-        await this.linkPartnerToCall(partnerId, partnerName, partnerVat);
+    async linkPartnerToCallAndOpen(partnerId, partnerName, partnerVat, contractName) {
+        await this.linkPartnerToCall(partnerId, partnerName, partnerVat, contractName);
         this.openPhonecall(partnerId);
     }
 

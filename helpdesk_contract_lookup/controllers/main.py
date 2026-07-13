@@ -89,7 +89,7 @@ class HelpdeskContractLookupController(http.Controller):
         csrf=False,
     )
     def link_partner_to_call(
-            self, phonecall_id=None, partner_id=None, partner_name=None, partner_vat=None):
+            self, phonecall_id=None, partner_id=None, partner_name=None, partner_vat=None, contract_name=None):
         self._check_access()
         if not phonecall_id or not partner_id:
             raise ValidationError("phonecall_id and partner_id are required.")
@@ -104,6 +104,7 @@ class HelpdeskContractLookupController(http.Controller):
             "som_caller_name": partner_name or False,
             "som_caller_vat": partner_vat or False,
             "partner_id": odoo_partner.id if odoo_partner else False,
+            "som_contract_name": contract_name or False,
         })
         return {"status": "ok"}
 
@@ -206,6 +207,7 @@ class HelpdeskContractLookupController(http.Controller):
                 "description": call.description or "",
                 "categories": categories,
                 "pbx_call_id": call.som_pbx_call_id or "",
+                "contract_name": call.som_contract_name or "",
             })
 
         return {"phonecalls": result, "odoo_partner_found": True}

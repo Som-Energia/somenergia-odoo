@@ -98,18 +98,20 @@
                                             <span t-if="partner.member_code">Member: <t t-esc="partner.member_code"/> - </span>
                                             <span t-if="partner.vat">VAT: <t t-esc="partner.vat"/></span>
                                         </div>
-                                        <div t-if="phonecallId" class="d-flex gap-2">
-                                            <button
-                                                class="btn btn-sm btn-outline-success"
-                                                t-on-click="() => this.linkPartnerToCall(partner.id, partner.name, partner.vat)">
-                                                <i class="fa fa-link me-1"/> Link to Call
-                                            </button>
-                                            <button
-                                                class="btn btn-sm btn-success"
-                                                t-on-click="() => this.linkPartnerToCallAndOpen(partner.id, partner.name, partner.vat)">
-                                                <i class="fa fa-link me-1"/> Link to Call and Open
-                                            </button>
-                                        </div>
+                                                        <div t-if="phonecallId" class="d-flex gap-2">
+                                                            <button
+                                                                class="btn btn-sm btn-outline-success"
+                                                                title="Linkar trucada"
+                                                                t-on-click="() => this.linkPartnerToCall(partner.id, partner.name, partner.vat)">
+                                                                <i class="fa fa-link"/> <i class="fa fa-phone"/>
+                                                            </button>
+                                                            <button
+                                                                class="btn btn-sm btn-success"
+                                                                title="Linkar trucada i obrir"
+                                                                t-on-click="() => this.linkPartnerToCallAndOpen(partner.id, partner.name, partner.vat)">
+                                                                <i class="fa fa-link"/> <i class="fa fa-phone"/> <i class="fa fa-external-link"/>
+                                                            </button>
+                                                        </div>
                                         <div t-else="" class="d-flex gap-2">
                                             <button
                                                 class="btn btn-sm btn-success"
@@ -144,7 +146,7 @@
                                                         </td>
                                                     </tr>
                                                     <tr t-att-style="contract_index % 2 !== 0 ? 'background-color: #e8f4fd;' : ''">
-                                                        <td>
+                                                         <td>
                                                             <t t-if="contract.contract_url">
                                                                 <a t-att-href="contract.contract_url" target="_blank" class="text-decoration-none">
                                                                     <t t-esc="contract.number"/>
@@ -153,22 +155,39 @@
                                                             <t t-else="">
                                                                 <t t-esc="contract.number"/>
                                                             </t>
+                                                            <span t-if="state.linkedContractNumber === contract.number" class="badge bg-success ms-1">Linked</span>
                                                         </td>
                                                         <td>
                                                             <div class="small"><t t-esc="contract.cups"/></div>
                                                             <div class="text-muted o-contract-secondary-text"><t t-esc="contract.cups_address"/></div>
                                                         </td>
                                                         <td><t t-esc="contract.state"/></td>
-                                                        <td>
-                                                            <button
-                                                                class="btn btn-outline-secondary btn-sm"
-                                                                t-on-click="() => this.loadContractDetails(contract.number)"
-                                                                t-att-disabled="state.loadingDetailsByContract[contract.number]"
-                                                            >
-                                                                <t t-if="state.loadingDetailsByContract[contract.number]">Loading...</t>
-                                                                <t t-elif="state.expandedContracts[contract.number]"><i class="fa fa-chevron-up me-1"/>Hide details</t>
-                                                                <t t-else=""><i class="fa fa-chevron-down me-1"/>Load details</t>
-                                                            </button>
+                                                         <td>
+                                                            <div class="d-flex gap-1 flex-wrap align-items-center">
+                                                                <t t-if="phonecallId">
+                                                                    <button
+                                                                        class="btn btn-sm btn-outline-success"
+                                                                        title="Linkar trucada"
+                                                                        t-on-click="() => this.linkPartnerToCall(partner.id, partner.name, partner.vat, contract.number)">
+                                                                        <i class="fa fa-link"/> <i class="fa fa-phone"/>
+                                                                    </button>
+                                                                    <button
+                                                                        class="btn btn-sm btn-success"
+                                                                        title="Linkar trucada i obrir"
+                                                                        t-on-click="() => this.linkPartnerToCallAndOpen(partner.id, partner.name, partner.vat, contract.number)">
+                                                                        <i class="fa fa-link"/> <i class="fa fa-phone"/> <i class="fa fa-external-link"/>
+                                                                    </button>
+                                                                </t>
+                                                                <button
+                                                                    class="btn btn-outline-secondary btn-sm"
+                                                                    t-on-click="() => this.loadContractDetails(contract.number)"
+                                                                    t-att-disabled="state.loadingDetailsByContract[contract.number]"
+                                                                >
+                                                                    <t t-if="state.loadingDetailsByContract[contract.number]">Loading...</t>
+                                                                    <t t-elif="state.expandedContracts[contract.number]"><i class="fa fa-chevron-up me-1"/>Hide details</t>
+                                                                    <t t-else=""><i class="fa fa-chevron-down me-1"/>Load details</t>
+                                                                </button>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                     <tr t-if="state.expandedContracts[contract.number]"
@@ -366,6 +385,7 @@
                                                         <span t-if="call.agent"><i class="fa fa-user me-1"/><t t-esc="call.agent"/></span>
                                                         <span t-if="call.phone"><i class="fa fa-phone me-1"/><t t-esc="call.phone"/></span>
                                                         <span t-if="call.duration"><i class="fa fa-clock-o me-1"/><t t-esc="call.duration"/></span>
+                                                        <span t-if="call.contract_name"><i class="fa fa-file-text-o me-1"/><t t-esc="call.contract_name"/></span>
                                                     </div>
                                                     <div t-if="call.categories and call.categories.length" class="d-flex flex-wrap gap-1 mt-1">
                                                         <t t-foreach="call.categories" t-as="cat" t-key="cat">
