@@ -5,20 +5,13 @@ import { Component, onWillStart, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 
 class ContractLookupAction extends Component {
-    get storageKey() {
-        return "helpdesk_contract_lookup.return_search";
-    }
-
     setup() {
         this.notification = useService("notification");
         this.rpc = useService("rpc");
         this.action = useService("action");
         const params = (this.props.action && this.props.action.params) || {};
-        const savedSearch = this._consumeSavedSearch();
-        const initialField = this.fields.includes(params.field)
-            ? params.field
-            : (savedSearch && this.fields.includes(savedSearch.field) ? savedSearch.field : "phone");
-        const initialValue = (params.value || savedSearch?.value || "").toString();
+        const initialField = this.fields.includes(params.field) ? params.field : "phone";
+        const initialValue = (params.value || "").toString();
         this.phonecallId = params.phonecall_id || null;
         this.callInfo = params.call_info || null;
         this.state = useState({
@@ -40,31 +33,6 @@ class ContractLookupAction extends Component {
                 await this.onSearch();
             }
         });
-    }
-
-    _consumeSavedSearch() {
-        try {
-            const raw = sessionStorage.getItem(this.storageKey);
-            if (!raw) {
-                return null;
-            }
-            sessionStorage.removeItem(this.storageKey);
-            return JSON.parse(raw);
-        } catch {
-            sessionStorage.removeItem(this.storageKey);
-            return null;
-        }
-    }
-
-    _saveReturnSearch() {
-        try {
-            sessionStorage.setItem(this.storageKey, JSON.stringify({
-                field: this.state.field,
-                value: this.state.value,
-            }));
-        } catch {
-            // Ignore storage failures.
-        }
     }
 
     get fields() {
@@ -140,20 +108,28 @@ class ContractLookupAction extends Component {
                 { type: "success" }
             );
             this.state.linkedPartnerId = partnerId;
+            this._reloadAllPhonecalls();
         } catch (error) {
             const message = error.message || "Unexpected error linking partner to call.";
             this.notification.add(message, { type: "danger" });
         }
     }
 
+    _reloadAllPhonecalls() {
+        const partners = this.state.result && this.state.result.partners || [];
+        for (const partner of partners) {
+            delete this.state.phonecallsByPartner[partner.id];
+            this.loadPartnerPhonecalls(partner.id);
+        }
+    }
+
     async linkPartnerToCallAndOpen(partnerId, partnerName, partnerVat) {
         await this.linkPartnerToCall(partnerId, partnerName, partnerVat);
-        this.openPhonecall();
+        this.openPhonecall(partnerId);
     }
 
     async openPartnerInOdoo(partnerId, partnerName, partnerVat) {
         try {
-            this._saveReturnSearch();
             const response = await this.rpc("/helpdesk_contract_lookup/open_partner_in_odoo", {
                 partner_id: partnerId,
                 partner_name: partnerName,
@@ -165,9 +141,14 @@ class ContractLookupAction extends Component {
                     res_model: "res.partner",
                     res_id: response.odoo_partner_id,
                     views: [[false, "form"]],
-                    target: "current",
+                    target: "new",
                 },
-                { stackPosition: "push" }
+                {
+                    onClose: () => {
+                        delete this.state.phonecallsByPartner[partnerId];
+                        this.loadPartnerPhonecalls(partnerId);
+                    },
+                }
             );
         } catch (error) {
             const message = error.message || "Unexpected error opening partner in Odoo.";
@@ -183,16 +164,20 @@ class ContractLookupAction extends Component {
                 partner_vat: partnerVat,
                 partner_phone: partnerPhone,
             });
-            this._saveReturnSearch();
             this.action.doAction(
                 {
                     type: "ir.actions.act_window",
                     res_model: "crm.phonecall",
                     res_id: response.phonecall_id,
                     views: [[false, "form"]],
-                    target: "current",
+                    target: "new",
                 },
-                { stackPosition: "push" }
+                {
+                    onClose: () => {
+                        delete this.state.phonecallsByPartner[partnerId];
+                        this.loadPartnerPhonecalls(partnerId);
+                    },
+                }
             );
         } catch (error) {
             const message = error.message || "Unexpected error registering incoming call.";
@@ -200,16 +185,21 @@ class ContractLookupAction extends Component {
         }
     }
 
-    openPhonecall() {
+    openPhonecall(partnerId = null) {
         this.action.doAction(
             {
                 type: "ir.actions.act_window",
                 res_model: "crm.phonecall",
                 res_id: this.phonecallId,
                 views: [[false, "form"]],
-                target: "current",
+                target: "new",
             },
-            { newWindow: true }
+            partnerId ? {
+                onClose: () => {
+                    delete this.state.phonecallsByPartner[partnerId];
+                    this.loadPartnerPhonecalls(partnerId);
+                },
+            } : {}
         );
     }
 
