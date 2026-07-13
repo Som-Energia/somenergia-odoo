@@ -274,17 +274,21 @@ class ContractLookupAction extends Component {
         }
     }
 
-    openCall(callId) {
-        this._saveReturnSearch();
+    openCall(callId, partnerId) {
         this.action.doAction(
             {
                 type: "ir.actions.act_window",
                 res_model: "crm.phonecall",
                 res_id: callId,
                 views: [[false, "form"]],
-                target: "current",
+                target: "new",
             },
-            { stackPosition: "push" }
+            {
+                onClose: () => {
+                    delete this.state.phonecallsByPartner[partnerId];
+                    this.loadPartnerPhonecalls(partnerId);
+                },
+            }
         );
     }
 

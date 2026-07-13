@@ -356,7 +356,7 @@
                                                         </div>
                                                         <button
                                                             class="btn btn-sm btn-outline-primary py-0 flex-shrink-0"
-                                                            t-on-click="() => this.openCall(call.id)">
+                                                            t-on-click="() => this.openCall(call.id, partner.id)">
                                                             <i class="fa fa-external-link"/>
                                                         </button>
                                                     </div>
