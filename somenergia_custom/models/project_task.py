@@ -53,7 +53,9 @@ class Task(models.Model):
                 active_test=False
             ).user_ids
             assigned_user_ids = task.with_context(active_test=False).user_ids
-            partner_to_remove_ids = (follower_user_ids - assigned_user_ids).partner_id
+            partner_to_remove_ids = (
+                follower_user_ids.partner_id - assigned_user_ids.partner_id
+            )
             if partner_to_remove_ids:
                 task.sudo().message_follower_ids.filtered(
                     lambda follower: follower.partner_id in partner_to_remove_ids
