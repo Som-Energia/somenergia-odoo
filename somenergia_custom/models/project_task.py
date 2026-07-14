@@ -44,13 +44,20 @@ class Task(models.Model):
             self.env["ir.config_parameter"].sudo().get_param("som_avoid_default_task_followers")
         )
         if flag_avoid_default_followers:
-            for task_id in task_ids:
-                partner_to_remove_ids = (task_id.message_partner_ids.user_ids - task_id.user_ids).partner_id
-                if partner_to_remove_ids:
-                    task_id.sudo().message_follower_ids.filtered(
-                        lambda x: x.partner_id.id in partner_to_remove_ids.ids
-                    ).unlink()
+            task_ids._remove_default_followers()
         return task_ids
+
+    def _remove_default_followers(self):
+        for task in self:
+            follower_user_ids = task.message_partner_ids.with_context(
+                active_test=False
+            ).user_ids
+            assigned_user_ids = task.with_context(active_test=False).user_ids
+            partner_to_remove_ids = (follower_user_ids - assigned_user_ids).partner_id
+            if partner_to_remove_ids:
+                task.sudo().message_follower_ids.filtered(
+                    lambda follower: follower.partner_id in partner_to_remove_ids
+                ).unlink()
 
     def button_start_work(self):
         internal_project_ids = self.env['project.project'].get_internal_projects()
