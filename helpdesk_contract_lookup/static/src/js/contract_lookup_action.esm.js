@@ -14,6 +14,7 @@ class ContractLookupAction extends Component {
         const initialValue = (params.value || "").toString();
         this.phonecallId = params.phonecall_id ? parseInt(params.phonecall_id, 10) : null;
         this.callInfo = params.call_info || null;
+        this.phonecallFormViewId = false;
         this.state = useState({
             field: initialField,
             value: initialValue,
@@ -30,6 +31,8 @@ class ContractLookupAction extends Component {
             loadingPhonecallsByPartner: {},
         });
         onWillStart(async () => {
+            const viewRes = await this.rpc("/helpdesk_contract_lookup/phonecall_form_view_id", {});
+            this.phonecallFormViewId = viewRes.view_id || false;
             if (this.state.value.trim()) {
                 await this.onSearch();
             }
@@ -196,7 +199,7 @@ class ContractLookupAction extends Component {
                 type: "ir.actions.act_window",
                 res_model: "crm.phonecall",
                 res_id: this.phonecallId,
-                views: [[false, "form"]],
+                views: [[this.phonecallFormViewId || false, "form"]],
                 target: "new",
             },
             partnerId ? {
@@ -276,7 +279,7 @@ class ContractLookupAction extends Component {
                 type: "ir.actions.act_window",
                 res_model: "crm.phonecall",
                 res_id: callId,
-                views: [[false, "form"]],
+                views: [[this.phonecallFormViewId || false, "form"]],
                 target: "new",
             },
             {
@@ -286,6 +289,14 @@ class ContractLookupAction extends Component {
                 },
             }
         );
+    }
+
+    contrastColor(hex) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.5 ? "#000" : "#fff";
     }
 
     callStateBadge(state) {

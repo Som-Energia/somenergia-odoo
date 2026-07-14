@@ -1,4 +1,5 @@
 import logging
+import pytz
 
 from odoo import http
 from odoo.http import request
@@ -80,6 +81,21 @@ class HelpdeskContractLookupController(http.Controller):
         except Exception as exc:
             _logger.exception("Unexpected error during contract details")
             raise UserError("Unexpected error while fetching contract details: %s" % exc)
+
+    @http.route(
+        "/helpdesk_contract_lookup/phonecall_form_view_id",
+        type="json",
+        auth="user",
+        methods=["POST"],
+        csrf=False,
+    )
+    def phonecall_form_view_id(self):
+        self._check_access()
+        view = request.env.ref(
+            "helpdesk_contract_lookup.view_crm_phonecall_form_lookup",
+            raise_if_not_found=False,
+        )
+        return {"view_id": view.id if view else False}
 
     @http.route(
         "/helpdesk_contract_lookup/link_partner_to_call",
@@ -186,6 +202,7 @@ class HelpdeskContractLookupController(http.Controller):
         )
 
         result = []
+        user_tz = pytz.timezone(request.env.user.tz or "UTC")
         for call in calls:
             # Format duration (float minutes) as MM:SS
             total_seconds = int((call.duration or 0) * 60)
@@ -193,12 +210,18 @@ class HelpdeskContractLookupController(http.Controller):
             seconds = total_seconds % 60
             duration_str = "%d:%02d" % (minutes, seconds) if call.duration else ""
 
-            categories = [cat.name for cat in call.som_category_ids]
+            categories = [
+                {
+                    "name": cat.name,
+                    "color": cat._get_color_rgb(cat.som_family_color)["rgb"] if cat.som_family_color else "#e0e0e0",
+                }
+                for cat in call.som_category_ids
+            ]
 
             result.append({
                 "id": call.id,
                 "name": call.name or "",
-                "date": call.date.strftime("%Y-%m-%d %H:%M") if call.date else "",
+                "date": call.date.replace(tzinfo=pytz.utc).astimezone(user_tz).strftime("%Y-%m-%d %H:%M") if call.date else "",
                 "state": call.state or "",
                 "direction": call.direction or "",
                 "phone": call.partner_phone or "",

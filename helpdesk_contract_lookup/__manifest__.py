@@ -15,6 +15,7 @@
     ],
     "data": [
         "security/lookup_security.xml",
+        "views/crm_phonecall_views.xml",
         "views/menu.xml",
         "views/res_partner_views.xml",
         "views/res_config_settings_views.xml",
