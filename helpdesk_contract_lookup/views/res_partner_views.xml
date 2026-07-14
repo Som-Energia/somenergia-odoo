@@ -9,7 +9,7 @@
                 <button
                     name="action_open_contract_lookup"
                     type="object"
-                    string="Contract Lookup"
+                    string="Contacte 360"
                     class="oe_stat_button"
                     icon="fa-search"
                     groups="helpdesk_mgmt.group_helpdesk_user"
