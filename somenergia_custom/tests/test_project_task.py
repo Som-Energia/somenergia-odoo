@@ -4,6 +4,7 @@ from datetime import timedelta
 from freezegun import freeze_time
 
 from odoo import fields
+from odoo.tests import new_test_user
 from odoo.tests.common import TransactionCase, tagged
 
 
@@ -51,3 +52,31 @@ class TestProjectTask(TransactionCase):
         self.assertNotIn(future_project, task.som_project_area_domain_ids)
         self.assertIn(timeless_project, task.som_project_area_domain_ids)
         self.assertNotIn(non_area_project, task.som_project_area_domain_ids)
+
+    def test_create_removes_archived_project_followers(self):
+        self.env['ir.config_parameter'].set_param(
+            'som_avoid_default_task_followers', True
+        )
+        archived_follower = new_test_user(
+            self.env, login='archived_project_follower', groups='base.group_user'
+        )
+        assigned_follower = new_test_user(
+            self.env, login='assigned_project_follower', groups='base.group_user'
+        )
+        project = self.env['project.project'].create({
+            'name': 'Project With Followers',
+        })
+        project.message_subscribe([
+            archived_follower.partner_id.id,
+            assigned_follower.partner_id.id,
+        ])
+        archived_follower.active = False
+
+        task = self.env['project.task'].create({
+            'name': 'Task Without Default Followers',
+            'project_id': project.id,
+            'user_ids': [(6, 0, [assigned_follower.id])],
+        })
+
+        self.assertNotIn(archived_follower.partner_id, task.message_partner_ids)
+        self.assertIn(assigned_follower.partner_id, task.message_partner_ids)
