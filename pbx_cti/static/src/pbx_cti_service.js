@@ -18,6 +18,7 @@ export const pbxCtiService = {
                             {
                                 type: "ir.actions.client",
                                 tag: "helpdesk_contract_lookup.main",
+                                name: "Contract Lookup",
                                 params: {
                                     field: "phone",
                                     value: payload.phone,
