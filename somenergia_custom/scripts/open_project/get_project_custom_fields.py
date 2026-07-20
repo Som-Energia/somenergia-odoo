@@ -2,19 +2,19 @@
 """Inspect OpenProject project custom-field definitions and current values.
 
 Example:
-    OPENPROJECT_API_KEY=... python get_project_custom_fields.py
+    python get_project_custom_fields.py
 """
 
 import argparse
 import json
-import os
 from pathlib import Path
 from urllib.parse import urljoin
 
 import requests
 
+from openproject_config import load_openproject_config
 
-DEFAULT_BASE_URL = "https://somenergia.openproject.com/api/v3"
+
 DEFAULT_OUTPUT = Path(__file__).with_name("project_custom_fields.json")
 
 
@@ -51,11 +51,6 @@ def get_projects(client, base_url, page_size):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--base-url",
-        default=os.environ.get("OPENPROJECT_URL", DEFAULT_BASE_URL),
-        help="OpenProject API v3 base URL",
-    )
     parser.add_argument("--page-size", type=int, default=200)
     parser.add_argument(
         "--output",
@@ -68,9 +63,7 @@ def parse_arguments():
 
 def main():
     arguments = parse_arguments()
-    api_key = os.environ.get("OPENPROJECT_API_KEY")
-    if not api_key:
-        raise SystemExit("OPENPROJECT_API_KEY must be set.")
+    base_url, api_key = load_openproject_config()
     if arguments.page_size < 1:
         raise SystemExit("--page-size must be greater than zero.")
 
@@ -78,10 +71,10 @@ def main():
     client.auth = ("apikey", api_key)
     client.headers.update({"Accept": "application/hal+json"})
 
-    schema = get(client, arguments.base_url, "projects/schema")
+    schema = get(client, base_url, "projects/schema")
     projects = []
-    for project_link in get_projects(client, arguments.base_url, arguments.page_size):
-        project = get(client, arguments.base_url, project_link["_links"]["self"]["href"])
+    for project_link in get_projects(client, base_url, arguments.page_size):
+        project = get(client, base_url, project_link["_links"]["self"]["href"])
         projects.append({
             "id": project["id"],
             "identifier": project["identifier"],

@@ -2,18 +2,16 @@
 """List OpenProject projects and their current CeCo custom-field value.
 
 Example:
-    OPENPROJECT_API_KEY=... python get_projects_ceco.py
+    python get_projects_ceco.py
 """
 
 import argparse
 import json
-import os
 from urllib.parse import urljoin
 
 import requests
 
-
-DEFAULT_BASE_URL = "https://somenergia.openproject.com/api/v3"
+from openproject_config import load_openproject_config
 
 
 def get(client, base_url, path_or_url, params=None):
@@ -62,11 +60,6 @@ def get_projects(client, base_url, page_size):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--base-url",
-        default=os.environ.get("OPENPROJECT_URL", DEFAULT_BASE_URL),
-        help="OpenProject API v3 base URL",
-    )
     parser.add_argument("--ceco-field", default="CeCo")
     parser.add_argument("--page-size", type=int, default=200)
     return parser.parse_args()
@@ -74,9 +67,7 @@ def parse_arguments():
 
 def main():
     arguments = parse_arguments()
-    api_key = os.environ.get("OPENPROJECT_API_KEY")
-    if not api_key:
-        raise SystemExit("OPENPROJECT_API_KEY must be set.")
+    base_url, api_key = load_openproject_config()
     if arguments.page_size < 1:
         raise SystemExit("--page-size must be greater than zero.")
 
@@ -85,11 +76,11 @@ def main():
     client.headers.update({"Accept": "application/hal+json"})
 
     ceco_key, ceco_schema = get_ceco_field(
-        get(client, arguments.base_url, "projects/schema"), arguments.ceco_field
+        get(client, base_url, "projects/schema"), arguments.ceco_field
     )
     projects = []
-    for project_link in get_projects(client, arguments.base_url, arguments.page_size):
-        project = get(client, arguments.base_url, project_link["_links"]["self"]["href"])
+    for project_link in get_projects(client, base_url, arguments.page_size):
+        project = get(client, base_url, project_link["_links"]["self"]["href"])
         projects.append({
             "id": project["id"],
             "identifier": project["identifier"],
