@@ -7,7 +7,9 @@ Example:
 
 import argparse
 import json
+import re
 from datetime import date
+from decimal import Decimal
 from urllib.parse import urljoin
 
 import requests
@@ -16,6 +18,9 @@ from openproject_config import load_openproject_config
 
 
 DEFAULT_DATE_FROM = "2026-07-13"
+ISO_DURATION_PATTERN = re.compile(
+    r"^PT(?:(?P<hours>\d+)H)?(?:(?P<minutes>\d+)M)?(?:(?P<seconds>\d+(?:\.\d+)?)S)?$"
+)
 
 
 class OpenProjectClient:
@@ -41,6 +46,18 @@ def link_id(link):
 
 def link_title(link):
     return link.get("title") if link else None
+
+
+def duration_to_hours(duration):
+    """Convert an OpenProject ISO 8601 duration to Odoo decimal hours."""
+    match = ISO_DURATION_PATTERN.fullmatch(duration)
+    if not match or not any(match.groupdict().values()):
+        raise ValueError("Unsupported OpenProject duration: %r" % duration)
+
+    hours = Decimal(match.group("hours") or 0)
+    minutes = Decimal(match.group("minutes") or 0)
+    seconds = Decimal(match.group("seconds") or 0)
+    return float(hours + minutes / 60 + seconds / 3600)
 
 
 def get_time_entries(client, date_from, page_size):
@@ -83,12 +100,16 @@ def export_time_entries(client, date_from, page_size):
             users[user_id] = client.get(user_link["href"])
 
         user = users[user_id]
+        openproject_hours = entry["hours"]
         exported_entries.append({
             "openproject_time_entry_id": entry["id"],
             "date": entry["spentOn"],
-            "hours": entry["hours"],
+            "openproject_hours": openproject_hours,
+            "unit_amount": duration_to_hours(openproject_hours),
             "comment": entry.get("comment", {}).get("raw"),
             "openproject_user_id": user_id,
+            "openproject_user_name": user.get("name") or link_title(user_link),
+            "openproject_user_login": user.get("login"),
             "employee_work_email": user.get("email"),
             "openproject_project_id": project_id,
             "openproject_project_name": link_title(project_link),
