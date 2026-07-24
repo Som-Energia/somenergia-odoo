@@ -1,0 +1,446 @@
+{
+  "schema_custom_fields": {
+    "customField1": {
+      "type": "String",
+      "name": "Slack Webhook URL",
+      "required": false,
+      "hasDefault": false,
+      "writable": true,
+      "options": {
+        "rtl": null
+      }
+    },
+    "customField6": {
+      "type": "Link",
+      "name": "Acta de seguiment",
+      "required": false,
+      "hasDefault": false,
+      "writable": true,
+      "options": {
+        "rtl": null
+      }
+    },
+    "customField7": {
+      "type": "Link",
+      "name": "URL repositori",
+      "required": false,
+      "hasDefault": false,
+      "writable": true,
+      "options": {
+        "rtl": null
+      }
+    },
+    "customField8": {
+      "type": "Link",
+      "name": "Carpeta al Google Drive",
+      "required": false,
+      "hasDefault": false,
+      "writable": true,
+      "options": {
+        "rtl": null
+      }
+    },
+    "customField13": {
+      "type": "String",
+      "name": "CeCo vinculat",
+      "required": false,
+      "hasDefault": false,
+      "writable": true,
+      "options": {
+        "rtl": null
+      }
+    }
+  },
+  "schema_attribute_groups": [
+    {
+      "_type": "ProjectFormCustomFieldSection",
+      "id": 1,
+      "name": "Project attributes",
+      "attributes": [
+        "customField1",
+        "customField6",
+        "customField7",
+        "customField8",
+        "customField13"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": 52,
+      "identifier": "cim-dades",
+      "name": "CiM Dades",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 51,
+      "identifier": "singulars-25-27-som-energia-activa",
+      "name": "Singulars 25-27 Som Energia Activa",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 50,
+      "identifier": "cim-odoo",
+      "name": "CiM Odoo",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 49,
+      "identifier": "odoo-cif-vinculacio-amb-odoo-enterprise",
+      "name": "Odoo CiF (vinculació amb Odoo Enterprise)",
+      "custom_fields": {
+        "customField13": "Comptabilitat"
+      }
+    },
+    {
+      "id": 47,
+      "identifier": "descompte-social",
+      "name": "Descompte Social",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 46,
+      "identifier": "entorn-tarifes",
+      "name": "Entorn Tarifes",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 45,
+      "identifier": "estrategia-comercial",
+      "name": "Estratègia Comercial",
+      "custom_fields": {
+        "customField6": "https://docs.google.com/document/d/1re1TB80KeeD0LyipMgJ8dn3FiqDCnqPifemmwZ3kD8U/edit?tab=t.0#heading=h.wfj1sk3censq",
+        "customField13": null
+      }
+    },
+    {
+      "id": 44,
+      "identifier": "cicle-de-xerrades",
+      "name": "Cicle de Xerrades",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 43,
+      "identifier": "bones-practiques",
+      "name": "Bones pràctiques",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 42,
+      "identifier": "migracio-authentik",
+      "name": "Migraciò Authentik",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 41,
+      "identifier": "previsio-de-la-demanda",
+      "name": "Previsió de la demanda",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 40,
+      "identifier": "balanc-i-marges",
+      "name": "Balanç i marges",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 39,
+      "identifier": "tractament-de-fitxers-del-mercat",
+      "name": "Tractament fitxers",
+      "custom_fields": {
+        "customField7": "https://gitlab.somenergia.coop/et/somenergia-curves",
+        "customField13": null
+      }
+    },
+    {
+      "id": 38,
+      "identifier": "onboarding-client-web-erp",
+      "name": "Onboarding Client Web ERP",
+      "custom_fields": {
+        "customField6": "https://docs.google.com/document/d/1TP-SeiRmvXx9X5iF0j0nTi_kayffScZFUCiATUmM9Mo/edit?pli=1&tab=t.0#heading=h.y18xiofgovm0",
+        "customField13": null
+      }
+    },
+    {
+      "id": 36,
+      "identifier": "esborrat-de-dades",
+      "name": "Esborrat de dades",
+      "custom_fields": {
+        "customField6": "https://docs.google.com/document/d/1NhIRLDmluiGB9SPjixpbf-go8Bg_vONIfBftQj3Dhys/edit?tab=t.0#heading=h.hduyp9y0hzoh",
+        "customField13": null
+      }
+    },
+    {
+      "id": 34,
+      "identifier": "ct-ss",
+      "name": "CT SS",
+      "custom_fields": {
+        "customField6": "https://docs.google.com/document/d/1mGrV1z6wSli1bfb7JMONoGTSzg6DfSzyWVEXKCzFHkY/edit?tab=t.0#heading=h.vfjow4ujyfs",
+        "customField13": null
+      }
+    },
+    {
+      "id": 33,
+      "identifier": "nova-web",
+      "name": "Nova WEB",
+      "custom_fields": {
+        "customField1": null,
+        "customField6": null,
+        "customField7": null,
+        "customField8": null,
+        "customField13": null
+      }
+    },
+    {
+      "id": 32,
+      "identifier": "participacio",
+      "name": "Participació",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 31,
+      "identifier": "migracio-a-freescout",
+      "name": "Migració a Freescout",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 30,
+      "identifier": "som-labs",
+      "name": "Som Labs",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 29,
+      "identifier": "indicadors-slash-seguiment-okrs",
+      "name": "Indicadors",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 28,
+      "identifier": "erp-de-representacio",
+      "name": "ERP de Representació",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 27,
+      "identifier": "representacio-de-mercat",
+      "name": "Representació de Mercat",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 25,
+      "identifier": "no-assignat",
+      "name": "No Assignat",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 24,
+      "identifier": "som-serveis",
+      "name": "Som Serveis",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 23,
+      "identifier": "millora-ux-de-la-contractacio-formularis",
+      "name": "Millora UX de la contractació (formularis)",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 22,
+      "identifier": "canvi-de-tarifes",
+      "name": "Canvi de Tarifes",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 21,
+      "identifier": "kalinfo",
+      "name": "Kalinfo",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 20,
+      "identifier": "tomatic",
+      "name": "Tomàtic",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 19,
+      "identifier": "odoo",
+      "name": "ODOO",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 18,
+      "identifier": "cim-technocuca",
+      "name": "CiM TechnoCuca",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 17,
+      "identifier": "cim-it",
+      "name": "CiM IT",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 16,
+      "identifier": "som-solet",
+      "name": "Som Solet",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 15,
+      "identifier": "auvidi",
+      "name": "AUVIDI",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 14,
+      "identifier": "flux-solar",
+      "name": "Flux Solar",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 13,
+      "identifier": "ov-representa",
+      "name": "OV Representa",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 12,
+      "identifier": "generation-kwh",
+      "name": "Generation kWh",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 11,
+      "identifier": "indexada",
+      "name": "Indexada",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 10,
+      "identifier": "cim-ov-slash-forms",
+      "name": "CiM OV/Forms",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 6,
+      "identifier": "jardiner-slash-plantmonitor",
+      "name": "Jardiner / Plantmonitor",
+      "custom_fields": {
+        "customField6": "https://docs.google.com/document/d/1qSB3JlPqtBBsoMyWhpohwcDuSPvQZ-XlcaYjgfR2ORw/edit?tab=t.0#bookmark=id.h0ozag7l98l1",
+        "customField7": "https://gitlab.somenergia.coop/et/somenergia-jardiner/",
+        "customField8": null,
+        "customField13": null
+      }
+    },
+    {
+      "id": 5,
+      "identifier": "som-energia",
+      "name": "Som Energia",
+      "custom_fields": {
+        "customField13": null
+      }
+    },
+    {
+      "id": 4,
+      "identifier": "cim-erp",
+      "name": "CiM ERP",
+      "custom_fields": {
+        "customField1": null,
+        "customField13": null
+      }
+    },
+    {
+      "id": 3,
+      "identifier": "gurb",
+      "name": "GURB",
+      "custom_fields": {
+        "customField1": null,
+        "customField13": null
+      }
+    },
+    {
+      "id": 2,
+      "identifier": "your-scrum-project",
+      "name": "Scrum project",
+      "custom_fields": {
+        "customField1": null,
+        "customField13": null
+      }
+    },
+    {
+      "id": 1,
+      "identifier": "demo-project",
+      "name": "Demo project",
+      "custom_fields": {
+        "customField1": null,
+        "customField13": null
+      }
+    }
+  ]
+}
