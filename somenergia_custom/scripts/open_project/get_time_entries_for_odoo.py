@@ -17,7 +17,7 @@ import requests
 from openproject_config import load_openproject_config
 
 
-DEFAULT_DATE_FROM = "2026-07-13"
+DEFAULT_DATE_FROM = "2026-07-20"
 ISO_DURATION_PATTERN = re.compile(
     r"^PT(?:(?P<hours>\d+)H)?(?:(?P<minutes>\d+)M)?(?:(?P<seconds>\d+(?:\.\d+)?)S)?$"
 )
@@ -86,6 +86,8 @@ def get_time_entries(client, date_from, page_size):
 
 def export_time_entries(client, date_from, page_size):
     users = {}
+    projects = {}
+    work_packages = {}
     exported_entries = []
 
     for entry in get_time_entries(client, date_from, page_size):
@@ -96,10 +98,17 @@ def export_time_entries(client, date_from, page_size):
 
         user_id = link_id(user_link)
         project_id = link_id(project_link)
+        work_package_id = link_id(work_package_link)
         if user_id not in users:
             users[user_id] = client.get(user_link["href"])
+        if project_id and project_id not in projects:
+            projects[project_id] = client.get(project_link["href"])
+        if work_package_id and work_package_id not in work_packages:
+            work_packages[work_package_id] = client.get(work_package_link["href"])
 
         user = users[user_id]
+        project = projects.get(project_id, {})
+        work_package = work_packages.get(work_package_id, {})
         openproject_hours = entry["hours"]
         exported_entries.append({
             "openproject_time_entry_id": entry["id"],
@@ -113,8 +122,10 @@ def export_time_entries(client, date_from, page_size):
             "employee_work_email": user.get("email"),
             "openproject_project_id": project_id,
             "openproject_project_name": link_title(project_link),
-            "openproject_work_package_id": link_id(work_package_link),
+            "openproject_project_ceco": project.get("customField13"),
+            "openproject_work_package_id": work_package_id,
             "openproject_work_package_subject": link_title(work_package_link),
+            "openproject_work_package_ceco": work_package.get("customField14"),
         })
 
     return exported_entries
