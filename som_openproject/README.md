@@ -16,9 +16,6 @@ The API key is sent through OpenProject Basic Auth using `apikey` as the user.
 Every HAL URL is constrained to this configured origin and redirects are rejected
 before a follow-up request can be made.
 
-The historical validation scripts are kept under `scripts/open_project/` as examples.
-The Odoo importer does not read `.openproject.conf`.
-
 ## Schedule
 
 The scheduled action is inactive by default. After validation in a test environment,
