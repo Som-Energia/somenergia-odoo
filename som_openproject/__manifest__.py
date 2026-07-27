@@ -8,6 +8,7 @@
     "depends": ["somenergia_custom"],
     "data": [
         "data/ir_cron.xml",
+        "views/som_worked_week_view.xml",
     ],
     "installable": True,
 }

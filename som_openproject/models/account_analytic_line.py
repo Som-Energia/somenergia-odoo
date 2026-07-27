@@ -76,6 +76,23 @@ class AccountAnalyticLine(models.Model):
         copy=False,
         readonly=True,
     )
+    oproject_source_data_readable = fields.Text(
+        string="OpenProject source data",
+        compute="_compute_oproject_source_data_readable",
+        readonly=True,
+    )
+
+    @api.depends("oproject_source_data")
+    def _compute_oproject_source_data_readable(self):
+        for record in self:
+            record.oproject_source_data_readable = (
+                json.dumps(
+                    record.oproject_source_data,
+                    ensure_ascii=False,
+                    indent=2,
+                    sort_keys=True,
+                ) if record.oproject_source_data else False
+            )
 
     def init(self):
         # Odoo stores an empty Integer as 0, so a normal unique constraint would
@@ -273,8 +290,13 @@ class AccountAnalyticLine(models.Model):
             return False
 
         entry_date = source_data.get("date")
+        from datetime import datetime as _datetime
+        entry_datetime = (
+            _datetime.strptime(entry_date, "%Y-%m-%d").strftime("%Y-%m-%d 12:00:00")
+            if entry_date else False
+        )
         week, worked_week = self._get_worked_week_info_from_timesheet_date(
-            entry_date, employee.id
+            entry_datetime, employee.id
         )
         if not week or not worked_week:
             _logger.warning(
@@ -283,8 +305,19 @@ class AccountAnalyticLine(models.Model):
                 entry_date,
             )
             return False
+        work_package_id = source_data.get("openproject_work_package_id")
+        work_package_subject = source_data.get("openproject_work_package_subject")
+        if work_package_id and work_package_subject and entry_date:
+            from datetime import datetime
+            date_obj = datetime.strptime(entry_date, "%Y-%m-%d")
+            date_short = date_obj.strftime("%d/%m/%y")
+            timesheet_name = "[OP #%s %s]%s" % (
+                work_package_id, date_short, work_package_subject
+            )
+        else:
+            timesheet_name = work_package_subject or "/"
         return {
-            "name": source_data.get("openproject_work_package_subject") or "/",
+            "name": timesheet_name,
             "date": entry_date,
             "unit_amount": source_data.get("unit_amount"),
             "employee_id": employee.id,
@@ -380,7 +413,6 @@ class AccountAnalyticLine(models.Model):
         return stats
 
     @api.model
-    def _cron_import_openproject_timesheets(self):
-        execution_date = fields.Date.today()
-        date_from, date_to = self._get_openproject_week_range(execution_date)
+    def _cron_import_openproject_timesheets(self, reference_date=None):
+        date_from, date_to = self._get_openproject_week_range(reference_date)
         return self._import_openproject_timesheets(date_from, date_to)

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 from datetime import datetime, timedelta
 
 from odoo.exceptions import UserError
@@ -31,15 +32,15 @@ class TestOpenProjectImport(TransactionCase):
         cls.work_package_project = cls.env["project.project"].create({
             "name": "OpenProject Work Package CeCo",
         })
-        date_from = datetime(2026, 7, 20, 0, 0, 0)
+        date_from = datetime(2099, 7, 21, 12, 0, 0)
         cls.week = cls.env["som.calendar.week"].create({
-            "name": "2026-W30",
-            "som_cw_code": "2026W30",
+            "name": "2099-W30",
+            "som_cw_code": "2099W30",
             "som_cw_date": date_from,
-            "som_cw_date_end": date_from + timedelta(days=6),
+            "som_cw_date_end": datetime(2099, 7, 27, 23, 59, 59),
             "som_cw_week_number": 30,
-            "som_cw_week_year": 2026,
-            "som_cw_year": 2026,
+            "som_cw_week_year": 2099,
+            "som_cw_year": 2099,
         })
         cls.worked_week = cls.env["som.worked.week"].create({
             "som_week_id": cls.week.id,
@@ -49,10 +50,11 @@ class TestOpenProjectImport(TransactionCase):
     def _source_entry(self, entry_id, **overrides):
         source = {
             "openproject_time_entry_id": entry_id,
-            "date": "2026-07-20",
+            "date": "2099-07-24",
             "openproject_hours": "PT1H30M",
             "unit_amount": 1.5,
             "comment": "OpenProject test entry",
+            "openproject_work_package_id": 1863,
             "openproject_work_package_subject": "OpenProject work package",
             "openproject_user_login": self.user.login,
             "openproject_project_ceco": self.project.name,
@@ -73,8 +75,15 @@ class TestOpenProjectImport(TransactionCase):
         self.assertEqual(line.som_week_id, self.week)
         self.assertEqual(line.som_worked_week_id, self.worked_week)
         self.assertEqual(line.unit_amount, 1.5)
-        self.assertEqual(line.name, source["openproject_work_package_subject"])
+        self.assertEqual(
+            line.name,
+            "[OP #1863 24/07/99]OpenProject work package",
+        )
         self.assertEqual(line.oproject_source_data, source)
+        self.assertEqual(
+            line.oproject_source_data_readable,
+            json.dumps(source, ensure_ascii=False, indent=2, sort_keys=True),
+        )
 
     def test_import_prefers_work_package_ceco(self):
         stats = self.AnalyticLine._import_openproject_source_entries([

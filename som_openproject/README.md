@@ -29,6 +29,10 @@ execution on 2026-07-26 imports entries dated from 2026-07-20 through 2026-07-26
 The initial next execution is scheduled for 08:00 UTC, which is 10:00 in Spain during
 summer time. The business rule is independent of the exact execution hour.
 
+For a controlled manual execution, call
+`_cron_import_openproject_timesheets(reference_date="YYYY-MM-DD")`. The supplied date
+selects its Monday-Sunday week; omitting it uses the current date.
+
 ## Matching rules
 
 Only entries with an OpenProject CeCo value are candidates for import. The target
@@ -43,8 +47,9 @@ matched exactly through `hr.employee.user_id.login` and the OpenProject user log
 Missing or ambiguous employee, project, calendar week, or worked-week matches cause
 the entry to be skipped and logged as a warning.
 
-The Odoo timesheet description uses `openproject_work_package_subject`. The
-OpenProject time-entry comment remains available in the stored source JSON.
+The Odoo timesheet description uses the work-package ID, date, and subject in the form
+`[OP #<id> <dd/mm/yy>]<subject>`. The OpenProject time-entry comment remains available in
+the stored source JSON.
 
 ## Immutability and traceability
 
@@ -52,6 +57,10 @@ Every imported entry stores:
 
 - `oproject_entry_id`: immutable OpenProject time-entry ID.
 - `oproject_source_data`: normalized JSON data used for the Odoo creation.
+
+The worked-week timesheet table exposes the OpenProject entry ID and a formatted,
+read-only source-data column. Both columns are hidden by default and can be enabled
+when investigating an imported timesheet.
 
 `oproject_entry_id` has a partial database unique index for values other than zero.
 Re-runs and retries therefore skip already imported entries. Changes or deletions made
