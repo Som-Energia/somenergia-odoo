@@ -10,11 +10,10 @@ import json
 import re
 from datetime import date
 from decimal import Decimal
-from urllib.parse import urljoin
 
 import requests
 
-from openproject_config import load_openproject_config
+from openproject_config import load_openproject_config, resolve_openproject_url
 
 
 DEFAULT_DATE_FROM = "2026-07-20"
@@ -31,8 +30,17 @@ class OpenProjectClient:
         self.session.headers.update({"Accept": "application/hal+json"})
 
     def get(self, path_or_url, params=None):
-        url = urljoin(self.base_url, path_or_url)
-        response = self.session.get(url, params=params, timeout=30)
+        url = resolve_openproject_url(self.base_url, path_or_url)
+        response = self.session.get(
+            url,
+            params=params,
+            timeout=30,
+            allow_redirects=False,
+        )
+        if 300 <= response.status_code < 400:
+            raise requests.HTTPError(
+                "OpenProject request redirected to %s." % response.headers.get("Location")
+            )
         response.raise_for_status()
         return response.json()
 

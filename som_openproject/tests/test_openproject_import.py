@@ -5,6 +5,8 @@ from odoo.exceptions import UserError
 from odoo.tests import new_test_user
 from odoo.tests.common import TransactionCase, tagged
 
+from odoo.addons.som_openproject.models.account_analytic_line import OpenProjectClient
+
 
 @tagged("som_openproject")
 class TestOpenProjectImport(TransactionCase):
@@ -128,3 +130,26 @@ class TestOpenProjectImport(TransactionCase):
 
         self.assertEqual(str(date_from), "2026-07-20")
         self.assertEqual(str(date_to), "2026-07-26")
+
+    def test_openproject_client_rejects_external_hal_urls(self):
+        client = OpenProjectClient(
+            "https://openproject.example.test/api/v3",
+            "test-api-key",
+        )
+
+        self.assertEqual(
+            client._resolve_url("projects"),
+            "https://openproject.example.test/api/v3/projects",
+        )
+        self.assertEqual(
+            client._resolve_url(
+                "https://openproject.example.test/api/v3/projects/1"
+            ),
+            "https://openproject.example.test/api/v3/projects/1",
+        )
+        for url in (
+                "https://attacker.example.test/entries",
+                "//attacker.example.test/entries",
+        ):
+            with self.assertRaises(ValueError):
+                client._resolve_url(url)

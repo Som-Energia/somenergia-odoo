@@ -2,20 +2,33 @@
 
 from configparser import ConfigParser
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 
 CONFIG_PATH = Path(__file__).with_name(".openproject.conf")
-LEGACY_CONFIG_PATH = (
-    Path(__file__).parents[3]
-    / "somenergia_custom/scripts/open_project/.openproject.conf"
-)
+
+
+def _origin(url):
+    parsed_url = urlparse(url)
+    if parsed_url.scheme not in ("http", "https") or not parsed_url.hostname:
+        raise RuntimeError("OpenProject URL must be a valid HTTP(S) URL.")
+    port = parsed_url.port
+    if port is None:
+        port = 443 if parsed_url.scheme == "https" else 80
+    return parsed_url.scheme.lower(), parsed_url.hostname.lower(), port
+
+
+def resolve_openproject_url(base_url, path_or_url):
+    """Resolve a HAL URL and reject a change of authenticated origin."""
+    url = urljoin(base_url.rstrip("/") + "/", path_or_url)
+    if _origin(url) != _origin(base_url):
+        raise RuntimeError("OpenProject URL points outside the configured origin.")
+    return url
 
 
 def load_openproject_config():
     config = ConfigParser()
-    config_path = CONFIG_PATH if CONFIG_PATH.exists() else LEGACY_CONFIG_PATH
-    if not config.read(config_path):
+    if not config.read(CONFIG_PATH):
         raise RuntimeError(
             "OpenProject configuration file not found: %s" % CONFIG_PATH
         )
@@ -33,7 +46,5 @@ def load_openproject_config():
         api_key = api_key[1:-1].strip()
     if not api_url or not api_key:
         raise RuntimeError("api_url and api_key must not be empty.")
-    parsed_url = urlparse(api_url)
-    if parsed_url.scheme not in ("http", "https") or not parsed_url.netloc:
-        raise RuntimeError("api_url must be a valid HTTP(S) URL.")
+    _origin(api_url)
     return api_url, api_key

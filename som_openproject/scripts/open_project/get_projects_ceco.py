@@ -7,19 +7,23 @@ Example:
 
 import argparse
 import json
-from urllib.parse import urljoin
 
 import requests
 
-from openproject_config import load_openproject_config
+from openproject_config import load_openproject_config, resolve_openproject_url
 
 
 def get(client, base_url, path_or_url, params=None):
     response = client.get(
-        urljoin(base_url.rstrip("/") + "/", path_or_url),
+        resolve_openproject_url(base_url, path_or_url),
         params=params,
         timeout=30,
+        allow_redirects=False,
     )
+    if 300 <= response.status_code < 400:
+        raise requests.HTTPError(
+            "OpenProject request redirected to %s." % response.headers.get("Location")
+        )
     response.raise_for_status()
     return response.json()
 

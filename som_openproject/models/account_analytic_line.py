@@ -4,7 +4,7 @@ import logging
 import re
 from datetime import timedelta
 from decimal import Decimal
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import requests
 
@@ -25,18 +25,41 @@ class OpenProjectClient:
 
     def __init__(self, base_url, api_key):
         self.base_url = base_url.rstrip("/") + "/"
+        self.origin = self._origin(self.base_url)
         self.session = requests.Session()
         self.session.auth = ("apikey", api_key)
         self.session.headers.update({"Accept": "application/hal+json"})
 
     def get(self, path_or_url, params=None):
+        url = self._resolve_url(path_or_url)
         response = self.session.get(
-            urljoin(self.base_url, path_or_url),
+            url,
             params=params,
             timeout=30,
+            allow_redirects=False,
         )
+        if 300 <= response.status_code < 400:
+            raise requests.HTTPError(
+                "OpenProject request redirected to %s." % response.headers.get("Location")
+            )
         response.raise_for_status()
         return response.json()
+
+    @staticmethod
+    def _origin(url):
+        parsed_url = urlparse(url)
+        if parsed_url.scheme not in ("http", "https") or not parsed_url.hostname:
+            raise ValueError("OpenProject URL must be a valid HTTP(S) URL.")
+        port = parsed_url.port
+        if port is None:
+            port = 443 if parsed_url.scheme == "https" else 80
+        return parsed_url.scheme.lower(), parsed_url.hostname.lower(), port
+
+    def _resolve_url(self, path_or_url):
+        url = urljoin(self.base_url, path_or_url)
+        if self._origin(url) != self.origin:
+            raise ValueError("OpenProject URL points outside the configured origin.")
+        return url
 
 
 class AccountAnalyticLine(models.Model):

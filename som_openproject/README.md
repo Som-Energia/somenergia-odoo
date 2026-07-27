@@ -13,10 +13,11 @@ openproject_api_key = replace-with-an-api-key
 ```
 
 The API key is sent through OpenProject Basic Auth using `apikey` as the user.
+Every HAL URL is constrained to this configured origin and redirects are rejected
+before a follow-up request can be made.
 
-The historical validation scripts are kept under `scripts/open_project/`. Their local,
-ignored `.openproject.conf` remains under `somenergia_custom/scripts/open_project/`.
-The scripts retain that location as a fallback. The Odoo importer does not read it.
+The historical validation scripts are kept under `scripts/open_project/` as examples.
+The Odoo importer does not read `.openproject.conf`.
 
 ## Schedule
 
