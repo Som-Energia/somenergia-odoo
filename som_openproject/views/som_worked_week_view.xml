@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_som_worked_week_form_openproject" model="ir.ui.view">
+        <field name="name">som.worked.week.form.openproject</field>
+        <field name="model">som.worked.week</field>
+        <field name="inherit_id" ref="somenergia_custom.view_som_worked_week_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='som_timesheet_ids']/tree/field[@name='name']" position="after">
+                <field name="oproject_entry_id" optional="hide" readonly="1"/>
+                <field name="oproject_source_data_readable"
+                       optional="hide"
+                       readonly="1"
+                       widget="text"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
