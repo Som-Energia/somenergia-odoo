@@ -152,7 +152,44 @@ class TestErpLeadSync(TransactionCase):
             [('titular_phone', '=', '933001122')], limit=1
         )
 
-    def test_get_contract_in_erp_priority(self):
+    def test_get_contract_in_erp_filters_by_state_done(self):
+        """
+        Test that get_contract_in_erp only matches ERP leads with state='done'.
+        Leads in other states (e.g. 'open') must not be matched.
+        """
+        _logger.info("--> Test: test_get_contract_in_erp_filters_by_state_done")
+
+        mock_erp_lead_obj = MagicMock()
+        # ERP returns nothing — simulates that the lead exists but state != 'done'
+        mock_erp_lead_obj.search.return_value = []
+
+        erp_id = self.lead_to_find_by_cups.get_contract_in_erp(mock_erp_lead_obj)
+
+        self.assertFalse(erp_id)
+        # Verify that state='done' is always included in the search domain
+        for call in mock_erp_lead_obj.search.call_args_list:
+            domain = call[0][0]
+            self.assertIn(('state', '=', 'done'), domain)
+
+    def test_get_contract_in_erp_matches_only_done_state(self):
+        """
+        Test that get_contract_in_erp marks a lead as won only when
+        the ERP lead has state='done'.
+        """
+        _logger.info("--> Test: test_get_contract_in_erp_matches_only_done_state")
+
+        mock_erp_lead_obj = MagicMock()
+        mock_erp_lead_obj.search.return_value = [201]
+
+        erp_id = self.lead_to_find_by_cups.get_contract_in_erp(mock_erp_lead_obj)
+
+        self.assertEqual(erp_id, 201)
+        # The domain used must include the state filter
+        call_domain = mock_erp_lead_obj.search.call_args_list[0][0][0]
+        self.assertIn(('crm_lead_id', '=', 0), call_domain)
+        self.assertIn(('state', '=', 'done'), call_domain)
+
+
         """
         Test the logic and search priority in 'get_contract_in_erp'.
         It should find by CUPS first, even if it has other data.
@@ -177,7 +214,7 @@ class TestErpLeadSync(TransactionCase):
         self.assertEqual(erp_id, 101)
         # We verify that search was called with the CUPS domain
         mock_erp_lead_obj.search.assert_called_once_with(
-            [('crm_lead_id', '=', 0), ('cups', '=ilike', 'ES_PRIORITY_TEST%')], limit=1
+            [('crm_lead_id', '=', 0), ('state', '=', 'done'), ('cups', '=ilike', 'ES_PRIORITY_TEST%')], limit=1
         )
 
     @patch('odoo.addons.som_crm.models.crm_lead.Client')
