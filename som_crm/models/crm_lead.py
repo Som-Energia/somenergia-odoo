@@ -396,7 +396,7 @@ class Lead(models.Model):
             value_to_search = getattr(self, lead_field, None)
             if not value_to_search:
                 continue
-            domain = [('crm_lead_id', '=', 0)]
+            domain = [('crm_lead_id', '=', 0), ('state', '=', 'done')]
             erp_lead_id = search_strategies[lead_field](erp_lead_obj, domain, value_to_search)
             if erp_lead_id:
                 return erp_lead_id[0]
@@ -660,7 +660,7 @@ class Lead(models.Model):
         print("Connection OK\n")
 
         erp_lead_obj = c.model('giscedata.crm.lead')
-        base_domain = [('crm_lead_id', '=', 0)]
+        base_domain = [('crm_lead_id', '=', 0), ('state', '=', 'done')]
 
         strategies = [
             ('som_cups',   'CUPS',  self._erp_search_by_cups),
