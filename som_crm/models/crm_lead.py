@@ -660,7 +660,7 @@ class Lead(models.Model):
         print("Connection OK\n")
 
         erp_lead_obj = c.model('giscedata.crm.lead')
-        base_domain = [('crm_lead_id', '=', 0)]
+        base_domain = [('crm_lead_id', '=', 0), ('state', '=', 'done')]
 
         strategies = [
             ('som_cups',   'CUPS',  self._erp_search_by_cups),
