@@ -189,7 +189,7 @@ class TestErpLeadSync(TransactionCase):
         self.assertIn(('crm_lead_id', '=', 0), call_domain)
         self.assertIn(('state', '=', 'done'), call_domain)
 
-
+    def test_get_contract_in_erp_priority(self):
         """
         Test the logic and search priority in 'get_contract_in_erp'.
         It should find by CUPS first, even if it has other data.
