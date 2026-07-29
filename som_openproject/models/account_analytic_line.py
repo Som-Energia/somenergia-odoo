@@ -329,24 +329,14 @@ class AccountAnalyticLine(models.Model):
         }
 
     @api.model
-    def _import_openproject_source_entries(self, source_entries, user_logins=None):
+    def _import_openproject_source_entries(self, source_entries):
         """Create immutable timesheets from normalized OpenProject entries."""
         stats = {"created": 0, "duplicates": 0, "skipped": 0}
-        user_logins_filter = set(user_logins) if user_logins else None
         seen_entry_ids = set()
         for source_data in source_entries:
             entry_id = source_data.get("openproject_time_entry_id")
             if not isinstance(entry_id, int) or entry_id <= 0:
                 _logger.warning("OpenProject entry skipped: invalid entry ID %r.", entry_id)
-                stats["skipped"] += 1
-                continue
-            login = source_data.get("openproject_user_login")
-            if user_logins_filter and login not in user_logins_filter:
-                _logger.debug(
-                    "OpenProject entry %s skipped: user %r not in filter.",
-                    entry_id,
-                    login,
-                )
                 stats["skipped"] += 1
                 continue
             if entry_id in seen_entry_ids or self.with_context(active_test=False).search_count(
@@ -377,27 +367,86 @@ class AccountAnalyticLine(models.Model):
         return stats
 
     @api.model
+    def _resolve_user_logins_to_hrefs(self, client, user_logins):
+        """Return the set of canonical user hrefs for the given login list.
+
+        Follows nextByOffset pagination so hrefs on later pages are not missed.
+        A RequestException here aborts the run before any entry is processed,
+        which is the correct behaviour.
+        """
+        filters = json.dumps([{
+            "login": {"operator": "=", "values": list(user_logins)},
+        }])
+        hrefs = set()
+        found_logins = set()
+        page = client.get("users", params={"filters": filters, "pageSize": 200})
+        while True:
+            for user in page.get("_embedded", {}).get("elements", []):
+                self_href = user.get("_links", {}).get("self", {}).get("href")
+                if self_href:
+                    hrefs.add(self_href)
+                login = user.get("login")
+                if login:
+                    found_logins.add(login)
+            if found_logins >= set(user_logins):
+                break
+            next_page = page.get("_links", {}).get("nextByOffset")
+            if not next_page:
+                break
+            page = client.get(next_page["href"])
+        missing = set(user_logins) - found_logins
+        if missing:
+            _logger.warning(
+                "OpenProject user_logins filter: %s login(s) not found: %s",
+                len(missing),
+                sorted(missing),
+            )
+        return hrefs
+
+    @api.model
     def _import_openproject_timesheets(self, date_from, date_to, user_logins=None):
         date_from = fields.Date.to_date(date_from)
         date_to = fields.Date.to_date(date_to)
-        user_logins_filter = set(user_logins) if user_logins else None
         client = self._get_openproject_client()
         if not client:
             return {"created": 0, "duplicates": 0, "skipped": 0}
 
-        _logger.info(
-            "Starting OpenProject timesheet import from %s to %s%s.",
-            date_from,
-            date_to,
-            " (filter: %s)" % sorted(user_logins_filter) if user_logins_filter else "",
-        )
+        user_href_filter = None
+        if user_logins:
+            user_href_filter = self._resolve_user_logins_to_hrefs(client, user_logins)
+            _logger.info(
+                "Starting OpenProject timesheet import from %s to %s"
+                " (filter: %s).",
+                date_from,
+                date_to,
+                sorted(user_logins),
+            )
+        else:
+            _logger.info(
+                "Starting OpenProject timesheet import from %s to %s.",
+                date_from,
+                date_to,
+            )
         source_entries = []
         read_count = 0
         normalization_skipped = 0
+        filter_skipped = 0
         caches = {"users": {}, "projects": {}, "work_packages": {}}
         try:
             for entry in self._get_openproject_time_entries(client, date_from, date_to):
                 read_count += 1
+                if user_href_filter is not None:
+                    user_href = (
+                        entry.get("_links", {}).get("user", {}).get("href")
+                    )
+                    if user_href not in user_href_filter:
+                        _logger.debug(
+                            "OpenProject entry %s skipped: user href %r not in filter.",
+                            entry.get("id"),
+                            user_href,
+                        )
+                        filter_skipped += 1
+                        continue
                 try:
                     source_entries.append(
                         self._normalize_openproject_entry(client, entry, caches)
@@ -412,8 +461,8 @@ class AccountAnalyticLine(models.Model):
             _logger.exception("OpenProject timesheet import failed while reading the API.")
             raise
 
-        stats = self._import_openproject_source_entries(source_entries, user_logins=user_logins)
-        stats["skipped"] += normalization_skipped
+        stats = self._import_openproject_source_entries(source_entries)
+        stats["skipped"] += normalization_skipped + filter_skipped
         _logger.info(
             "OpenProject timesheet import finished: %s read, %s created, "
             "%s duplicates, %s skipped.",
