@@ -329,14 +329,24 @@ class AccountAnalyticLine(models.Model):
         }
 
     @api.model
-    def _import_openproject_source_entries(self, source_entries):
+    def _import_openproject_source_entries(self, source_entries, user_logins=None):
         """Create immutable timesheets from normalized OpenProject entries."""
         stats = {"created": 0, "duplicates": 0, "skipped": 0}
+        user_logins_filter = set(user_logins) if user_logins else None
         seen_entry_ids = set()
         for source_data in source_entries:
             entry_id = source_data.get("openproject_time_entry_id")
             if not isinstance(entry_id, int) or entry_id <= 0:
                 _logger.warning("OpenProject entry skipped: invalid entry ID %r.", entry_id)
+                stats["skipped"] += 1
+                continue
+            login = source_data.get("openproject_user_login")
+            if user_logins_filter and login not in user_logins_filter:
+                _logger.debug(
+                    "OpenProject entry %s skipped: user %r not in filter.",
+                    entry_id,
+                    login,
+                )
                 stats["skipped"] += 1
                 continue
             if entry_id in seen_entry_ids or self.with_context(active_test=False).search_count(
@@ -367,17 +377,19 @@ class AccountAnalyticLine(models.Model):
         return stats
 
     @api.model
-    def _import_openproject_timesheets(self, date_from, date_to):
+    def _import_openproject_timesheets(self, date_from, date_to, user_logins=None):
         date_from = fields.Date.to_date(date_from)
         date_to = fields.Date.to_date(date_to)
+        user_logins_filter = set(user_logins) if user_logins else None
         client = self._get_openproject_client()
         if not client:
             return {"created": 0, "duplicates": 0, "skipped": 0}
 
         _logger.info(
-            "Starting OpenProject timesheet import from %s to %s.",
+            "Starting OpenProject timesheet import from %s to %s%s.",
             date_from,
             date_to,
+            " (filter: %s)" % sorted(user_logins_filter) if user_logins_filter else "",
         )
         source_entries = []
         read_count = 0
@@ -400,7 +412,7 @@ class AccountAnalyticLine(models.Model):
             _logger.exception("OpenProject timesheet import failed while reading the API.")
             raise
 
-        stats = self._import_openproject_source_entries(source_entries)
+        stats = self._import_openproject_source_entries(source_entries, user_logins=user_logins)
         stats["skipped"] += normalization_skipped
         _logger.info(
             "OpenProject timesheet import finished: %s read, %s created, "
@@ -413,6 +425,6 @@ class AccountAnalyticLine(models.Model):
         return stats
 
     @api.model
-    def _cron_import_openproject_timesheets(self, reference_date=None):
+    def _cron_import_openproject_timesheets(self, reference_date=None, user_logins=None):
         date_from, date_to = self._get_openproject_week_range(reference_date)
-        return self._import_openproject_timesheets(date_from, date_to)
+        return self._import_openproject_timesheets(date_from, date_to, user_logins=user_logins)

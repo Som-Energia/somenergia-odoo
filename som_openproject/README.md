@@ -30,6 +30,10 @@ For a controlled manual execution, call
 `_cron_import_openproject_timesheets(reference_date="YYYY-MM-DD")`. The supplied date
 selects its Monday-Sunday week; omitting it uses the current date.
 
+To restrict the import to specific users, pass a list of OpenProject logins:
+`_cron_import_openproject_timesheets(reference_date="YYYY-MM-DD", user_logins=["user@example.com"])`.
+Entries from other users count as skipped in the summary log.
+
 ## Matching rules
 
 Only entries with an OpenProject CeCo value are candidates for import. The target

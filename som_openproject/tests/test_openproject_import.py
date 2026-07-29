@@ -132,6 +132,27 @@ class TestOpenProjectImport(TransactionCase):
             self.AnalyticLine.search([("oproject_entry_id", "=", 1004)])
         )
 
+    def test_user_logins_filter_skips_excluded_user(self):
+        included = self._source_entry(1006)
+        excluded = self._source_entry(
+            1007,
+            openproject_user_login="other.user@somenergia.coop",
+        )
+
+        stats = self.AnalyticLine._import_openproject_source_entries(
+            [included, excluded],
+            user_logins=[self.user.login],
+        )
+
+        self.assertEqual(stats["created"], 1)
+        self.assertEqual(stats["skipped"], 1)
+        self.assertTrue(
+            self.AnalyticLine.search([("oproject_entry_id", "=", 1006)])
+        )
+        self.assertFalse(
+            self.AnalyticLine.search([("oproject_entry_id", "=", 1007)])
+        )
+
     def test_week_range_starts_on_execution_week_monday(self):
         date_from, date_to = self.AnalyticLine._get_openproject_week_range(
             "2026-07-23"
