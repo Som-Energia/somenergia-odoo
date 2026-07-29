@@ -132,6 +132,53 @@ class TestOpenProjectImport(TransactionCase):
             self.AnalyticLine.search([("oproject_entry_id", "=", 1004)])
         )
 
+    def test_user_logins_filter_skips_excluded_user(self):
+        included_href = "/api/v3/users/10"
+        excluded_href = "/api/v3/users/99"
+        user_href_filter = {included_href}
+
+        included_entry = {
+            "id": 1006,
+            "_links": {"user": {"href": included_href}},
+        }
+        excluded_entry = {
+            "id": 1007,
+            "_links": {"user": {"href": excluded_href}},
+        }
+
+        def href_in_filter(entry):
+            return entry.get("_links", {}).get("user", {}).get("href") in user_href_filter
+
+        self.assertTrue(href_in_filter(included_entry))
+        self.assertFalse(href_in_filter(excluded_entry))
+
+    def test_resolve_user_logins_follows_pagination(self):
+        from unittest.mock import patch, MagicMock
+
+        page1 = {
+            "_embedded": {"elements": [
+                {"login": "user.one@example.com", "_links": {"self": {"href": "/api/v3/users/1"}}},
+            ]},
+            "_links": {"nextByOffset": {"href": "/api/v3/users?offset=2"}},
+        }
+        page2 = {
+            "_embedded": {"elements": [
+                {"login": "user.two@example.com", "_links": {"self": {"href": "/api/v3/users/2"}}},
+            ]},
+            "_links": {},
+        }
+
+        client = MagicMock()
+        client.get.side_effect = [page1, page2]
+
+        hrefs = self.AnalyticLine._resolve_user_logins_to_hrefs(
+            client,
+            ["user.one@example.com", "user.two@example.com"],
+        )
+
+        self.assertEqual(hrefs, {"/api/v3/users/1", "/api/v3/users/2"})
+        self.assertEqual(client.get.call_count, 2)
+
     def test_week_range_starts_on_execution_week_monday(self):
         date_from, date_to = self.AnalyticLine._get_openproject_week_range(
             "2026-07-23"

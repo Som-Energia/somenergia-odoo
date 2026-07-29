@@ -367,25 +367,86 @@ class AccountAnalyticLine(models.Model):
         return stats
 
     @api.model
-    def _import_openproject_timesheets(self, date_from, date_to):
+    def _resolve_user_logins_to_hrefs(self, client, user_logins):
+        """Return the set of canonical user hrefs for the given login list.
+
+        Follows nextByOffset pagination so hrefs on later pages are not missed.
+        A RequestException here aborts the run before any entry is processed,
+        which is the correct behaviour.
+        """
+        filters = json.dumps([{
+            "login": {"operator": "=", "values": list(user_logins)},
+        }])
+        hrefs = set()
+        found_logins = set()
+        page = client.get("users", params={"filters": filters, "pageSize": 200})
+        while True:
+            for user in page.get("_embedded", {}).get("elements", []):
+                self_href = user.get("_links", {}).get("self", {}).get("href")
+                if self_href:
+                    hrefs.add(self_href)
+                login = user.get("login")
+                if login:
+                    found_logins.add(login)
+            if found_logins >= set(user_logins):
+                break
+            next_page = page.get("_links", {}).get("nextByOffset")
+            if not next_page:
+                break
+            page = client.get(next_page["href"])
+        missing = set(user_logins) - found_logins
+        if missing:
+            _logger.warning(
+                "OpenProject user_logins filter: %s login(s) not found: %s",
+                len(missing),
+                sorted(missing),
+            )
+        return hrefs
+
+    @api.model
+    def _import_openproject_timesheets(self, date_from, date_to, user_logins=None):
         date_from = fields.Date.to_date(date_from)
         date_to = fields.Date.to_date(date_to)
         client = self._get_openproject_client()
         if not client:
             return {"created": 0, "duplicates": 0, "skipped": 0}
 
-        _logger.info(
-            "Starting OpenProject timesheet import from %s to %s.",
-            date_from,
-            date_to,
-        )
+        user_href_filter = None
+        if user_logins:
+            user_href_filter = self._resolve_user_logins_to_hrefs(client, user_logins)
+            _logger.info(
+                "Starting OpenProject timesheet import from %s to %s"
+                " (filter: %s).",
+                date_from,
+                date_to,
+                sorted(user_logins),
+            )
+        else:
+            _logger.info(
+                "Starting OpenProject timesheet import from %s to %s.",
+                date_from,
+                date_to,
+            )
         source_entries = []
         read_count = 0
         normalization_skipped = 0
+        filter_skipped = 0
         caches = {"users": {}, "projects": {}, "work_packages": {}}
         try:
             for entry in self._get_openproject_time_entries(client, date_from, date_to):
                 read_count += 1
+                if user_href_filter is not None:
+                    user_href = (
+                        entry.get("_links", {}).get("user", {}).get("href")
+                    )
+                    if user_href not in user_href_filter:
+                        _logger.debug(
+                            "OpenProject entry %s skipped: user href %r not in filter.",
+                            entry.get("id"),
+                            user_href,
+                        )
+                        filter_skipped += 1
+                        continue
                 try:
                     source_entries.append(
                         self._normalize_openproject_entry(client, entry, caches)
@@ -401,7 +462,7 @@ class AccountAnalyticLine(models.Model):
             raise
 
         stats = self._import_openproject_source_entries(source_entries)
-        stats["skipped"] += normalization_skipped
+        stats["skipped"] += normalization_skipped + filter_skipped
         _logger.info(
             "OpenProject timesheet import finished: %s read, %s created, "
             "%s duplicates, %s skipped.",
@@ -413,6 +474,6 @@ class AccountAnalyticLine(models.Model):
         return stats
 
     @api.model
-    def _cron_import_openproject_timesheets(self, reference_date=None):
+    def _cron_import_openproject_timesheets(self, reference_date=None, user_logins=None):
         date_from, date_to = self._get_openproject_week_range(reference_date)
-        return self._import_openproject_timesheets(date_from, date_to)
+        return self._import_openproject_timesheets(date_from, date_to, user_logins=user_logins)
