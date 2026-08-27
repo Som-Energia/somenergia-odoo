@@ -57,6 +57,7 @@ class TestCrmPhonecallToLead(TransactionCase):
         cls.company.write({
             'som_ff_auto_upcomming_activity': True,
         })
+        cls.company.partner_id.country_id = cls.env.ref('base.es')
 
     def test_prepare_opportunity_vals(self):
         vals = self.phonecall._prepare_opportunity_vals()
@@ -159,7 +160,6 @@ class TestCrmPhonecallToLead(TransactionCase):
             'name': 'Existing Opportunity',
             'type': 'opportunity',
             'phone': self.test_phone_number_unformatted,
-            'phone_sanitized': self.test_phone_number
         })
         opp_count_before = self.env['crm.lead'].search_count([])
 
