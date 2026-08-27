@@ -30,7 +30,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['base', 'hr'],
+    'depends': ['base', 'hr', 'hr_attendance'],
     'data': [
         'security/ir.model.access.csv',
         'security/employee_document_security.xml',
