@@ -14,18 +14,19 @@ class TestSendWelcomeEmail(TransactionCase):
         cls.origin_stage = cls.env.ref('crm.stage_lead1')
         cls.target_stage = cls.env['crm.stage'].create({'name': 'Welcome Sent'})
 
-        cls.lang_ca = cls.env.ref('base.lang_ca_ES', raise_if_not_found=False)
-        cls.lang_es = cls.env.ref('base.lang_es', raise_if_not_found=False)
+        Lang = cls.env['res.lang']
+        cls.lang_ca = Lang._activate_lang('ca_ES') or Lang._create_lang('ca_ES')
+        cls.lang_es = Lang._activate_lang('es_ES') or Lang._create_lang('es_ES')
 
         cls.partner_ca = cls.env['res.partner'].create({
             'name': 'Partner CA',
             'email': 'partner.ca@example.com',
-            'lang': cls.lang_ca.code if cls.lang_ca else 'ca_ES',
+            'lang': cls.lang_ca.code,
         })
         cls.partner_es = cls.env['res.partner'].create({
             'name': 'Partner ES',
             'email': 'partner.es@example.com',
-            'lang': cls.lang_es.code if cls.lang_es else 'es_ES',
+            'lang': cls.lang_es.code,
         })
         cls.partner_no_email = cls.env['res.partner'].create({
             'name': 'Partner No Email',
@@ -59,6 +60,15 @@ class TestSendWelcomeEmail(TransactionCase):
             vals['lang_id'] = lang.id
         return self.env['crm.lead'].create(vals)
 
+    def _enable_spanish(self):
+        if not self.env.ref('base.lang_es', raise_if_not_found=False):
+            self.env['ir.model.data'].create({
+                'module': 'base',
+                'name': 'lang_es',
+                'model': 'res.lang',
+                'res_id': self.lang_es.id,
+            })
+
     # --- _process_welcome ---
 
     def test_ca_partner_uses_ca_template(self):
@@ -69,6 +79,7 @@ class TestSendWelcomeEmail(TransactionCase):
         self.assertEqual(lead.stage_id, self.target_stage)
 
     def test_es_partner_uses_es_template(self):
+        self._enable_spanish()
         lead = self._create_lead(self.partner_es, lang=self.lang_es)
         with patch.object(type(self.template_es), 'send_mail') as mock_send:
             lead._process_welcome()
@@ -76,6 +87,7 @@ class TestSendWelcomeEmail(TransactionCase):
         self.assertEqual(lead.stage_id, self.target_stage)
 
     def test_es_partner_falls_back_to_ca_if_no_es_template(self):
+        self._enable_spanish()
         self.env.company.som_crm_lead_welcome_template_es_id = False
         lead = self._create_lead(self.partner_es, lang=self.lang_es)
         with patch.object(type(self.template_ca), 'send_mail') as mock_send:
@@ -87,6 +99,13 @@ class TestSendWelcomeEmail(TransactionCase):
 
     def test_falls_back_to_ca_when_lead_lang_is_empty(self):
         lead = self._create_lead(self.partner_es)
+        with patch.object(type(self.template_ca), 'send_mail') as mock_send:
+            lead._process_welcome()
+            mock_send.assert_called_once_with(lead.id, force_send=True)
+        self.assertEqual(lead.stage_id, self.target_stage)
+
+    def test_es_lead_falls_back_to_ca_without_spanish_language_marker(self):
+        lead = self._create_lead(self.partner_es, lang=self.lang_es)
         with patch.object(type(self.template_ca), 'send_mail') as mock_send:
             lead._process_welcome()
             mock_send.assert_called_once_with(lead.id, force_send=True)
