@@ -380,7 +380,7 @@ class Lead(models.Model):
         domain += [(erp_field, '=', casted_phone)]
         return erp_lead_obj.search(domain, limit=1)
 
-    def get_contract_in_erp(self, erp_lead_obj):
+    def get_contract_in_erp(self, erp_lead_obj, erp_webform_stage_id):
         self.ensure_one()
         search_strategies = {
             'som_cups': self._erp_search_by_cups,
@@ -397,7 +397,11 @@ class Lead(models.Model):
             value_to_search = getattr(self, lead_field, None)
             if not value_to_search:
                 continue
-            domain = [('crm_lead_id', '=', 0), ('state', '=', 'done')]
+            domain = [
+                ('crm_lead_id', '=', 0),
+                ('state', '=', 'done'),
+                ('stage_id', '=', erp_webform_stage_id),
+            ]
             erp_lead_id = search_strategies[lead_field](erp_lead_obj, domain, value_to_search)
             if erp_lead_id:
                 return erp_lead_id[0]
@@ -432,10 +436,21 @@ class Lead(models.Model):
 
         erp_lead_obj = c.model("giscedata.crm.lead")
 
+        try:
+            ir_model_data = c.model('ir.model.data')
+            erp_webform_stage_id = ir_model_data.get_object_reference(
+                'som_leads_polissa', 'webform_stage_converted'
+            )[1]
+        except Exception as e:
+            _logger.error(
+                "Cannot resolve ERP XML ID som_leads_polissa.webform_stage_converted: %s", e
+            )
+            return
+
         found_ids = []
         for lead_id in lead_ids:
             try:
-                erp_lead_id = lead_id.get_contract_in_erp(erp_lead_obj)
+                erp_lead_id = lead_id.get_contract_in_erp(erp_lead_obj, erp_webform_stage_id)
                 if erp_lead_id:
                     # Write to Odoo first so the lead is marked as won even if
                     # the ERP write fails. This prevents to have the id in ERP but not in Odoo,
@@ -661,7 +676,22 @@ class Lead(models.Model):
         print("Connection OK\n")
 
         erp_lead_obj = c.model('giscedata.crm.lead')
-        base_domain = [('crm_lead_id', '=', 0), ('state', '=', 'done')]
+
+        try:
+            ir_model_data = c.model('ir.model.data')
+            erp_webform_stage_id = ir_model_data.get_object_reference(
+                'som_leads_polissa', 'webform_stage_converted'
+            )[1]
+        except Exception as e:
+            print(f"Cannot resolve ERP XML ID som_leads_polissa.webform_stage_converted: {e}")
+            return
+        print(f"webform_stage_converted id in ERP: {erp_webform_stage_id}\n")
+
+        base_domain = [
+            ('crm_lead_id', '=', 0),
+            ('state', '=', 'done'),
+            ('stage_id', '=', erp_webform_stage_id),
+        ]
 
         strategies = [
             ('som_cups',   'CUPS',  self._erp_search_by_cups),
@@ -694,14 +724,19 @@ class Lead(models.Model):
 
             print(f"  result: [] ✗ NO MATCH")
 
-            # Check without crm_lead_id=0 to detect false negatives
-            domain_no_filter = [d for d in domain if d != ('crm_lead_id', '=', 0)]
+            # Check without base filters to detect false negatives and show why no match
+            base_filter_keys = {('crm_lead_id', '=', 0), ('state', '=', 'done'), ('stage_id', '=', erp_webform_stage_id)}
+            domain_no_filter = [d for d in domain if d not in base_filter_keys]
             result_no_filter = erp_lead_obj.search(domain_no_filter)
             if result_no_filter:
-                matching = erp_lead_obj.read(result_no_filter, ['id', 'crm_lead_id'])
+                matching = erp_lead_obj.read(result_no_filter, ['id', 'crm_lead_id', 'state', 'stage_id'])
                 crm_ids = [m.get('crm_lead_id') for m in matching]
-                print(f"  ⚠  Without crm_lead_id=0 filter → found: {result_no_filter}")
-                print(f"     crm_lead_id in ERP            : {crm_ids}")
+                states = [m.get('state') for m in matching]
+                stages = [m.get('stage_id') for m in matching]
+                print(f"  ⚠  Without base filters → found: {result_no_filter}")
+                print(f"     crm_lead_id in ERP: {crm_ids}")
+                print(f"     state in ERP      : {states}")
+                print(f"     stage_id in ERP   : {stages}")
                 print(f"     → Likely cause: ERP lead already has crm_lead_id set")
             print()
 
