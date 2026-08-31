@@ -337,7 +337,6 @@ class TestErpLeadSync(TransactionCase):
         mock_erp_lead_model.search.assert_not_called()
         mock_erp_lead_model.write.assert_not_called()
 
-
     def test_get_leads_to_check_include_inactive(self):
         """Test that inactive leads are included when include_inactive=True."""
         leads_exclude_inactive = self.CrmLead.get_leads_to_check(self.stage_won, include_inactive=False)
@@ -396,3 +395,100 @@ class TestErpLeadSync(TransactionCase):
         # Verify that the ERP was updated
         mock_erp_lead_model.write.assert_called_once_with(
             999, {'crm_lead_id': self.lead_inactive_to_check.id})
+
+    @patch('odoo.addons.som_crm.models.crm_lead.Client')
+    def test_check_inconsistencies_filters_by_stage_and_state(self, mock_erppeek_client):
+        """
+        Test that _erp_sync_check_inconsistencies only considers ERP leads
+        with state='done' AND stage_id=webform_stage_converted.
+        ERP leads outside that stage must not be reported as inconsistencies
+        even if they have a nonzero crm_lead_id.
+        """
+        mock_client_instance = MagicMock()
+        mock_erppeek_client.return_value = mock_client_instance
+
+        mock_erp_lead_model = MagicMock()
+        mock_ir_model_data = MagicMock()
+        mock_ir_model_data.get_object_reference.return_value = (
+            'giscedata.crm.lead', self.ERP_WEBFORM_STAGE_ID
+        )
+
+        def model_side_effect(model_name):
+            if model_name == 'ir.model.data':
+                return mock_ir_model_data
+            return mock_erp_lead_model
+
+        mock_client_instance.model.side_effect = model_side_effect
+
+        # ERP returns no leads matching the full domain — simulates leads
+        # that have crm_lead_id != 0 but wrong stage or state
+        mock_erp_lead_model.search.return_value = []
+
+        inconsistencies = self.CrmLead._erp_sync_check_inconsistencies()
+
+        self.assertEqual(inconsistencies, [])
+        # Verify domain includes all three required filters
+        call_domain = mock_erp_lead_model.search.call_args[0][0]
+        self.assertIn(('crm_lead_id', '!=', 0), call_domain)
+        self.assertIn(('state', '=', 'done'), call_domain)
+        self.assertIn(('stage_id', '=', self.ERP_WEBFORM_STAGE_ID), call_domain)
+
+    @patch('odoo.addons.som_crm.models.crm_lead.Client')
+    def test_check_inconsistencies_aborts_when_xml_id_not_found(self, mock_erppeek_client):
+        """
+        Test that _erp_sync_check_inconsistencies returns [] without querying
+        ERP leads when the webform_stage_converted XML ID cannot be resolved.
+        """
+        mock_client_instance = MagicMock()
+        mock_erppeek_client.return_value = mock_client_instance
+
+        mock_erp_lead_model = MagicMock()
+        mock_ir_model_data = MagicMock()
+        mock_ir_model_data.get_object_reference.side_effect = Exception(
+            "XML ID not found: som_leads_polissa.webform_stage_converted"
+        )
+
+        def model_side_effect(model_name):
+            if model_name == 'ir.model.data':
+                return mock_ir_model_data
+            return mock_erp_lead_model
+
+        mock_client_instance.model.side_effect = model_side_effect
+
+        result = self.CrmLead._erp_sync_check_inconsistencies()
+
+        self.assertEqual(result, [])
+        mock_erp_lead_model.search.assert_not_called()
+
+    @patch('odoo.addons.som_crm.models.crm_lead.Client')
+    def test_fix_inconsistencies_does_not_mark_wrong_stage_lead_as_won(self, mock_erppeek_client):
+        """
+        Test that _erp_sync_fix_inconsistencies does not mark a lead as won
+        when the linked ERP lead is outside webform_stage_converted.
+        The inconsistency check must filter it out before the fix runs.
+        """
+        mock_client_instance = MagicMock()
+        mock_erppeek_client.return_value = mock_client_instance
+
+        mock_erp_lead_model = MagicMock()
+        mock_ir_model_data = MagicMock()
+        mock_ir_model_data.get_object_reference.return_value = (
+            'giscedata.crm.lead', self.ERP_WEBFORM_STAGE_ID
+        )
+
+        def model_side_effect(model_name):
+            if model_name == 'ir.model.data':
+                return mock_ir_model_data
+            return mock_erp_lead_model
+
+        mock_client_instance.model.side_effect = model_side_effect
+
+        # ERP returns no leads — simulates that all linked leads are outside
+        # the required stage, so the check finds zero inconsistencies
+        mock_erp_lead_model.search.return_value = []
+
+        self.CrmLead._erp_sync_fix_inconsistencies()
+
+        # No lead must have been moved to won stage
+        self.assertEqual(self.lead_to_find_by_cups.stage_id, self.stage_new)
+        self.assertEqual(self.lead_to_find_by_vat.stage_id, self.stage_new)

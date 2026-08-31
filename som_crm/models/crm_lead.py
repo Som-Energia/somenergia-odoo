@@ -514,7 +514,22 @@ class Lead(models.Model):
 
         erp_lead_obj = c.model("giscedata.crm.lead")
 
-        erp_domain = [('crm_lead_id', '!=', 0)]
+        try:
+            ir_model_data = c.model('ir.model.data')
+            erp_webform_stage_id = ir_model_data.get_object_reference(
+                'som_leads_polissa', 'webform_stage_converted'
+            )[1]
+        except Exception as e:
+            _logger.error(
+                "Cannot resolve ERP XML ID som_leads_polissa.webform_stage_converted: %s", e
+            )
+            return []
+
+        erp_domain = [
+            ('crm_lead_id', '!=', 0),
+            ('state', '=', 'done'),
+            ('stage_id', '=', erp_webform_stage_id),
+        ]
         if date_from:
             erp_domain.append(('create_date', '>=', date_from))
 
