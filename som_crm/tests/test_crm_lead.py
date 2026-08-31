@@ -968,6 +968,7 @@ class TestCrmLeadEmailConfirmation(TransactionCase):
         })
 
         # Configure Sales Team for Reply-To
+        cls.env['ir.config_parameter'].set_param('mail.catchall.domain', 'test.com')
         cls.sales_team = cls.env.ref('sales_team.team_sales_department', raise_if_not_found=False)
         if not cls.sales_team:
             cls.sales_team = cls.env['crm.team'].create({'name': 'Sales Department'})
@@ -980,7 +981,6 @@ class TestCrmLeadEmailConfirmation(TransactionCase):
 
         cls.sales_team.write({
             'alias_name': 'sales-test-alias',
-            'alias_domain': 'test.com',
         })
         cls.expected_reply_to = f'{cls.sales_team.alias_name}@{cls.sales_team.alias_domain}'
 
@@ -1002,7 +1002,7 @@ class TestCrmLeadEmailConfirmation(TransactionCase):
         # 3. Check that send_mail was called with the correct arguments
         expected_email_values = {
             'email_from': 'company-sender@test.com',
-            'reply_to': 'sales-test-alias@somenergia.coop',
+            'reply_to': self.expected_reply_to,
         }
         mock_send_mail.assert_called_with(
             self.lead_base.id,
@@ -1037,7 +1037,7 @@ class TestCrmLeadEmailConfirmation(TransactionCase):
         # 3. Check that send_mail was called with the correct arguments
         expected_email_values = {
             'email_from': 'company-sender@test.com',
-            'reply_to': 'sales-test-alias@somenergia.coop',
+            'reply_to': self.expected_reply_to,
         }
         mock_send_mail.assert_called_with(
             self.lead_base.id,

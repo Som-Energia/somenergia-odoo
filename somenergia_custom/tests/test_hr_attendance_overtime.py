@@ -19,9 +19,25 @@ class TestHrAttendanceOvertime(common.TransactionCase):
         cls.env = cls.env(context=dict(cls.env.context, **DISABLED_MAIL_CONTEXT))
         resource_calendar = cls.env["resource.calendar"]
 
-        # 7 hours_per_day by default
+        # Thursday, 2 January 2025, has seven theoretical working hours.
         cls.calendar1 = resource_calendar.create(
-            {"name": "Test calendar 1"}
+            {
+                "name": "Test calendar 1",
+                "attendance_ids": [
+                    (0, 0, {
+                        "name": "Thursday morning",
+                        "dayofweek": "3",
+                        "hour_from": 8,
+                        "hour_to": 12,
+                    }),
+                    (0, 0, {
+                        "name": "Thursday afternoon",
+                        "dayofweek": "3",
+                        "hour_from": 13,
+                        "hour_to": 16,
+                    }),
+                ],
+            }
         )
 
         cls.employee_user = new_test_user(

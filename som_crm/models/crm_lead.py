@@ -43,6 +43,7 @@ class Lead(models.Model):
                     'favourable' if record.som_comparison_cost > 0 else 'disfavourable')
             else:
                 record.som_comparison_cost = 0.0
+                record.som_comparison_result = False
 
     @api.depends('message_ids', 'message_ids.subtype_id', 'message_ids.mail_activity_type_id')
     def _compute_activities_counters(self):
@@ -191,7 +192,7 @@ class Lead(models.Model):
             ("disfavourable", _("disfavourable")),
         ],
         string="Comparison Result",
-        compute='_compute_comparison_result',
+        compute='_compute_comparison_cost',
         readonly=False,
         store=True,
         required=False,
