@@ -49,3 +49,8 @@ package.json
 /man/
 /share/
 /src/
+
+# config
+scripts/config.json
+scripts/*.local.json
+scripts/secrets*.json
