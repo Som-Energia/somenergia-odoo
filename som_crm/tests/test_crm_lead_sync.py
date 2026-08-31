@@ -492,3 +492,58 @@ class TestErpLeadSync(TransactionCase):
         # No lead must have been moved to won stage
         self.assertEqual(self.lead_to_find_by_cups.stage_id, self.stage_new)
         self.assertEqual(self.lead_to_find_by_vat.stage_id, self.stage_new)
+
+    def test_get_erp_webform_converted_stage_id_returns_id(self):
+        """
+        Test that _get_erp_webform_converted_stage_id returns the remote ID
+        from ir.model.data.get_object_reference.
+        """
+        mock_client = MagicMock()
+        mock_ir_model_data = MagicMock()
+        mock_ir_model_data.get_object_reference.return_value = (
+            'giscedata.crm.lead', self.ERP_WEBFORM_STAGE_ID
+        )
+        mock_client.model.return_value = mock_ir_model_data
+
+        result = self.CrmLead._get_erp_webform_converted_stage_id(mock_client)
+
+        self.assertEqual(result, self.ERP_WEBFORM_STAGE_ID)
+        mock_ir_model_data.get_object_reference.assert_called_once_with(
+            'som_leads_polissa', 'webform_stage_converted'
+        )
+
+    def test_get_erp_webform_converted_stage_id_returns_false_on_error(self):
+        """
+        Test that _get_erp_webform_converted_stage_id returns False when
+        the XML ID cannot be resolved, and logs the error.
+        """
+        mock_client = MagicMock()
+        mock_ir_model_data = MagicMock()
+        mock_ir_model_data.get_object_reference.side_effect = Exception("XML ID not found")
+        mock_client.model.return_value = mock_ir_model_data
+
+        result = self.CrmLead._get_erp_webform_converted_stage_id(mock_client)
+
+        self.assertFalse(result)
+
+    def test_get_erp_webform_domain_unlinked(self):
+        """
+        Test that _get_erp_webform_domain with operator '=' returns the
+        domain for unlinked leads (normal sync).
+        """
+        domain = self.CrmLead._get_erp_webform_domain('=', self.ERP_WEBFORM_STAGE_ID)
+
+        self.assertIn(('crm_lead_id', '=', 0), domain)
+        self.assertIn(('state', '=', 'done'), domain)
+        self.assertIn(('stage_id', '=', self.ERP_WEBFORM_STAGE_ID), domain)
+
+    def test_get_erp_webform_domain_linked(self):
+        """
+        Test that _get_erp_webform_domain with operator '!=' returns the
+        domain for linked leads (inconsistency check).
+        """
+        domain = self.CrmLead._get_erp_webform_domain('!=', self.ERP_WEBFORM_STAGE_ID)
+
+        self.assertIn(('crm_lead_id', '!=', 0), domain)
+        self.assertIn(('state', '=', 'done'), domain)
+        self.assertIn(('stage_id', '=', self.ERP_WEBFORM_STAGE_ID), domain)
