@@ -380,46 +380,24 @@ class Lead(models.Model):
         domain += [(erp_field, '=', casted_phone)]
         return erp_lead_obj.search(domain, limit=1)
 
-    def _get_erp_webform_converted_stage_id(self, erp_client):
+    def _get_erp_contract_domain(self, crm_lead_operator):
         """
-        Resolve the remote stage ID for som_leads_polissa.webform_stage_converted.
-
-        Args:
-            erp_client: active erppeek Client instance.
-
-        Returns:
-            int: the remote stage ID, or False if it cannot be resolved.
-        """
-        try:
-            ir_model_data = erp_client.model('ir.model.data')
-            return ir_model_data.get_object_reference(
-                'som_leads_polissa', 'webform_stage_converted'
-            )[1]
-        except Exception as e:
-            _logger.error(
-                "Cannot resolve ERP XML ID som_leads_polissa.webform_stage_converted: %s", e
-            )
-            return False
-
-    def _get_erp_webform_domain(self, crm_lead_operator, stage_id):
-        """
-        Build the base ERP domain for webform-converted contractations.
+        Build the base ERP domain for valid contractations.
 
         Args:
             crm_lead_operator (str): '=' for unlinked leads (normal sync),
                                      '!=' for linked leads (inconsistency check).
-            stage_id (int): the remote stage ID from _get_erp_webform_converted_stage_id.
 
         Returns:
-            list: Odoo-style domain with crm_lead_id, state and stage_id conditions.
+            list: Odoo-style domain with crm_lead_id, state and polissa_id conditions.
         """
         return [
             ('crm_lead_id', crm_lead_operator, 0),
             ('state', '=', 'done'),
-            ('stage_id', '=', stage_id),
+            ('polissa_id', '!=', False),
         ]
 
-    def get_contract_in_erp(self, erp_lead_obj, erp_webform_stage_id):
+    def get_contract_in_erp(self, erp_lead_obj):
         self.ensure_one()
         search_strategies = {
             'som_cups': self._erp_search_by_cups,
@@ -436,7 +414,7 @@ class Lead(models.Model):
             value_to_search = getattr(self, lead_field, None)
             if not value_to_search:
                 continue
-            domain = self._get_erp_webform_domain('=', erp_webform_stage_id)
+            domain = self._get_erp_contract_domain('=')
             erp_lead_id = search_strategies[lead_field](erp_lead_obj, domain, value_to_search)
             if erp_lead_id:
                 return erp_lead_id[0]
@@ -471,14 +449,10 @@ class Lead(models.Model):
 
         erp_lead_obj = c.model("giscedata.crm.lead")
 
-        erp_webform_stage_id = self._get_erp_webform_converted_stage_id(c)
-        if not erp_webform_stage_id:
-            return
-
         found_ids = []
         for lead_id in lead_ids:
             try:
-                erp_lead_id = lead_id.get_contract_in_erp(erp_lead_obj, erp_webform_stage_id)
+                erp_lead_id = lead_id.get_contract_in_erp(erp_lead_obj)
                 if erp_lead_id:
                     # Write to Odoo first so the lead is marked as won even if
                     # the ERP write fails. This prevents to have the id in ERP but not in Odoo,
@@ -542,11 +516,7 @@ class Lead(models.Model):
 
         erp_lead_obj = c.model("giscedata.crm.lead")
 
-        erp_webform_stage_id = self._get_erp_webform_converted_stage_id(c)
-        if not erp_webform_stage_id:
-            return []
-
-        erp_domain = self._get_erp_webform_domain('!=', erp_webform_stage_id)
+        erp_domain = self._get_erp_contract_domain('!=')
         if date_from:
             erp_domain.append(('create_date', '>=', date_from))
 
@@ -709,13 +679,7 @@ class Lead(models.Model):
 
         erp_lead_obj = c.model('giscedata.crm.lead')
 
-        erp_webform_stage_id = self._get_erp_webform_converted_stage_id(c)
-        if not erp_webform_stage_id:
-            print("Cannot resolve webform_stage_converted — aborting debug")
-            return
-        print(f"webform_stage_converted id in ERP: {erp_webform_stage_id}\n")
-
-        base_domain = self._get_erp_webform_domain('=', erp_webform_stage_id)
+        base_domain = self._get_erp_contract_domain('=')
 
         strategies = [
             ('som_cups',   'CUPS',  self._erp_search_by_cups),
@@ -749,18 +713,18 @@ class Lead(models.Model):
             print(f"  result: [] ✗ NO MATCH")
 
             # Check without base filters to detect false negatives and show why no match
-            base_filter_keys = {('crm_lead_id', '=', 0), ('state', '=', 'done'), ('stage_id', '=', erp_webform_stage_id)}
+            base_filter_keys = {('crm_lead_id', '=', 0), ('state', '=', 'done'), ('polissa_id', '!=', False)}
             domain_no_filter = [d for d in domain if d not in base_filter_keys]
             result_no_filter = erp_lead_obj.search(domain_no_filter)
             if result_no_filter:
-                matching = erp_lead_obj.read(result_no_filter, ['id', 'crm_lead_id', 'state', 'stage_id'])
+                matching = erp_lead_obj.read(result_no_filter, ['id', 'crm_lead_id', 'state', 'polissa_id'])
                 crm_ids = [m.get('crm_lead_id') for m in matching]
                 states = [m.get('state') for m in matching]
-                stages = [m.get('stage_id') for m in matching]
+                polissa_ids = [m.get('polissa_id') for m in matching]
                 print(f"  ⚠  Without base filters → found: {result_no_filter}")
                 print(f"     crm_lead_id in ERP: {crm_ids}")
                 print(f"     state in ERP      : {states}")
-                print(f"     stage_id in ERP   : {stages}")
+                print(f"     polissa_id in ERP : {polissa_ids}")
                 print(f"     → Likely cause: ERP lead already has crm_lead_id set")
             print()
 
