@@ -176,7 +176,10 @@ class TestCrmLeadFetchmail(TransactionCase):
         """
         Test that the creation process does not raise an error if the ref'd records are not found.
         """
-        self.sales_team.unlink()
+        self.env['ir.model.data'].search([
+            ('module', '=', 'sales_team'),
+            ('name', '=', 'team_sales_department'),
+        ]).unlink()
         lead = self.env['crm.lead'].with_context(**self.fetchmail_context).create({
             'name': 'Lead with missing config',
             'type': 'opportunity',
