@@ -1,0 +1,40 @@
+.o_helpdesk_contract_lookup {
+    font-size: 1.2rem;
+
+    .form-label,
+    .form-control,
+    .form-select,
+    .btn,
+    .alert,
+    .card-title,
+    .table,
+    .nav-link {
+        font-size: inherit;
+    }
+
+    .btn-sm,
+    .table-sm,
+    .small {
+        font-size: 1.02rem;
+    }
+
+    .badge {
+        font-size: 0.9rem;
+    }
+
+    .o-contract-secondary-text {
+        font-size: 0.95rem;
+    }
+
+    .o-contract-detail {
+        font-size: 0.95rem;
+        color: #3d4a57;
+    }
+
+    // Responsive border for the right phonecalls column
+    @include media-breakpoint-up(xl) {
+        .border-xl-start {
+            border-left: 1px solid var(--bs-border-color) !important;
+        }
+    }
+}

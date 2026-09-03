@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="helpdesk_contract_lookup.ContractLookupAction" owl="1">
+        <div class="o_helpdesk_contract_lookup p-4" style="height: calc(100vh - 110px); overflow-y: auto;">
+            <div t-if="callInfo" class="alert alert-info d-flex gap-3 align-items-center mb-2">
+                <i class="fa fa-phone"/>
+                <span><strong>Phone:</strong> <t t-esc="callInfo.phone"/></span>
+                <span><strong>Call ID:</strong> <t t-esc="callInfo.callid"/></span>
+                <span><strong>Time:</strong> <t t-esc="callInfo.created_at"/></span>
+            </div>
+            <div t-if="phonecallId" class="mb-3">
+                <button class="btn btn-outline-primary" t-on-click="openPhonecall">
+                    <i class="fa fa-phone me-1"/> Open Call
+                </button>
+            </div>
+            <div class="d-flex align-items-end gap-2 flex-wrap mb-3">
+                <div>
+                    <label class="form-label">Search field</label>
+                    <select class="form-select" t-model="state.field">
+                        <t t-foreach="fields" t-as="field" t-key="field">
+                            <option t-att-value="field"><t t-esc="fieldLabels[field] || field"/></option>
+                        </t>
+                    </select>
+                </div>
+                <div class="flex-grow-1">
+                    <label class="form-label">Search value</label>
+                    <input
+                        class="form-control"
+                        type="text"
+                        t-model="state.value"
+                        t-on-keydown="onSearchKeydown"
+                        placeholder="Type phone, NIF, contract, CUPS..."
+                    />
+                </div>
+                <button class="btn btn-primary" t-on-click="onSearch" t-att-disabled="state.loading">
+                    <t t-if="state.loading">Searching...</t>
+                    <t t-else="">Search</t>
+                </button>
+            </div>
+
+            <t t-if="state.error">
+                <div class="alert alert-danger" role="alert">
+                    <t t-esc="state.error"/>
+                </div>
+            </t>
+
+            <t t-if="state.result and state.result.status === 'no_info'">
+                <div class="alert alert-warning" role="alert">No information found.</div>
+            </t>
+
+            <t t-if="state.result and state.result.partners and state.result.partners.length">
+                <div class="alert alert-info mb-3">
+                    Results: <t t-esc="state.result.count"/>
+                    <t t-if="state.result.too_many"> (limited)</t>
+                </div>
+
+                <t t-foreach="state.result.partners" t-as="partner" t-key="partner.id">
+                    <div t-attf-class="card mb-3 {{ state.linkedPartnerId === partner.id ? 'border-success' : '' }}">
+                        <div class="card-body">
+                            <div class="row g-0">
+                                <!-- Left column: partner info + contracts (70%) -->
+                                <div class="col-12 col-xl-8 pe-xl-3">
+                                    <h5 class="card-title mb-1">
+                                        <t t-esc="partner.name"/>
+                                        <span t-if="state.linkedPartnerId === partner.id" class="badge bg-success ms-2">Linked</span>
+                                        <span t-if="partner.ov" class="badge bg-info ms-2">OV</span>
+                                        <div class="d-inline-flex gap-2 ms-2 align-middle">
+                                            <a t-if="partner.erp_url" t-att-href="partner.erp_url" target="_blank" class="btn btn-sm btn-outline-secondary py-0">
+                                                <i class="fa fa-external-link me-1"/>Open in ERP
+                                            </a>
+                                            <button
+                                                class="btn btn-sm btn-outline-primary py-0"
+                                                t-on-click="() => this.openPartnerInOdoo(partner.id, partner.name, partner.vat)">
+                                                <i class="fa fa-user me-1"/>Open in Odoo
+                                            </button>
+                                        </div>
+                                    </h5>
+                                    <div class="text-muted small mb-2">
+                                        <span t-if="partner.address"><t t-esc="partner.address"/>, </span>
+                                        <span t-if="partner.city"><t t-esc="partner.city"/> </span>
+                                        <span t-if="partner.postalcode">(<t t-esc="partner.postalcode"/>) </span>
+                                        <span t-if="partner.state"><t t-esc="partner.state"/></span>
+                                    </div>
+                                    <div class="text-muted small mb-2">
+                                        <span t-if="partner.email"><i class="fa fa-envelope me-1"/><t t-esc="partner.email"/> </span>
+                                        <t t-foreach="partner.phones" t-as="phone" t-key="phone">
+                                            <span><i class="fa fa-phone me-1"/><t t-esc="phone"/> </span>
+                                        </t>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <div class="text-muted">
+                                            <span>Partner ID: </span>
+                                            <a t-if="partner.erp_url" t-att-href="partner.erp_url" target="_blank" class="text-decoration-none">
+                                                <t t-esc="partner.id"/>
+                                            </a>
+                                            <t t-else=""><t t-esc="partner.id"/></t>
+                                            <span> - </span>
+                                            <span t-if="partner.member_code">Member: <t t-esc="partner.member_code"/> - </span>
+                                            <span t-if="partner.vat">VAT: <t t-esc="partner.vat"/></span>
+                                        </div>
+                                                        <div t-if="phonecallId" class="d-flex gap-2">
+                                                            <button
+                                                                class="btn btn-sm btn-outline-success"
+                                                                title="Linkar trucada"
+                                                                t-on-click="() => this.linkPartnerToCall(partner.id, partner.name, partner.vat)">
+                                                                <i class="fa fa-link"/> <i class="fa fa-phone"/>
+                                                            </button>
+                                                            <button
+                                                                class="btn btn-sm btn-success"
+                                                                title="Linkar trucada i obrir"
+                                                                t-on-click="() => this.linkPartnerToCallAndOpen(partner.id, partner.name, partner.vat)">
+                                                                <i class="fa fa-link"/> <i class="fa fa-phone"/> <i class="fa fa-external-link"/>
+                                                            </button>
+                                                        </div>
+                                        <div t-else="" class="d-flex gap-2">
+                                            <button
+                                                class="btn btn-sm btn-success"
+                                                t-on-click="() => this.registerIncomingCall(partner.id, partner.name, partner.vat, partner.primary_phone)">
+                                                <i class="fa fa-phone me-1"/> Register Incoming Call
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <t t-if="partner.contracts.length">
+                                        <table class="table table-sm table-striped mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Contract</th>
+                                                    <th>CUPS</th>
+                                                    <th>Status</th>
+                                                    <th>Details</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="partner.contracts" t-as="contract" t-key="contract.number">
+                                                    <tr t-att-style="contract_index % 2 !== 0 ? 'background-color: #e8f4fd;' : ''">
+                                                        <td colspan="4" class="py-1 px-3">
+                                                            <div class="d-flex gap-4 small text-muted flex-wrap">
+                                                                <i class="fa fa-bolt me-1"/>
+                                                                <span><strong>Titular:</strong> <t t-esc="contract.titular || '—'"/></span>
+                                                                <span><strong>Tarifa:</strong> <t t-esc="contract.tarifa || '—'"/></span>
+                                                                <span><strong>IBAN:</strong> <t t-esc="contract.iban || '—'"/></span>
+                                                                <span><strong>Start:</strong> <t t-esc="contract.start_date || '—'"/></span>
+                                                                <span t-if="contract.end_date"><strong>End:</strong> <t t-esc="contract.end_date"/></span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr t-att-style="contract_index % 2 !== 0 ? 'background-color: #e8f4fd;' : ''">
+                                                         <td>
+                                                            <t t-if="contract.contract_url">
+                                                                <a t-att-href="contract.contract_url" target="_blank" class="text-decoration-none">
+                                                                    <t t-esc="contract.number"/>
+                                                                </a>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <t t-esc="contract.number"/>
+                                                            </t>
+                                                            <span t-if="state.linkedContractNumber === contract.number" class="badge bg-success ms-1">Linked</span>
+                                                        </td>
+                                                        <td>
+                                                            <div class="small"><t t-esc="contract.cups"/></div>
+                                                            <div class="text-muted o-contract-secondary-text"><t t-esc="contract.cups_address"/></div>
+                                                        </td>
+                                                        <td><t t-esc="contract.state"/></td>
+                                                         <td>
+                                                            <div class="d-flex gap-1 flex-wrap align-items-center">
+                                                                <t t-if="phonecallId">
+                                                                    <button
+                                                                        class="btn btn-sm btn-outline-success"
+                                                                        title="Linkar trucada"
+                                                                        t-on-click="() => this.linkPartnerToCall(partner.id, partner.name, partner.vat, contract.number)">
+                                                                        <i class="fa fa-link"/> <i class="fa fa-phone"/>
+                                                                    </button>
+                                                                    <button
+                                                                        class="btn btn-sm btn-success"
+                                                                        title="Linkar trucada i obrir"
+                                                                        t-on-click="() => this.linkPartnerToCallAndOpen(partner.id, partner.name, partner.vat, contract.number)">
+                                                                        <i class="fa fa-link"/> <i class="fa fa-phone"/> <i class="fa fa-external-link"/>
+                                                                    </button>
+                                                                </t>
+                                                                <button
+                                                                    class="btn btn-outline-secondary btn-sm"
+                                                                    t-on-click="() => this.loadContractDetails(contract.number)"
+                                                                    t-att-disabled="state.loadingDetailsByContract[contract.number]"
+                                                                >
+                                                                    <t t-if="state.loadingDetailsByContract[contract.number]">Loading...</t>
+                                                                    <t t-elif="state.expandedContracts[contract.number]"><i class="fa fa-chevron-up me-1"/>Hide details</t>
+                                                                    <t t-else=""><i class="fa fa-chevron-down me-1"/>Load details</t>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr t-if="state.expandedContracts[contract.number]"
+                                                        t-att-style="contract_index % 2 !== 0 ? 'background-color: #e8f4fd;' : ''">
+                                                        <td colspan="4" class="p-0">
+                                                            <ul class="nav nav-tabs px-2 pt-2 bg-light">
+                                                                <li class="nav-item">
+                                                                    <a t-att-class="'nav-link py-1' + (getActiveTab(contract.number) === 'invoices' ? ' active' : '')"
+                                                                       t-on-click="() => this.setActiveTab(contract.number, 'invoices')"
+                                                                       style="cursor:pointer">
+                                                                        <i class="fa fa-file-text-o me-1"/>Invoices
+                                                                        <span class="badge bg-secondary ms-1"><t t-esc="state.detailsByContract[contract.number].invoices.length"/></span>
+                                                                    </a>
+                                                                </li>
+                                                                <li class="nav-item">
+                                                                    <a t-att-class="'nav-link py-1' + (getActiveTab(contract.number) === 'meter_readings' ? ' active' : '')"
+                                                                       t-on-click="() => this.setActiveTab(contract.number, 'meter_readings')"
+                                                                       style="cursor:pointer">
+                                                                        <i class="fa fa-tachometer me-1"/>Meter readings
+                                                                        <span class="badge bg-secondary ms-1"><t t-esc="state.detailsByContract[contract.number].meter_readings.length"/></span>
+                                                                    </a>
+                                                                </li>
+                                                                <li class="nav-item">
+                                                                    <a t-att-class="'nav-link py-1' + (getActiveTab(contract.number) === 'atr_cases' ? ' active' : '')"
+                                                                       t-on-click="() => this.setActiveTab(contract.number, 'atr_cases')"
+                                                                       style="cursor:pointer">
+                                                                        <i class="fa fa-exchange me-1"/>ATR cases
+                                                                        <span class="badge bg-secondary ms-1"><t t-esc="state.detailsByContract[contract.number].atr_cases.length"/></span>
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                            <div class="tab-content">
+                                                                <div t-if="getActiveTab(contract.number) === 'invoices'"
+                                                                     style="max-height: 300px; overflow-y: auto;">
+                                                                    <table class="table table-sm table-striped mb-0">
+                                                                        <thead class="table-light sticky-top">
+                                                                            <tr>
+                                                                                <th>Number</th>
+                                                                                <th>Period</th>
+                                                                                <th>Invoice date</th>
+                                                                                <th>Due date</th>
+                                                                                <th>kWh</th>
+                                                                                <th>Amount</th>
+                                                                                <th>State</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <t t-foreach="state.detailsByContract[contract.number].invoices" t-as="invoice" t-key="invoice.number">
+                                                                                <tr>
+                                                                                    <td>
+                                                                                        <t t-if="invoice.invoice_url">
+                                                                                            <a t-att-href="invoice.invoice_url" target="_blank" class="text-decoration-none">
+                                                                                                <t t-esc="invoice.number"/>
+                                                                                            </a>
+                                                                                        </t>
+                                                                                        <t t-else="">
+                                                                                            <t t-esc="invoice.number"/>
+                                                                                        </t>
+                                                                                    </td>
+                                                                                    <td><t t-esc="invoice.initial_date"/> – <t t-esc="invoice.final_date"/></td>
+                                                                                    <td><t t-esc="invoice.invoice_date"/></td>
+                                                                                    <td><t t-esc="invoice.due_date"/></td>
+                                                                                    <td><t t-esc="invoice.energy_kwh"/></td>
+                                                                                    <td><t t-esc="(invoice.amount || 0).toFixed(2)"/> €</td>
+                                                                                    <td>
+                                                                                        <span t-att-class="invoiceStateBadge(invoice.state)">
+                                                                                            <i t-att-class="invoiceStateIcon(invoice.state)"/>
+                                                                                            <t t-esc="' ' + invoiceStateLabel(invoice.state)"/>
+                                                                                        </span>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </t>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                                <div t-if="getActiveTab(contract.number) === 'meter_readings'"
+                                                                     style="max-height: 300px; overflow-y: auto;">
+                                                                    <table class="table table-sm table-striped mb-0">
+                                                                        <thead class="table-light sticky-top">
+                                                                            <tr>
+                                                                                <th>Meter</th>
+                                                                                <th>Date</th>
+                                                                                <th>Period</th>
+                                                                                <th>Reading</th>
+                                                                                <th>Origin</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <t t-foreach="state.detailsByContract[contract.number].meter_readings" t-as="reading" t-key="reading.date + reading.period">
+                                                                                <tr>
+                                                                                    <td><t t-esc="reading.meter"/></td>
+                                                                                    <td><t t-esc="reading.date"/></td>
+                                                                                    <td><t t-esc="reading.period"/></td>
+                                                                                    <td><t t-esc="reading.reading"/></td>
+                                                                                    <td><t t-esc="reading.origin"/></td>
+                                                                                </tr>
+                                                                            </t>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                                <div t-if="getActiveTab(contract.number) === 'atr_cases'"
+                                                                     style="max-height: 300px; overflow-y: auto;">
+                                                                    <table class="table table-sm table-striped mb-0">
+                                                                        <thead class="table-light sticky-top">
+                                                                            <tr>
+                                                                                <th>Date</th>
+                                                                                <th>Process</th>
+                                                                                <th>Step</th>
+                                                                                <th>State</th>
+                                                                                <th>Info</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <t t-foreach="state.detailsByContract[contract.number].atr_cases" t-as="atr" t-key="atr.date + atr.process + atr.step">
+                                                                                <tr>
+                                                                                    <td><t t-esc="atr.date"/></td>
+                                                                                    <td><t t-esc="atr.process"/></td>
+                                                                                    <td><t t-esc="atr.step"/></td>
+                                                                                    <td>
+                                                                                        <span t-att-class="atrStateBadge(atr.state)">
+                                                                                            <t t-esc="atr.state"/>
+                                                                                        </span>
+                                                                                    </td>
+                                                                                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" t-att-title="atr.additional_info">
+                                                                                        <t t-esc="atr.additional_info"/>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </t>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </t>
+                                </div>
+
+                                <!-- Right column: phone calls (30%) -->
+                                <div class="col-12 col-xl-4 border-xl-start ps-xl-3 mt-3 mt-xl-0">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <i class="fa fa-phone text-muted"/>
+                                        <span class="fw-semibold small">Phone calls</span>
+                                        <t t-if="state.phonecallsByPartner[partner.id]">
+                                            <span class="badge bg-secondary">
+                                                <t t-esc="state.phonecallsByPartner[partner.id].phonecalls.length"/>
+                                            </span>
+                                        </t>
+                                        <t t-if="state.loadingPhonecallsByPartner[partner.id]">
+                                            <i class="fa fa-spinner fa-spin text-muted"/>
+                                        </t>
+                                    </div>
+
+                                    <!-- Not yet loaded -->
+                                    <t t-if="!state.phonecallsByPartner[partner.id] and !state.loadingPhonecallsByPartner[partner.id]">
+                                        <div class="text-muted small fst-italic">—</div>
+                                    </t>
+
+                                    <!-- Partner not found in Odoo -->
+                                    <t t-elif="state.phonecallsByPartner[partner.id] and !state.phonecallsByPartner[partner.id].odoo_partner_found">
+                                        <div class="text-muted small fst-italic">
+                                            No Odoo partner found — use "Open in Odoo" first.
+                                        </div>
+                                    </t>
+
+                                    <!-- No calls -->
+                                    <t t-elif="state.phonecallsByPartner[partner.id] and state.phonecallsByPartner[partner.id].phonecalls.length === 0">
+                                        <div class="text-muted small fst-italic">No phone calls found.</div>
+                                    </t>
+
+                                    <!-- Calls list -->
+                                    <t t-elif="state.phonecallsByPartner[partner.id] and state.phonecallsByPartner[partner.id].phonecalls.length > 0">
+                                        <div style="max-height: 320px; overflow-y: auto;">
+                                            <t t-foreach="state.phonecallsByPartner[partner.id].phonecalls" t-as="call" t-key="call.id">
+                                                <div t-att-class="'border-bottom pb-2 mb-2' + (call.id === phonecallId ? ' bg-light border-start border-primary border-3 ps-2' : '')">
+                                                    <div class="d-flex align-items-center justify-content-between gap-1">
+                                                        <div class="d-flex align-items-center gap-1 flex-wrap">
+                                                            <i t-att-class="callDirectionIcon(call.direction)" t-att-title="call.direction"/>
+                                                            <span t-att-class="callStateBadge(call.state)">
+                                                                <t t-esc="callStateLabel(call.state)"/>
+                                                            </span>
+                                                            <span t-if="call.pbx_call_id" class="text-muted small text-nowrap"><i class="fa fa-hashtag me-1"/><t t-esc="call.pbx_call_id"/></span>
+                                                            <span class="text-muted small text-nowrap"><i class="fa fa-clock-o me-1"/><t t-esc="call.date"/></span>
+                                                        </div>
+                                                        <button
+                                                            class="btn btn-sm btn-outline-primary flex-shrink-0"
+                                                            t-on-click="() => this.openCall(call.id, partner.id)">
+                                                            <i class="fa fa-external-link me-1"/> Open
+                                                        </button>
+                                                    </div>
+                                                    <div class="small mt-1"><t t-esc="call.name"/></div>
+                                                    <div class="d-flex gap-2 text-muted small">
+                                                        <span t-if="call.agent"><i class="fa fa-user me-1"/><t t-esc="call.agent"/></span>
+                                                        <span t-if="call.phone"><i class="fa fa-phone me-1"/><t t-esc="call.phone"/></span>
+                                                        <span t-if="call.duration"><i class="fa fa-clock-o me-1"/><t t-esc="call.duration"/></span>
+                                                        <span t-if="call.contract_name"><i class="fa fa-file-text-o me-1"/><t t-esc="call.contract_name"/></span>
+                                                    </div>
+                                                    <div t-if="call.categories and call.categories.length" class="d-flex flex-wrap gap-1 mt-1">
+                                                        <t t-foreach="call.categories" t-as="cat" t-key="cat.name">
+                                                            <span t-att-style="'border-radius:3px;padding:1px 6px;pointer-events:none;background-color:' + cat.color + ';color:' + contrastColor(cat.color)" class="small"><t t-esc="cat.name"/></span>
+                                                        </t>
+                                                    </div>
+                                                    <div t-if="call.description" class="text-muted small mt-1 fst-italic" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" t-att-title="call.description">
+                                                        <t t-esc="call.description"/>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+            </t>
+        </div>
+    </t>
+</templates>
