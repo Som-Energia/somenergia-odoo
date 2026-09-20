@@ -399,14 +399,20 @@ class Lead(models.Model):
 
     def get_contract_in_erp(self, erp_lead_obj):
         self.ensure_one()
+        if self.som_cups:
+            domain = self._get_erp_contract_domain('=')
+            erp_lead_id = self._erp_search_by_cups(
+                erp_lead_obj, domain, self.som_cups
+            )
+            return erp_lead_id[0] if erp_lead_id else False
+
         search_strategies = {
-            'som_cups': self._erp_search_by_cups,
             'vat': self._erp_search_by_vat,
             'email_from': self._erp_search_by_email,
             'phone': self._erp_search_by_phone,
         }
 
-        for lead_field in ['som_cups', 'vat', 'email_from', 'phone']:
+        for lead_field in ['vat', 'email_from', 'phone']:
             if lead_field not in search_strategies:
                 _logger.warning(f"No search strategy for field {lead_field}")
                 continue
@@ -681,12 +687,14 @@ class Lead(models.Model):
 
         base_domain = self._get_erp_contract_domain('=')
 
-        strategies = [
-            ('som_cups',   'CUPS',  self._erp_search_by_cups),
-            ('vat',        'VAT',   self._erp_search_by_vat),
-            ('email_from', 'EMAIL', self._erp_search_by_email),
-            ('phone',      'PHONE', self._erp_search_by_phone),
-        ]
+        if self.som_cups:
+            strategies = [('som_cups', 'CUPS', self._erp_search_by_cups)]
+        else:
+            strategies = [
+                ('vat', 'VAT', self._erp_search_by_vat),
+                ('email_from', 'EMAIL', self._erp_search_by_email),
+                ('phone', 'PHONE', self._erp_search_by_phone),
+            ]
 
         for lead_field, label, strategy_fn in strategies:
             value = getattr(self, lead_field, None)
