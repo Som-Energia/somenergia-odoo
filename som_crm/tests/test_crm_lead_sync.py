@@ -193,8 +193,8 @@ class TestErpLeadSync(TransactionCase):
 
     def test_get_contract_in_erp_priority(self):
         """
-        Test the logic and search priority in 'get_contract_in_erp'.
-        It should find by CUPS first, even if it has other data.
+        Test that a lead with CUPS only searches by CUPS, even when it also
+        has other searchable data.
         """
         _logger.info("--> Test: test_get_contract_in_erp_priority")
 
@@ -215,6 +215,22 @@ class TestErpLeadSync(TransactionCase):
 
         self.assertEqual(erp_id, 101)
         # We verify that search was called with the full domain including polissa filter
+        mock_erp_lead_obj.search.assert_called_once_with(
+            [
+                ('crm_lead_id', '=', 0),
+                ('state', '=', 'done'),
+                ('polissa_id', '!=', False),
+                ('cups', '=ilike', 'ES_PRIORITY_TEST%'),
+            ], limit=1
+        )
+
+        # A CUPS that does not match must not fall back to the VAT.
+        mock_erp_lead_obj.reset_mock()
+        mock_erp_lead_obj.search.return_value = []
+
+        erp_id = lead_with_multiple_fields.get_contract_in_erp(mock_erp_lead_obj)
+
+        self.assertFalse(erp_id)
         mock_erp_lead_obj.search.assert_called_once_with(
             [
                 ('crm_lead_id', '=', 0),
