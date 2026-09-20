@@ -687,12 +687,14 @@ class Lead(models.Model):
 
         base_domain = self._get_erp_contract_domain('=')
 
-        strategies = [
-            ('som_cups',   'CUPS',  self._erp_search_by_cups),
-            ('vat',        'VAT',   self._erp_search_by_vat),
-            ('email_from', 'EMAIL', self._erp_search_by_email),
-            ('phone',      'PHONE', self._erp_search_by_phone),
-        ]
+        if self.som_cups:
+            strategies = [('som_cups', 'CUPS', self._erp_search_by_cups)]
+        else:
+            strategies = [
+                ('vat', 'VAT', self._erp_search_by_vat),
+                ('email_from', 'EMAIL', self._erp_search_by_email),
+                ('phone', 'PHONE', self._erp_search_by_phone),
+            ]
 
         for lead_field, label, strategy_fn in strategies:
             value = getattr(self, lead_field, None)
