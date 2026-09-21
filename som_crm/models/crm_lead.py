@@ -397,10 +397,24 @@ class Lead(models.Model):
             ('polissa_id', '!=', False),
         ]
 
+    def _get_erp_contract_date_domain(self):
+        self.ensure_one()
+        margin_days = int(self.env['ir.config_parameter'].sudo().get_param(
+            'som_crm_erp_contract_match_days', 10
+        ))
+        return [
+            ('create_date', '>=', fields.Datetime.to_string(
+                self.create_date - timedelta(days=margin_days)
+            )),
+            ('create_date', '<=', fields.Datetime.to_string(
+                self.create_date + timedelta(days=margin_days)
+            )),
+        ]
+
     def get_contract_in_erp(self, erp_lead_obj):
         self.ensure_one()
         if self.som_cups:
-            domain = self._get_erp_contract_domain('=')
+            domain = self._get_erp_contract_domain('=') + self._get_erp_contract_date_domain()
             erp_lead_id = self._erp_search_by_cups(
                 erp_lead_obj, domain, self.som_cups
             )
@@ -420,7 +434,7 @@ class Lead(models.Model):
             value_to_search = getattr(self, lead_field, None)
             if not value_to_search:
                 continue
-            domain = self._get_erp_contract_domain('=')
+            domain = self._get_erp_contract_domain('=') + self._get_erp_contract_date_domain()
             erp_lead_id = search_strategies[lead_field](erp_lead_obj, domain, value_to_search)
             if erp_lead_id:
                 return erp_lead_id[0]
@@ -685,7 +699,7 @@ class Lead(models.Model):
 
         erp_lead_obj = c.model('giscedata.crm.lead')
 
-        base_domain = self._get_erp_contract_domain('=')
+        base_domain = self._get_erp_contract_domain('=') + self._get_erp_contract_date_domain()
 
         if self.som_cups:
             strategies = [('som_cups', 'CUPS', self._erp_search_by_cups)]

@@ -36,6 +36,12 @@ class ResConfigSettings(models.TransientModel):
         default=0
     )
 
+    som_crm_erp_contract_match_days = fields.Integer(
+        string="Marge de dies per vincular contractacions ERP",
+        config_parameter='som_crm_erp_contract_match_days',
+        default=10,
+    )
+
     som_crm_lead_welcome_template_id = fields.Many2one(
         related='company_id.som_crm_lead_welcome_template_id',
         readonly=False,

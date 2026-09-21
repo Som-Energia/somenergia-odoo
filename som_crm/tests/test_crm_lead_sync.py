@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from datetime import timedelta
 from unittest.mock import patch, MagicMock, ANY
 
 from odoo.tests.common import TransactionCase, tagged
+from odoo import fields
 from odoo.tools import config
 
 _logger = logging.getLogger(__name__)
@@ -173,6 +175,22 @@ class TestErpLeadSync(TransactionCase):
             self.assertIn(('state', '=', 'done'), domain)
             self.assertIn(('polissa_id', '!=', False), domain)
 
+    def test_get_erp_contract_date_domain_uses_configured_margin(self):
+        self.env['ir.config_parameter'].sudo().set_param(
+            'som_crm_erp_contract_match_days', 3
+        )
+
+        domain = self.lead_to_find_by_cups._get_erp_contract_date_domain()
+
+        self.assertEqual(domain, [
+            ('create_date', '>=', fields.Datetime.to_string(
+                self.lead_to_find_by_cups.create_date - timedelta(days=3)
+            )),
+            ('create_date', '<=', fields.Datetime.to_string(
+                self.lead_to_find_by_cups.create_date + timedelta(days=3)
+            )),
+        ])
+
     def test_get_contract_in_erp_matches_with_full_domain(self):
         """
         Test that get_contract_in_erp returns an ERP id when the full
@@ -190,6 +208,8 @@ class TestErpLeadSync(TransactionCase):
         self.assertIn(('crm_lead_id', '=', 0), call_domain)
         self.assertIn(('state', '=', 'done'), call_domain)
         self.assertIn(('polissa_id', '!=', False), call_domain)
+        for clause in self.lead_to_find_by_cups._get_erp_contract_date_domain():
+            self.assertIn(clause, call_domain)
 
     def test_get_contract_in_erp_priority(self):
         """
@@ -220,7 +240,8 @@ class TestErpLeadSync(TransactionCase):
                 ('crm_lead_id', '=', 0),
                 ('state', '=', 'done'),
                 ('polissa_id', '!=', False),
-                ('cups', '=ilike', 'ES_PRIORITY_TEST%'),
+            ] + lead_with_multiple_fields._get_erp_contract_date_domain() + [
+                ('cups', '=ilike', 'ES_PRIORITY_TEST%')
             ], limit=1
         )
 
@@ -236,7 +257,8 @@ class TestErpLeadSync(TransactionCase):
                 ('crm_lead_id', '=', 0),
                 ('state', '=', 'done'),
                 ('polissa_id', '!=', False),
-                ('cups', '=ilike', 'ES_PRIORITY_TEST%'),
+            ] + lead_with_multiple_fields._get_erp_contract_date_domain() + [
+                ('cups', '=ilike', 'ES_PRIORITY_TEST%')
             ], limit=1
         )
 

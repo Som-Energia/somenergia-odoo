@@ -40,6 +40,18 @@
                     </div>
                 </div>
 
+                <div class="col-12 col-lg-6 o_setting_box">
+                    <div class="o_setting_left_pane">
+                        <field name="som_crm_erp_contract_match_days" />
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="som_crm_erp_contract_match_days" />
+                        <div class="text-muted">
+                            Dies abans o després de la creació de l'oportunitat per cercar contractacions a l'ERP
+                        </div>
+                    </div>
+                </div>
+
                 <div class="col-12 col-lg-6 o_setting_box" id="default_company_schedule_setting">
                     <div class="o_setting_right_pane">
                         <label for="som_crm_call_category_id"/>
