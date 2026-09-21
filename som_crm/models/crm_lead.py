@@ -399,9 +399,9 @@ class Lead(models.Model):
 
     def _get_erp_contract_date_domain(self):
         self.ensure_one()
-        margin_days = int(self.env['ir.config_parameter'].sudo().get_param(
+        margin_days = max(0, int(self.env['ir.config_parameter'].sudo().get_param(
             'som_crm_erp_contract_match_days', 10
-        ))
+        )))
         return [
             ('create_date', '>=', fields.Datetime.to_string(
                 self.create_date - timedelta(days=margin_days)
