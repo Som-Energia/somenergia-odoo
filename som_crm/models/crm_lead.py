@@ -441,6 +441,63 @@ class Lead(models.Model):
 
         return False
 
+    def _get_erp_lead_model(self):
+        _logger.info("Connecting to ERP")
+        try:
+            erppeek = dict(
+                server=f"{config.get('erp_uri')}:{config.get('erp_port')}",
+                db=config.get('erp_dbname'),
+                user=config.get('erp_user'),
+                password=config.get('erp_pwd'),
+            )
+            return Client(**erppeek).model("giscedata.crm.lead")
+        except Exception as e:
+            _logger.error("Error connecting to ERP: %s", e)
+            return False
+
+    def _sync_erp_contract_data(self, erp_lead_obj):
+        _logger.info("Starting ERP contract data synchronization")
+        leads_to_update = self.filtered(
+            lambda lead: lead.som_erp_lead_id and not lead.som_cups
+        )
+        _logger.info("CRM leads to enrich from ERP: %s", leads_to_update.ids)
+        if not leads_to_update:
+            _logger.info("ERP contract data synchronization completed: no leads updated")
+            return []
+
+        try:
+            erp_contracts = erp_lead_obj.read(
+                leads_to_update.mapped('som_erp_lead_id'), ['id', 'cups']
+            )
+        except Exception as e:
+            _logger.warning("Could not read ERP contract data: %s", e)
+            _logger.info("ERP contract data synchronization completed: no leads updated")
+            return []
+
+        cups_by_erp_id = {
+            contract['id']: contract.get('cups')
+            for contract in erp_contracts
+            if contract.get('cups')
+        }
+        updated_ids = []
+        for lead in leads_to_update:
+            cups = cups_by_erp_id.get(lead.som_erp_lead_id)
+            if cups:
+                lead.write({'som_cups': cups})
+                updated_ids.append(lead.id)
+
+        _logger.info(
+            "ERP contract data synchronization completed; updated CRM leads: %s",
+            updated_ids,
+        )
+        return updated_ids
+
+    def sync_erp_contract_data(self):
+        erp_lead_obj = self._get_erp_lead_model()
+        if not erp_lead_obj:
+            return []
+        return self._sync_erp_contract_data(erp_lead_obj)
+
     @api.model
     def _erp_sync(self, include_inactive=False):
         won_stage_id = self.get_won_stage()
@@ -454,20 +511,9 @@ class Lead(models.Model):
             return
         _logger.info(f"Leads to check in ERP: {len(lead_ids)}")
 
-        _logger.info(f"Connecting to ERP")
-        try:
-            erppeek = dict(
-                server=f"{config.get('erp_uri')}:{config.get('erp_port')}",
-                db=config.get('erp_dbname'),
-                user=config.get('erp_user'),
-                password=config.get('erp_pwd'),
-            )
-            c = Client(**erppeek)
-        except Exception as e:
-            _logger.error(f"Error connecting to ERP: {e}")
+        erp_lead_obj = self._get_erp_lead_model()
+        if not erp_lead_obj:
             return
-
-        erp_lead_obj = c.model("giscedata.crm.lead")
 
         found_ids = []
         for lead_id in lead_ids:
@@ -499,6 +545,7 @@ class Lead(models.Model):
             return
 
         _logger.info(f"Leads moved to 'Won' stage: {found_ids}")
+        self.browse(found_ids)._sync_erp_contract_data(erp_lead_obj)
 
     @api.model
     def _erp_sync_check_inconsistencies(self, date_from=None):
@@ -522,19 +569,9 @@ class Lead(models.Model):
         """
         _logger.info("Starting ERP sync inconsistency check")
 
-        try:
-            erppeek_params = dict(
-                server=f"{config.get('erp_uri')}:{config.get('erp_port')}",
-                db=config.get('erp_dbname'),
-                user=config.get('erp_user'),
-                password=config.get('erp_pwd'),
-            )
-            c = Client(**erppeek_params)
-        except Exception as e:
-            _logger.error("Error connecting to ERP: %s", e)
+        erp_lead_obj = self._get_erp_lead_model()
+        if not erp_lead_obj:
             return []
-
-        erp_lead_obj = c.model("giscedata.crm.lead")
 
         erp_domain = self._get_erp_contract_domain('!=')
         if date_from:
