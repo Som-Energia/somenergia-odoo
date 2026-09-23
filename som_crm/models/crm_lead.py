@@ -484,6 +484,19 @@ class Lead(models.Model):
             cups = cups_by_erp_id.get(lead.som_erp_lead_id)
             if cups:
                 lead.write({'som_cups': cups})
+                try:
+                    lead.message_post(
+                        body=_(
+                            "CUPS updated from ERP contract synchronization: %s"
+                        ) % cups,
+                        message_type='comment',
+                        subtype_xmlid='mail.mt_note',
+                    )
+                except Exception as e:
+                    _logger.warning(
+                        "Lead %s CUPS updated but failed to post chatter message: %s",
+                        lead.id, e,
+                    )
                 updated_ids.append(lead.id)
 
         _logger.info(

@@ -365,6 +365,11 @@ class TestErpLeadSync(TransactionCase):
             self.lead_to_find_by_cups.som_cups, 'ES0021000000000001ABCD'
         )
         self.assertEqual(self.lead_to_find_by_vat.som_cups, 'ES0021000000000002ABCD')
+        self.assertTrue(any(
+            'CUPS updated from ERP contract synchronization: ES0021000000000002ABCD'
+            in message.body
+            for message in self.lead_to_find_by_vat.message_ids
+        ))
         mock_erp_lead_obj.read.assert_called_once_with([102], ['id', 'cups'])
 
     @patch('odoo.addons.som_crm.models.crm_lead.Client')
