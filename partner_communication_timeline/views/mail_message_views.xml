@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_mail_message_partner_timeline_tree" model="ir.ui.view">
+        <field name="name">mail.message.partner.timeline.tree</field>
+        <field name="model">mail.message</field>
+        <field name="arch" type="xml">
+            <tree string="Comunicacions" create="0" edit="0" delete="0" default_order="date desc">
+                <field name="date"/>
+                <field name="message_type"/>
+                <field name="pct_partner_id" string="Contacte" widget="many2one"/>
+                <field name="author_id" widget="many2one"/>
+                <field name="partner_ids" string="Destinataris" widget="many2many_tags"/>
+                <field name="email_from"/>
+                <field name="subject"/>
+                <field name="pct_origin_model_label" string="Model origen"/>
+                <field name="pct_origin_display_name" string="Origen"/>
+                <field name="subtype_id"/>
+                <field name="pct_body_preview" string="Vista previa"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_mail_message_partner_timeline_form" model="ir.ui.view">
+        <field name="name">mail.message.partner.timeline.form</field>
+        <field name="model">mail.message</field>
+        <field name="arch" type="xml">
+            <form string="Comunicacio" create="0" edit="0" delete="0">
+                <header>
+                    <button name="action_pct_open_related_record"
+                            type="object"
+                            string="Obri document origen"
+                            class="oe_highlight"
+                            attrs="{'invisible': ['|', ('model', '=', False), ('res_id', '=', 0)]}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date" readonly="1"/>
+                            <field name="message_type" readonly="1"/>
+                            <field name="subtype_id" readonly="1"/>
+                            <field name="author_id" readonly="1"/>
+                            <field name="partner_ids" readonly="1" widget="many2many_tags"/>
+                            <field name="email_from" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="subject" readonly="1"/>
+                            <field name="pct_partner_id" readonly="1"/>
+                            <field name="pct_origin_model_label" readonly="1"/>
+                            <field name="pct_origin_display_name" readonly="1"/>
+                            <field name="model" readonly="1"/>
+                            <field name="res_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Cos">
+                            <field name="body" nolabel="1" widget="html" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_mail_message_partner_timeline_search" model="ir.ui.view">
+        <field name="name">mail.message.partner.timeline.search</field>
+        <field name="model">mail.message</field>
+        <field name="arch" type="xml">
+            <search string="Cerca comunicacions">
+                <field name="subject"/>
+                <field name="pct_body_text" string="Contingut"/>
+                <field name="author_id"/>
+                <field name="pct_partner_id" string="Contacte"/>
+                <field name="partner_ids" string="Destinataris"/>
+                <field name="email_from"/>
+                <field name="model" string="Model origen"/>
+                <filter string="Emails" name="emails" domain="[('message_type', '=', 'email')]"/>
+                <filter string="Comentaris i notes" name="comments" domain="[('message_type', '=', 'comment')]"/>
+                <separator/>
+                <filter string="CRM" name="crm" domain="[('model', '=', 'crm.lead')]"/>
+                <filter string="Tiquets" name="tickets" domain="[('model', '=', 'helpdesk.ticket')]"/>
+                <group expand="0" string="Agrupar per">
+                    <filter string="Model origen" name="group_by_model" context="{'group_by': 'model'}"/>
+                    <filter string="Autor" name="group_by_author" context="{'group_by': 'author_id'}"/>
+                    <filter string="Tipus" name="group_by_message_type" context="{'group_by': 'message_type'}"/>
+                    <filter string="Subtipus" name="group_by_subtype" context="{'group_by': 'subtype_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_pct_global_communications" model="ir.actions.act_window">
+        <field name="name">Comunicacions</field>
+        <field name="res_model">mail.message</field>
+        <field name="view_mode">tree,form</field>
+        <field name="views" eval="[(ref('view_mail_message_partner_timeline_tree'), 'tree'), (ref('view_mail_message_partner_timeline_form'), 'form')]"/>
+        <field name="search_view_id" ref="view_mail_message_partner_timeline_search"/>
+        <field name="domain">[('message_type', 'in', ['email', 'comment'])]</field>
+        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+
+    <menuitem
+        id="menu_pct_global_communications"
+        name="Comunicacions"
+        parent="crm.crm_menu_sales"
+        action="action_pct_global_communications"
+        sequence="20"/>
+
+</odoo>
