@@ -24,5 +24,5 @@ class WhatsappComposer(models.TransientModel):
         return {
             "type": "ir.actions.client",
             "tag": "mail.action_discuss",
-            "params": {"active_id": "mail.channel_%s" % channel.id},
+            "params": {"default_active_id": "mail.channel_%s" % channel.id},
         }
