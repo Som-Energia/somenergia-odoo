@@ -1,5 +1,5 @@
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
 
 from odoo.addons.phone_validation.tools import phone_validation
 
@@ -9,11 +9,12 @@ class ResPartner(models.Model):
 
     whatsapp_channel_count = fields.Integer(
         compute="_compute_whatsapp_channel_count",
+        compute_sudo=True,
         string="WhatsApp conversations",
     )
 
     def _compute_whatsapp_channel_count(self):
-        Channel = self.env["mail.channel"]
+        Channel = self.env["mail.channel"].sudo()
         for partner in self:
             partner.whatsapp_channel_count = Channel.search_count(
                 [
@@ -102,17 +103,20 @@ class ResPartner(models.Model):
 
     def action_open_whatsapp_channel(self):
         self.ensure_one()
-        channels = self.env["mail.channel"].search(
+        channels = self.env["mail.channel"].sudo().search(
             [
                 ("whatsapp_partner_id", "=", self.id),
                 ("channel_type", "=", "gateway"),
                 ("gateway_id.gateway_type", "=", "whatsapp"),
             ]
         )
+        channels = channels.filtered(
+            lambda channel: self.env.user in channel.gateway_id.member_ids
+        )
         if not channels:
-            return False
+            raise AccessError(_("You are not allowed to open this WhatsApp conversation."))
         if len(channels) == 1:
-            channels._som_whatsapp_join_current_user()
+            channels.with_user(self.env.user)._som_whatsapp_join_current_user()
             return {
                 "type": "ir.actions.client",
                 "tag": "mail.action_discuss",

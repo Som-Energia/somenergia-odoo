@@ -1,3 +1,4 @@
+from odoo.exceptions import AccessError
 from odoo.tests.common import TransactionCase
 
 
@@ -61,17 +62,31 @@ class TestPartnerWhatsapp(TransactionCase):
         self.assertEqual(mapping.gateway_token, "34600000001")
         self.assertEqual(channel.gateway_channel_token, "34600000001")
 
+    def test_non_operator_cannot_join_partner_channel(self):
+        self.partner._whatsapp_get_channel("mobile", self.gateway)
+        user = self.env["res.users"].create(
+            {
+                "name": "Unauthorized operator",
+                "login": "unauthorized.operator@example.com",
+                "groups_id": [(4, self.env.ref("base.group_user").id)],
+            }
+        )
+
+        with self.assertRaises(AccessError):
+            self.partner.with_user(user).action_open_whatsapp_channel()
+
     def test_lead_action_opens_partner_channel(self):
         channel = self.partner._whatsapp_get_channel("mobile", self.gateway)
         lead = self.env["crm.lead"].create(
             {"name": "WhatsApp lead", "partner_id": self.partner.id}
         )
 
-        action = lead.action_open_whatsapp_channel()
+        action = lead.with_user(self.other_operator).action_open_whatsapp_channel()
 
         self.assertEqual(
             action["params"]["active_id"], "mail.channel_%s" % channel.id
         )
+        self.assertIn(self.other_operator.partner_id, channel.channel_member_ids.partner_id)
 
     def test_inbound_channel_removes_webhook_user(self):
         channel = self.partner._som_whatsapp_get_or_create_channel(

@@ -1,4 +1,5 @@
-from odoo import fields, models
+from odoo import _, fields, models
+from odoo.exceptions import AccessError
 
 
 class MailChannel(models.Model):
@@ -22,10 +23,18 @@ class MailChannel(models.Model):
 
     def _som_whatsapp_join_current_user(self):
         for channel in self:
-            partner = self.env.user.partner_id
-            if not channel.channel_member_ids.filtered(
-                lambda member: member.partner_id == partner
+            user = self.env.user
+            gateway = channel.sudo().gateway_id
+            if (
+                not user.has_group("mail_gateway.gateway_user")
+                or user not in gateway.member_ids
             ):
-                channel.add_members(
-                    partner_ids=[partner.id], post_joined_message=False
+                raise AccessError(_("You are not allowed to join this WhatsApp conversation."))
+            if not channel.sudo().channel_member_ids.filtered(
+                lambda member: member.partner_id == user.partner_id
+            ):
+                # The user is authorized by the gateway, but is not a channel
+                # member yet, so the regular channel access check cannot apply.
+                channel.sudo().add_members(
+                    partner_ids=[user.partner_id.id], post_joined_message=False
                 )
