@@ -41,7 +41,8 @@ class ResPartner(models.Model):
             limit=1,
         )
         if mapping:
-            token = mapping.gateway_token
+            if mapping.gateway_token != token:
+                mapping.gateway_token = token
         else:
             mapping = Mapping.create(
                 {

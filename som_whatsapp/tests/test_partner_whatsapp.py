@@ -46,6 +46,21 @@ class TestPartnerWhatsapp(TransactionCase):
         self.assertEqual(action["tag"], "mail.action_discuss")
         self.assertIn(self.other_operator.partner_id, channel.channel_member_ids.partner_id)
 
+    def test_phone_change_updates_channel_destination(self):
+        channel = self.partner._whatsapp_get_channel("mobile", self.gateway)
+        self.partner.mobile = "+34600000001"
+
+        self.partner._whatsapp_get_channel("mobile", self.gateway)
+
+        mapping = self.env["res.partner.gateway.channel"].search(
+            [
+                ("partner_id", "=", self.partner.id),
+                ("gateway_id", "=", self.gateway.id),
+            ]
+        )
+        self.assertEqual(mapping.gateway_token, "34600000001")
+        self.assertEqual(channel.gateway_channel_token, "34600000001")
+
     def test_lead_action_opens_partner_channel(self):
         channel = self.partner._whatsapp_get_channel("mobile", self.gateway)
         lead = self.env["crm.lead"].create(
