@@ -55,6 +55,14 @@ class TestPartnerWhatsapp(TransactionCase):
         self.assertIn(self.other_operator.partner_id, channel.channel_member_ids.partner_id)
         self.assertFalse(channel._som_whatsapp_is_authorized_operator(self.other_operator))
 
+    def test_leave_unsubscribes_operator_from_partner_channel(self):
+        channel = self.partner._whatsapp_get_channel("mobile", self.gateway)
+        self.partner.with_user(self.other_operator).action_open_whatsapp_channel()
+
+        channel.with_user(self.other_operator).execute_command_leave()
+
+        self.assertNotIn(self.other_operator.partner_id, channel.channel_member_ids.partner_id)
+
     def test_partner_action_joins_operator_on_all_gateway_channels(self):
         first_channel = self.partner._whatsapp_get_channel("mobile", self.gateway)
         second_gateway = self.env["mail.gateway"].create(

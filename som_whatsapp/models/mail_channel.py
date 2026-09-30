@@ -39,3 +39,13 @@ class MailChannel(models.Model):
                 channel.sudo().add_members(
                     partner_ids=[user.partner_id.id], post_joined_message=False
                 )
+
+    def execute_command_leave(self, **kwargs):
+        for channel in self:
+            if (
+                channel.channel_type == "gateway"
+                and channel.gateway_id.gateway_type == "whatsapp"
+            ):
+                channel.action_unfollow()
+            else:
+                super(MailChannel, channel).execute_command_leave(**kwargs)
