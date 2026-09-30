@@ -119,7 +119,7 @@ class ResPartner(models.Model):
         if len(channels) == 1:
             return {
                 "type": "ir.actions.client",
-                "tag": "mail.action_discuss",
+                "tag": "som_whatsapp.action_discuss",
                 "context": {"active_id": "mail.channel_%s" % channels.id},
             }
         return {

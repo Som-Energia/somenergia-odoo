@@ -44,7 +44,7 @@ class TestPartnerWhatsapp(TransactionCase):
 
         action = self.partner.with_user(self.other_operator).action_open_whatsapp_channel()
 
-        self.assertEqual(action["tag"], "mail.action_discuss")
+        self.assertEqual(action["tag"], "som_whatsapp.action_discuss")
         self.assertIn(self.other_operator.partner_id, channel.channel_member_ids.partner_id)
 
     def test_removed_gateway_operator_no_longer_receives_updates(self):

@@ -11,5 +11,10 @@
         "views/crm_lead_views.xml",
         "views/res_partner_views.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "som_whatsapp/static/src/discuss/whatsapp_discuss_container.js",
+        ],
+    },
     "installable": True,
 }

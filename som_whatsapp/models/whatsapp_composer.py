@@ -23,6 +23,6 @@ class WhatsappComposer(models.TransientModel):
         channel._som_whatsapp_join_current_user()
         return {
             "type": "ir.actions.client",
-            "tag": "mail.action_discuss",
+            "tag": "som_whatsapp.action_discuss",
             "context": {"active_id": "mail.channel_%s" % channel.id},
         }
