@@ -120,7 +120,7 @@ class ResPartner(models.Model):
             return {
                 "type": "ir.actions.client",
                 "tag": "mail.action_discuss",
-                "params": {"default_active_id": "mail.channel_%s" % channels.id},
+                "context": {"active_id": "mail.channel_%s" % channels.id},
             }
         return {
             "type": "ir.actions.act_window",

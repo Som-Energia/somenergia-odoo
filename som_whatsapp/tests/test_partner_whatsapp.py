@@ -112,7 +112,7 @@ class TestPartnerWhatsapp(TransactionCase):
         action = lead.with_user(self.other_operator).action_open_whatsapp_channel()
 
         self.assertEqual(
-            action["params"]["default_active_id"], "mail.channel_%s" % channel.id
+            action["context"]["active_id"], "mail.channel_%s" % channel.id
         )
         self.assertIn(self.other_operator.partner_id, channel.channel_member_ids.partner_id)
 
