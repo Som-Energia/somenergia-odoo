@@ -47,6 +47,14 @@ class TestPartnerWhatsapp(TransactionCase):
         self.assertEqual(action["tag"], "mail.action_discuss")
         self.assertIn(self.other_operator.partner_id, channel.channel_member_ids.partner_id)
 
+    def test_removed_gateway_operator_no_longer_receives_updates(self):
+        channel = self.partner._whatsapp_get_channel("mobile", self.gateway)
+        self.partner.with_user(self.other_operator).action_open_whatsapp_channel()
+        self.gateway.member_ids -= self.other_operator
+
+        self.assertIn(self.other_operator.partner_id, channel.channel_member_ids.partner_id)
+        self.assertFalse(channel._som_whatsapp_is_authorized_operator(self.other_operator))
+
     def test_partner_action_joins_operator_on_all_gateway_channels(self):
         first_channel = self.partner._whatsapp_get_channel("mobile", self.gateway)
         second_gateway = self.env["mail.gateway"].create(

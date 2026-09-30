@@ -21,14 +21,15 @@ class MailChannel(models.Model):
         ),
     ]
 
+    def _som_whatsapp_is_authorized_operator(self, user):
+        self.ensure_one()
+        gateway = self.sudo().gateway_id
+        return user.has_group("mail_gateway.gateway_user") and user in gateway.member_ids
+
     def _som_whatsapp_join_current_user(self):
         for channel in self:
             user = self.env.user
-            gateway = channel.sudo().gateway_id
-            if (
-                not user.has_group("mail_gateway.gateway_user")
-                or user not in gateway.member_ids
-            ):
+            if not channel._som_whatsapp_is_authorized_operator(user):
                 raise AccessError(_("You are not allowed to join this WhatsApp conversation."))
             if not channel.sudo().channel_member_ids.filtered(
                 lambda member: member.partner_id == user.partner_id

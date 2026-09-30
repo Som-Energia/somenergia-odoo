@@ -14,5 +14,11 @@ class IrWebsocket(models.AbstractModel):
             for channel in channels
             if getattr(channel, "_name", None) != "mail.channel"
             or channel.channel_type != "gateway"
-            or channel.id in member_channel_ids
+            or (
+                channel.id in member_channel_ids
+                and (
+                    channel.sudo().gateway_id.gateway_type != "whatsapp"
+                    or channel._som_whatsapp_is_authorized_operator(self.env.user)
+                )
+            )
         ]
