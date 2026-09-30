@@ -47,6 +47,26 @@ class TestPartnerWhatsapp(TransactionCase):
         self.assertEqual(action["tag"], "mail.action_discuss")
         self.assertIn(self.other_operator.partner_id, channel.channel_member_ids.partner_id)
 
+    def test_partner_action_joins_operator_on_all_gateway_channels(self):
+        first_channel = self.partner._whatsapp_get_channel("mobile", self.gateway)
+        second_gateway = self.env["mail.gateway"].create(
+            {
+                "name": "Second WhatsApp",
+                "gateway_type": "whatsapp",
+                "token": "second-test-token",
+                "member_ids": [(4, self.other_operator.id)],
+            }
+        )
+        second_channel = self.partner._whatsapp_get_channel(
+            "mobile", second_gateway
+        )
+
+        action = self.partner.with_user(self.other_operator).action_open_whatsapp_channel()
+
+        self.assertEqual(action["res_model"], "mail.channel")
+        self.assertIn(self.other_operator.partner_id, first_channel.channel_member_ids.partner_id)
+        self.assertIn(self.other_operator.partner_id, second_channel.channel_member_ids.partner_id)
+
     def test_phone_change_updates_channel_destination(self):
         channel = self.partner._whatsapp_get_channel("mobile", self.gateway)
         self.partner.mobile = "+34600000001"

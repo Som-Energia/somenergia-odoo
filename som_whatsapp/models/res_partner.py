@@ -115,8 +115,8 @@ class ResPartner(models.Model):
         )
         if not channels:
             raise AccessError(_("You are not allowed to open this WhatsApp conversation."))
+        channels.with_user(self.env.user)._som_whatsapp_join_current_user()
         if len(channels) == 1:
-            channels.with_user(self.env.user)._som_whatsapp_join_current_user()
             return {
                 "type": "ir.actions.client",
                 "tag": "mail.action_discuss",
