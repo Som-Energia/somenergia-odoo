@@ -176,7 +176,10 @@ class TestErpLeadSync(TransactionCase):
             self.assertIn(('state', '=', 'done'), domain)
             self.assertIn(('polissa_id', '!=', False), domain)
 
-    def test_get_erp_contract_date_domain_uses_configured_margin(self):
+    @patch('odoo.addons.som_crm.models.crm_lead.fields.Date.today')
+    def test_get_erp_contract_date_domain_uses_configured_margin(self, mock_today):
+        current_date = fields.Date.from_string('2026-10-01')
+        mock_today.return_value = current_date
         self.env['ir.config_parameter'].sudo().set_param(
             'som_crm_erp_contract_match_days', 3
         )
@@ -185,14 +188,17 @@ class TestErpLeadSync(TransactionCase):
 
         self.assertEqual(domain, [
             ('create_date', '>=', fields.Datetime.to_string(
-                self.lead_to_find_by_cups.create_date - timedelta(days=3)
+                fields.Datetime.to_datetime(current_date - timedelta(days=3))
             )),
-            ('create_date', '<=', fields.Datetime.to_string(
-                self.lead_to_find_by_cups.create_date + timedelta(days=3)
+            ('create_date', '<', fields.Datetime.to_string(
+                fields.Datetime.to_datetime(current_date + timedelta(days=4))
             )),
         ])
 
-    def test_get_erp_contract_date_domain_normalizes_negative_margin(self):
+    @patch('odoo.addons.som_crm.models.crm_lead.fields.Date.today')
+    def test_get_erp_contract_date_domain_normalizes_negative_margin(self, mock_today):
+        current_date = fields.Date.from_string('2026-10-01')
+        mock_today.return_value = current_date
         self.env['ir.config_parameter'].sudo().set_param(
             'som_crm_erp_contract_match_days', -3
         )
@@ -201,10 +207,10 @@ class TestErpLeadSync(TransactionCase):
 
         self.assertEqual(domain, [
             ('create_date', '>=', fields.Datetime.to_string(
-                self.lead_to_find_by_cups.create_date
+                fields.Datetime.to_datetime(current_date)
             )),
-            ('create_date', '<=', fields.Datetime.to_string(
-                self.lead_to_find_by_cups.create_date
+            ('create_date', '<', fields.Datetime.to_string(
+                fields.Datetime.to_datetime(current_date + timedelta(days=1))
             )),
         ])
 

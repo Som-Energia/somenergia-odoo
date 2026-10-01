@@ -402,12 +402,17 @@ class Lead(models.Model):
         margin_days = max(0, int(self.env['ir.config_parameter'].sudo().get_param(
             'som_crm_erp_contract_match_days', 10
         )))
+        current_date = fields.Date.today()
         return [
             ('create_date', '>=', fields.Datetime.to_string(
-                self.create_date - timedelta(days=margin_days)
+                fields.Datetime.to_datetime(
+                    current_date - timedelta(days=margin_days)
+                )
             )),
-            ('create_date', '<=', fields.Datetime.to_string(
-                self.create_date + timedelta(days=margin_days)
+            ('create_date', '<', fields.Datetime.to_string(
+                fields.Datetime.to_datetime(
+                    current_date + timedelta(days=margin_days + 1)
+                )
             )),
         ]
 
