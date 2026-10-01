@@ -47,7 +47,7 @@
                     <div class="o_setting_right_pane">
                         <label for="som_crm_erp_contract_match_days" />
                         <div class="text-muted">
-                            Dies abans o després de la creació de l'oportunitat per cercar contractacions a l'ERP
+                            Dies abans o després de hui per cercar contractacions a l'ERP
                         </div>
                     </div>
                 </div>
