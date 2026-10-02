@@ -5,7 +5,7 @@ description: >
   Trigger: Quan necessites fer un commit de codi.
 metadata:
   author: oriol, pau
-  version: "1.2"
+  version: "1.3"
 ---
 
 ## When to Use
@@ -69,12 +69,17 @@ en lloc d'inventar o redefinir-ne el significat.
 ```bash
 git status --short
 git diff
+git diff --cached
 ```
 
 Identifica els fitxers de l'abast acordat. No descartis ni incloguis canvis
-aliens, i no utilitzis staging global.
+aliens, i no utilitzis staging global. Si ja hi ha canvis preparats, atura't i
+demana confirmació abans de continuar: no modifiquis l'índex ni desfés la
+selecció preparada per l'usuari.
 
 ### Pas 2: Preparar fitxers explícits
+
+Si cada fitxer només conté canvis de la tasca, prepara'ls explícitament:
 
 ```bash
 git add <fitxer> [<fitxer> ...]
@@ -82,9 +87,17 @@ git diff --cached
 git diff --cached --check
 ```
 
-Comprova que el diff preparat només conté els fitxers i canvis de l'abast. Si
-hi ha un fitxer aliè preparat, retira només aquell fitxer de l'staging amb
-`git restore --staged <fitxer>` i conserva els seus canvis locals.
+Si un fitxer barreja canvis de la tasca i canvis aliens, no preparis el fitxer
+complet. Només amb la confirmació de l'usuari, selecciona els hunks de la tasca:
+
+```bash
+git add -p -- <fitxer>
+```
+
+Revisa cada hunk abans d'acceptar-lo. Si els canvis no es poden separar amb
+seguretat per hunks, atura't. Comprova sempre que el diff preparat només conté
+canvis de l'abast; si hi detectes canvis aliens, atura't i demana confirmació
+sense modificar l'índex.
 
 ### Pas 3: Executar les comprovacions disponibles
 
@@ -152,7 +165,9 @@ git commit -m "🔨 migrate contract status values"
 | Error | Causa | Solució |
 |-------|-------|----------|
 | Nothing to commit | No hi ha fitxers preparats | Revisa `git status --short` i prepara fitxers explícits amb `git add <fitxer>` |
-| Unrelated files staged | S'han preparat canvis fora de l'abast | Retira cada fitxer aliè amb `git restore --staged <fitxer>` i revisa `git diff --cached` |
+| Existing staged changes | L'usuari ja havia preparat canvis | Atura't, preserva l'índex i demana confirmació abans de continuar |
+| Mixed task and unrelated edits | Un fitxer combina canvis de diferents abasts | Amb confirmació, usa `git add -p -- <fitxer>`; si no es poden separar amb seguretat, atura't |
+| Unrelated changes staged | El diff preparat conté canvis fora de l'abast | Atura't i demana confirmació sense modificar l'índex |
 | Commit message too long | Descripció massa llarga | Redueix-la a un màxim de 72 caràcters |
 | No emoji | Falta l'emoji inicial | Utilitza un emoji definit a gitmoji.dev |
 
