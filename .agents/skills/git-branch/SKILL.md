@@ -67,13 +67,27 @@ es pot determinar de manera inequívoca, demana confirmació: no assumeixis
 ### Pas 3: Actualitzar la branca base
 
 ```bash
-git fetch origin
-git switch <base_branch>
-git pull --ff-only origin <base_branch>
+base_branch="<base_branch>"
+
+if git fetch origin &&
+    git switch "$base_branch" &&
+    current_branch="$(git branch --show-current)" &&
+    [ "$current_branch" = "$base_branch" ] &&
+    git pull --ff-only origin "$base_branch"
+then
+    printf 'Branca base actualitzada: %s\n' "$base_branch"
+else
+    printf 'No s’ha pogut actualitzar la branca base: %s\n' "$base_branch" >&2
+    exit 1
+fi
 ```
 
-`--ff-only` evita crear un merge accidental. Si l'actualització no pot avançar
-amb fast-forward, atura't i revisa l'historial; no forcis el pull.
+La cadena condicional no depèn de `set -e`: si `git switch` falla, no executa
+el `pull`. Abans del `pull`, també comprova que `git branch --show-current`
+coincideixi exactament amb la base esperada. Qualsevol error o discrepància en
+aquest bloc interromp l'actualització. `--ff-only` evita crear un merge
+accidental; si l'actualització no pot avançar amb fast-forward, atura't i
+revisa l'historial, i no forcis el pull.
 
 ### Pas 4: Crear la branca nova
 

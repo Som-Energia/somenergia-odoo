@@ -31,9 +31,12 @@ una skill s'ha de reflectir en aquest resum dins del mateix canvi.
   sense confirmació.
 - Detectar o validar la branca base amb `git remote show origin`; no assumir
   `main` o `master` si no és inequívoca.
-- Actualitzar la base amb `git fetch origin`, `git switch <base_branch>` i
-  `git pull --ff-only origin <base_branch>`. Si no es pot fer fast-forward,
-  aturar-se i revisar l'historial sense forçar el pull.
+- Actualitzar la base amb una cadena condicional de `git fetch origin`,
+  `git switch <base_branch>`, verificació exacta de
+  `git branch --show-current` i `git pull --ff-only origin <base_branch>`. No
+  executar el pull si falla el switch o la verificació; qualsevol error del
+  bloc interromp l'actualització. Si no es pot fer fast-forward, aturar-se i
+  revisar l'historial sense forçar el pull.
 - Crear la branca amb `git switch -c <TYPE>_<description>` i publicar-la amb
   `git push -u origin <branch_name>`.
 
