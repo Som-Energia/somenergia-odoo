@@ -39,13 +39,25 @@ una skill s'ha de reflectir en aquest resum dins del mateix canvi.
 
 ### `git-pr`
 
-- Abans de crear-la: revisar `git status` i `git log main..HEAD --oneline`, i
-  publicar la branca.
-- Descripció en català i amb totes les seccions de la plantilla plenes:
-  Objectiu, Targeta o incidència, Comportament antic, Comportament nou i
-  Comprovacions.
-- Marcar amb `[x]` només les comprovacions que apliquen i usar un títol clar i
-  descriptiu.
+- La política canònica és [`.github/pull_request_template.md`](../.github/pull_request_template.md):
+  la skill l'ha de llegir i seguir sense inventar requisits.
+- Confirmar el remot i la branca base acordada o, si no s'ha indicat, detectar
+  la branca per defecte amb GitHub; actualitzar `origin` abans de comparar.
+- Abans de publicar: exigir un estat net i revisar commits, fitxers, estadística
+  i diff complet contra `origin/<base>` amb la comparació correcta; executar
+  `git diff --check origin/<base>...HEAD` i aturar-se davant canvis aliens.
+- Executar només tests i checks disponibles i rellevants. Marcar amb `[x]`
+  exclusivament els executats amb èxit, i enumerar explícitament els no
+  executats o no aplicables amb el motiu.
+- Títol clar i descriptiu en català, sense exigir emoji ni reproduir el nom o
+  format de la branca; cos en català amb totes les seccions plenes.
+- Enllaçar OpenProject quan existeixi una targeta; si no, enllaçar la incidència
+  de GitHub corresponent.
+- Afegir només etiquetes existents adequades a la naturalesa del canvi i
+  autoassignar la PR a l'autor que l'obre.
+- Publicar després de validar; crear la PR amb la base explícita o actualitzar
+  l'existent per a la branca, i verificar-ne al final base, commits, fitxers i
+  metadades.
 
 ### `odoo-test`
 
