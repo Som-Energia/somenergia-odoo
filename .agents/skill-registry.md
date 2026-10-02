@@ -1,61 +1,70 @@
 # Skill Registry
 
-**Delegator use only.** Any agent that launches sub-agents reads this registry to resolve compact rules, then injects them directly into sub-agent prompts. Sub-agents do NOT read this registry or individual SKILL.md files.
+Aquest registre permet descobrir les skills disponibles i injectar-ne les
+regles compactes quan es delega feina. És independent de l'eina d'agents: la
+font completa de cada comportament és el `SKILL.md` indicat.
 
-## User Skills
-
-> **Configuració inicial** (executar una vegada):
-> ```bash
-> cd $HOME/.config/opencode/skills
-> REPO_PATH="/path/to/somenergia-odoo"  # ajusta aquesta ruta al teu entorn
-> ln -s "$REPO_PATH/.agents/skills" somenergia-odoo
-> ```
-> OpenCode cercarà `.agents/skills/` dins del projecte.
+## Skills disponibles
 
 | Trigger | Skill | Path |
-|---------|-------|------|
-| Quan necessites crear una branca nova per treballar | git-branch | .agents/skills/git-branch/SKILL.md |
-| Quan necessites fer un commit de codi | git-commit | .agents/skills/git-commit/SKILL.md |
-| Quan necessites crear una Pull Request | git-pr | .agents/skills/git-pr/SKILL.md |
-| Quan necessites executar tests d'Odoo d'un mòdul o per tags | odoo-test | .agents/skills/odoo-test/SKILL.md |
+|---|---|---|
+| Quan cal crear una branca nova | `git-branch` | [`.agents/skills/git-branch/SKILL.md`](skills/git-branch/SKILL.md) |
+| Quan cal fer un commit | `git-commit` | [`.agents/skills/git-commit/SKILL.md`](skills/git-commit/SKILL.md) |
+| Quan cal crear una pull request | `git-pr` | [`.agents/skills/git-pr/SKILL.md`](skills/git-pr/SKILL.md) |
+| Quan cal executar tests d'un mòdul Odoo o filtrar-los per tags | `odoo-test` | [`.agents/skills/odoo-test/SKILL.md`](skills/odoo-test/SKILL.md) |
 
-## Compact Rules
+## Compact rules
 
-### git-branch
-- Format de branca: `<type>_<description>` (ex: `ADD_user_registration`)
-- Tipus: IMP_ (millora), FIX_ (bug), MOD_ (canvi), ADD_ (nova), REF_ (refactor), TEST_, DOCS_, CI_
-- Descripció: 2-3 paraules en anglès, lowercase, max 50 caràcters
-- Separador: guió baix entre tipus i descripció
-- Sempre fer `git fetch origin && git pull origin main` abans de crear branca
+Les regles següents resumeixen l'estat actual de les skills. Qualsevol canvi a
+una skill s'ha de reflectir en aquest resum dins del mateix canvi.
 
-### git-commit
-- Format: `<emoji> <description>` (ex: `✨ add user auth`)
-- Emoji obligatori seguit d'un espai
-- Descripció en anglès, max 72 caràcters, imperatiu
-- No utilitzar prefixos `feat:`, `fix:`, etc. (el tipus ja ve per l'emoji)
-- Context: utilitzar per guardar canvis implementats
+### `git-branch`
 
-### git-pr
-- PLANTILLA OBLIGATÒRIA: Omplir totes les seccions (Objectiu, Targeta, Comportament antic, Comportament nou, Comprovacions)
-- Totes les sections: Omple-les totes, no deixis espais buits
-- Idioma: Català per a la descripció
-- Títols: Clar i descriptiu
+- Format: `<type>_<description>`; tipus admesos: `IMP_`, `FIX_`, `MOD_`,
+  `ADD_`, `REF_`, `TEST_`, `DOCS_` i `CI_`.
+- Descripció de 2 o 3 paraules en anglès i minúscules, amb un màxim de 50
+  caràcters; la skill indica guions dins de la descripció si cal.
+- Abans de crear-la: `git fetch origin` i `git pull origin main`.
+- Crear-la amb `git checkout -b <type>_<description>` i publicar-la amb
+  `git push -u origin <branch_name>`.
 
-### odoo-test
-- Activar entorn: `pyenv activate odoo160`
-- Comanda base: `ODOO_ROOT=/path/to/odoo160 && python "$ODOO_ROOT/src/core/odoo-bin" -c "$ODOO_ROOT/conf/odoo_som.conf" --stop-after-init --log-level=test -d <database> -u <module> --test-enable`
-- Filtrat: `--test-tags "<spec1>,<spec2>"`
-- Sintaxi de filtre: `[-][tag][/module][:class][.method]`
+### `git-commit`
 
-## Project Conventions
+- Format obligatori: `<emoji> <description>` segons
+  [gitmoji.dev](https://gitmoji.dev/), sense prefix textual com `feat:` o
+  `fix:`.
+- Descripció en anglès, imperativa i de 72 caràcters com a màxim.
+- Revisar `git status` i `git diff`, seleccionar els fitxers amb `git add` i
+  crear el commit amb `git commit -m "<emoji> <description>"`.
 
-| File | Path | Notes |
-|------|------|-------|
-| AGENTS.md | AGENTS.md | Index — references files below |
-| .github/docs/estil.md | .github/docs/estil.md | Estil de codi |
-| .github/docs/evitar.md | .github/docs/evitar.md | Evitar patrons |
-| .github/docs/arquitectura.md | .github/docs/arquitectura.md | Arquitectura |
-| .github/docs/desenvolupament.md | .github/docs/desenvolupament.md | Desenvolupament |
-| pull_request_template.md | pull_request_template.md | Plantilla PR |
+### `git-pr`
 
-Read the convention files listed above for project-specific patterns and rules. All referenced paths have been extracted — no need to read index files to discover more.
+- Abans de crear-la: revisar `git status` i `git log main..HEAD --oneline`, i
+  publicar la branca.
+- Descripció en català i amb totes les seccions de la plantilla plenes:
+  Objectiu, Targeta o incidència, Comportament antic, Comportament nou i
+  Comprovacions.
+- Marcar amb `[x]` només les comprovacions que apliquen i usar un títol clar i
+  descriptiu.
+
+### `odoo-test`
+
+- Activar l'entorn amb `pyenv activate odoo160` i definir `ODOO_ROOT` sense
+  fixar rutes personals al repositori.
+- Executar `python "$ODOO_ROOT/src/core/odoo-bin"` amb la configuració local,
+  `--stop-after-init`, `--log-level=test`, la base de dades, `-u <module>` i
+  `--test-enable`.
+- Filtrar, quan calgui, amb `--test-tags "<spec1>,<spec2>"`; cada filtre té el
+  format `[-][tag][/module][:class][.method]`.
+
+## Convencions del projecte
+
+| Document | Path | Contingut |
+|---|---|---|
+| Índex d'agents | [`AGENTS.md`](../AGENTS.md) | Punt d'entrada breu |
+| Arquitectura | [`docs/arquitectura.md`](../docs/arquitectura.md) | Estructura i patrons d'Odoo 16 |
+| Desenvolupament | [`docs/desenvolupament.md`](../docs/desenvolupament.md) | Estil, pràctiques a evitar i validació |
+| Sincronització | [`docs/sincronitzacio-skills.md`](../docs/sincronitzacio-skills.md) | Divergències i control de skills comunes |
+
+La documentació tècnica canònica és a `docs/`. `.github/` es reserva per a
+configuració consumida directament per GitHub.
