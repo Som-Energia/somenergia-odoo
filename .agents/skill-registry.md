@@ -20,12 +20,21 @@ una skill s'ha de reflectir en aquest resum dins del mateix canvi.
 
 ### `git-branch`
 
-- Format: `<type>_<description>`; tipus admesos: `IMP_`, `FIX_`, `MOD_`,
-  `ADD_`, `REF_`, `TEST_`, `DOCS_` i `CI_`.
-- Descripció de 2 o 3 paraules en anglès i minúscules, amb un màxim de 50
-  caràcters; la skill indica guions dins de la descripció si cal.
-- Abans de crear-la: `git fetch origin` i `git pull origin main`.
-- Crear-la amb `git checkout -b <type>_<description>` i publicar-la amb
+- Format: `<TYPE>_<description>`; tipus admesos: `IMP`, `FIX`, `MOD`, `ADD`,
+  `REF`, `TEST`, `DOCS` i `CI`.
+- Descripció de 2 o 3 paraules en anglès i minúscules. El tipus, la descripció
+  i totes les paraules de la descripció se separen amb guions baixos (`_`); el
+  nom complet té un màxim de 50 caràcters.
+- Abans de canviar de branca, revisar canvis preparats, no preparats i no
+  versionats amb `git status --short --branch`. Si n'hi ha, aturar-se i
+  confirmar-ne el tractament; no descartar-los, fer `stash` ni arrossegar-los
+  sense confirmació.
+- Detectar o validar la branca base amb `git remote show origin`; no assumir
+  `main` o `master` si no és inequívoca.
+- Actualitzar la base amb `git fetch origin`, `git switch <base_branch>` i
+  `git pull --ff-only origin <base_branch>`. Si no es pot fer fast-forward,
+  aturar-se i revisar l'historial sense forçar el pull.
+- Crear la branca amb `git switch -c <TYPE>_<description>` i publicar-la amb
   `git push -u origin <branch_name>`.
 
 ### `git-commit`
