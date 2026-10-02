@@ -53,11 +53,12 @@ una skill s'ha de reflectir en aquest resum dins del mateix canvi.
   format de la branca; cos en català amb totes les seccions plenes.
 - Enllaçar OpenProject quan existeixi una targeta; si no, enllaçar la incidència
   de GitHub corresponent.
-- Afegir només etiquetes existents adequades a la naturalesa del canvi i
-  autoassignar la PR a l'autor que l'obre.
-- Publicar després de validar; crear la PR amb la base explícita o actualitzar
-  l'existent per a la branca, i verificar-ne al final base, commits, fitxers i
-  metadades.
+- Afegir una etiqueta només si n'existeix una d'adequada; altrament, ometre
+  l'opció d'etiqueta. Autoassignar la PR a l'autor que l'obre.
+- Publicar després de validar; cercar només PRs obertes i actualitzar-ne una
+  únicament si el head coincideix exactament en owner, repositori i branca. Si
+  no hi ha coincidència exacta, crear una PR nova amb la base explícita.
+- Verificar al final base, commits, fitxers i metadades.
 
 ### `odoo-test`
 
