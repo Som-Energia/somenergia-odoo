@@ -31,11 +31,20 @@ una skill s'ha de reflectir en aquest resum dins del mateix canvi.
 ### `git-commit`
 
 - Format obligatori: `<emoji> <description>` segons
-  [gitmoji.dev](https://gitmoji.dev/), sense prefix textual com `feat:` o
-  `fix:`.
+  [gitmoji.dev](https://gitmoji.dev/), font canònica del significat dels
+  emojis, sense prefix textual com `feat:` o `fix:`.
 - Descripció en anglès, imperativa i de 72 caràcters com a màxim.
-- Revisar `git status` i `git diff`, seleccionar els fitxers amb `git add` i
-  crear el commit amb `git commit -m "<emoji> <description>"`.
+- Revisar `git status --short` i `git diff`; no descartar ni incloure canvis
+  aliens i no utilitzar staging global.
+- Preparar explícitament només els fitxers de l'abast amb
+  `git add <fitxer> [<fitxer> ...]`, i revisar `git diff --cached` i
+  `git diff --cached --check` abans del commit.
+- Executar només comprovacions aplicables configurades realment al repositori;
+  no inventar ordres ni afirmar que una comprovació no executada ha passat.
+- Crear el commit amb `git commit -m "<emoji> <description>"` i verificar-lo
+  amb `git show --stat --oneline HEAD` i `git status --short`.
+- Retirar de l'staging cada fitxer aliè amb `git restore --staged <fitxer>`,
+  sense descartar-ne els canvis locals.
 
 ### `git-pr`
 
