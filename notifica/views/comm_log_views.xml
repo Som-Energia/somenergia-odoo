@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_comm_log_search" model="ir.ui.view">
+        <field name="name">comm.log.search</field>
+        <field name="model">comm.log</field>
+        <field name="arch" type="xml">
+            <search string="Search Communications">
+                <field name="partner_id"/>
+                <field name="subject"/>
+                <field name="source_type"/>
+                <field name="origin_app"/>
+                <field name="status"/>
+                <separator/>
+                <filter name="filter_internal"
+                        string="Internal"
+                        domain="[('source_type', '=', 'internal')]"/>
+                <filter name="filter_external"
+                        string="External"
+                        domain="[('source_type', '=', 'external')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_source_type"
+                            string="Source Type"
+                            context="{'group_by': 'source_type'}"/>
+                    <filter name="group_origin_app"
+                            string="Origin App"
+                            context="{'group_by': 'origin_app'}"/>
+                    <filter name="group_partner"
+                            string="Contact"
+                            context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_comm_log_tree" model="ir.ui.view">
+        <field name="name">comm.log.tree</field>
+        <field name="model">comm.log</field>
+        <field name="arch" type="xml">
+            <tree string="Communications" default_order="date desc">
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="subject"/>
+                <field name="source_type" widget="badge"/>
+                <field name="origin_app" widget="badge"/>
+                <field name="status" widget="badge"/>
+                <field name="recipient_email"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_comm_log_form" model="ir.ui.view">
+        <field name="name">comm.log.form</field>
+        <field name="model">comm.log</field>
+        <field name="arch" type="xml">
+            <form string="Communication">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_resend"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-paper-plane"
+                                string="Resend"
+                                groups="base.group_user"
+                                attrs="{'invisible': [('status', '!=', 'sent')]}"/>
+                        <button name="action_retry"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-repeat"
+                                string="Retry"
+                                groups="base.group_user"
+                                attrs="{'invisible': [('status', '!=', 'failed')]}"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="date"/>
+                            <field name="subject"/>
+                        </group>
+                        <group>
+                            <field name="source_type" widget="badge"/>
+                            <field name="origin_app" widget="badge"/>
+                            <field name="status" widget="badge"/>
+                            <field name="lang"/>
+                        </group>
+                    </group>
+                    <group string="Details">
+                        <group>
+                            <field name="author_email"/>
+                            <field name="recipient_email"/>
+                            <field name="external_ref_id"/>
+                            <field name="failure_reason" attrs="{'invisible': [('status', '!=', 'failed')]}"/>
+                        </group>
+                        <group>
+                            <field name="source_model"/>
+                            <field name="source_res_id"/>
+                            <field name="source_message_id"/>
+                        </group>
+                    </group>
+                    <field name="body_html" widget="html"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_comm_log" model="ir.actions.act_window">
+        <field name="name">Communications</field>
+        <field name="res_model">comm.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_comm_log_search"/>
+    </record>
+
+</odoo>
