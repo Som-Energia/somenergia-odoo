@@ -5,7 +5,7 @@ description: >
   Trigger: Quan necessites crear o actualitzar una Pull Request.
 metadata:
   author: oriol, pau
-  version: "1.2"
+  version: "1.3"
 ---
 
 ## When to Use
@@ -80,7 +80,7 @@ A la plantilla:
 
 ### Pas 4: Preparar metadades i descripció
 
-Consulta les etiquetes existents i cerca només PRs obertes. Identifica el
+Consulta les etiquetes disponibles i cerca només PRs obertes. Identifica el
 `owner`, el repositori i la branca que es publicaran a `origin`, i conserva
 únicament una coincidència exacta dels tres camps del head:
 
@@ -88,14 +88,22 @@ Consulta les etiquetes existents i cerca només PRs obertes. Identifica el
 gh label list
 gh api user --jq .login
 
+if ! command -v jq >/dev/null 2>&1; then
+  echo "Error: cal instal·lar jq per cercar la PR oberta." >&2
+  exit 1
+fi
+
 head_name_with_owner="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
 head_owner="${head_name_with_owner%%/*}"
 head_repository="${head_name_with_owner#*/}"
 head_branch="$(git branch --show-current)"
 
-open_prs="$(gh pr list --state open --limit 1000 \
-  --json number,state,headRefName,headRepository,headRepositoryOwner,url)"
-matching_prs="$(printf '%s' "$open_prs" | jq \
+if ! open_prs="$(gh pr list --state open --limit 1000 \
+  --json number,state,headRefName,headRepository,headRepositoryOwner,url)"; then
+  echo "Error: no s'han pogut consultar les PR obertes." >&2
+  exit 1
+fi
+if ! matching_prs="$(printf '%s' "$open_prs" | jq \
   --arg owner "$head_owner" \
   --arg repository "$head_repository" \
   --arg branch "$head_branch" \
@@ -104,14 +112,33 @@ matching_prs="$(printf '%s' "$open_prs" | jq \
     .headRepositoryOwner.login == $owner and
     .headRepository.name == $repository and
     .headRefName == $branch
-  )]')"
-printf '%s' "$matching_prs" | jq '{count: length, pullRequests: .}'
+  )]')"; then
+  echo "Error: no s'han pogut filtrar les PR obertes." >&2
+  exit 1
+fi
+if ! printf '%s' "$matching_prs" | jq '{count: length, pullRequests: .}'; then
+  echo "Error: no s'ha pogut validar el resultat de la cerca." >&2
+  exit 1
+fi
 ```
 
 Atura't si hi ha més d'una coincidència exacta. Si n'hi ha una, usa el seu
-`number` per editar-la. Si no n'hi ha cap, crea una PR nova: una PR tancada o
-fusionada, o una PR d'un altre fork amb el mateix nom de branca, no compta com
-a coincidència.
+`number` per editar-la i consulta'n les etiquetes actuals:
+
+```bash
+gh pr view "<numero>" --json labels
+```
+
+Compara-les amb les etiquetes disponibles que són adequades al canvi. Conserva
+les adequades, afegeix només les adequades que faltin i retira explícitament
+cada etiqueta que hagis confirmat que ha quedat obsoleta. Si no hi ha cap
+etiqueta adequada, retira igualment totes les obsoletes. No retiris una
+etiqueta si no pots confirmar que és aliena al canvi; si la titularitat o la
+finalitat és dubtosa, atura't i demana una decisió.
+
+Si no hi ha cap coincidència, crea una PR nova: una PR tancada o fusionada, o
+una PR d'un altre fork amb el mateix nom de branca, no compta com a
+coincidència.
 
 Segueix literalment la política de
 [`.github/pull_request_template.md`](../../../.github/pull_request_template.md):
@@ -122,8 +149,9 @@ Segueix literalment la política de
 3. Enllaça OpenProject quan hi hagi una targeta; si no, enllaça la incidència
    de GitHub corresponent.
 4. Si existeix una etiqueta adequada, afegeix-la; si no n'hi ha cap, omet
-   l'opció d'etiqueta. No usis una etiqueta només perquè la comanda en demani
-   una.
+   l'opció d'etiqueta. En editar, conserva les adequades i retira les obsoletes
+   confirmades, fins i tot si no queda cap etiqueta. No usis una etiqueta només
+   perquè la comanda en demani una ni retiris etiquetes de finalitat dubtosa.
 5. Assigna la PR a l'autor que l'obre.
 
 Copia la plantilla a un fitxer temporal fora del repositori, omple-la sense
@@ -162,8 +190,10 @@ gh pr edit "<numero>" \
   --body-file "/tmp/<cos-pr>.md"
 ```
 
-Si existeix una etiqueta adequada, afegeix
-`--add-label "<etiqueta-existent>"`; altrament, omet aquesta opció.
+Afegeix `--add-label "<etiqueta-adequada>"` per cada etiqueta adequada que
+falti i `--remove-label "<etiqueta-obsoleta>"` per cada etiqueta que hagis
+confirmat que ja no correspon. Si no hi ha cap etiqueta adequada, omet
+`--add-label`, però mantén totes les opcions `--remove-label` necessàries.
 
 Finalment, verifica que la PR apunta a la base correcta, conté només els
 commits i fitxers revisats i mostra les metadades esperades:
@@ -177,9 +207,11 @@ gh pr view --json url,title,body,baseRefName,headRefName,commits,files,labels,as
 | Error | Acció segura |
 |---|---|
 | La base o el remot no són els esperats | Atura't i confirma'ls abans de publicar. |
+| No hi ha `jq` o falla la consulta o el filtratge de PRs | Atura't; no interpretis l'error com si no hi hagués cap coincidència. |
 | Hi ha canvis locals o fitxers aliens | Atura't; no els descartis ni els incloguis. |
 | Una comprovació no s'ha executat | Indica-la com a no executada o no aplicable amb el motiu. |
-| No existeix cap etiqueta adequada | Omet `--label` o `--add-label`; no n'inventis cap. |
-| Hi ha una PR oberta amb el head exacte | Verifica owner, repositori i branca, i actualitza-la pel número. |
+| No existeix cap etiqueta adequada | En crear, omet `--label`. En editar, omet `--add-label` i retira amb `--remove-label` les etiquetes obsoletes confirmades. |
+| Hi ha una PR oberta amb el head exacte | Verifica owner, repositori i branca, compara'n les etiquetes actuals i actualitza-la pel número. |
+| La titularitat o finalitat d'una etiqueta és dubtosa | Atura't i demana una decisió abans de retirar-la. |
 | Només hi ha una PR tancada, fusionada o d'un altre fork | Crea una PR nova. |
 | Fallen validacions o `git diff --check` | Corregeix els errors abans de crear o actualitzar la PR. |

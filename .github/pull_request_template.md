@@ -6,7 +6,10 @@ Política de Pull Requests de Som Energia:
 - Enllaça la targeta d'OpenProject quan existeixi. Si no n'hi ha, enllaça la
   incidència de GitHub corresponent (per exemple, `Closes #123`).
 - Si existeix una etiqueta adequada, afegeix-la. Si no n'hi ha cap, no usis
-  cap etiqueta.
+  cap etiqueta. En editar una PR, compara les etiquetes actuals amb les
+  disponibles: conserva les adequades, afegeix només les adequades que faltin
+  i retira les obsoletes confirmades, encara que no en quedi cap. No retiris
+  una etiqueta de titularitat o finalitat dubtosa sense demanar una decisió.
 - Assigna la PR a la persona que l'obre.
 - Marca amb `[x]` exclusivament comprovacions executades amb èxit. Enumera de
   manera explícita les comprovacions no executades o no aplicables i el motiu.
