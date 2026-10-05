@@ -243,8 +243,11 @@ fitxers. Odoo només descobreix addons sota els directoris configurats a
 `addons_path`; després, `depends` en resol els noms tècnics. Per tant:
 
 - el directori arrel d'aquest repositori ha de ser una entrada d'`addons_path`;
-- totes les dependències externes del manifest han d'existir en alguna altra
-  entrada;
+- tots els addons tècnics declarats a `depends` han de ser descobribles via
+  `addons_path`; si provenen d'altres repositoris, aquests han de tenir-hi
+  l'entrada corresponent;
+- els paquets de `external_dependencies.python`, com `erppeek` a `som_crm`, han
+  d'estar disponibles a l'entorn Python d'Odoo, no a `addons_path`;
 - els noms tècnics han de ser únics en el conjunt carregat: no s'ha de confiar
   en l'ordre d'`addons_path` per mantenir dues implementacions amb el mateix
   nom;
