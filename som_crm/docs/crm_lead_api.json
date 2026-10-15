@@ -23,7 +23,7 @@
     "/api/crm/lead": {
       "post": {
         "summary": "Crear un lead al CRM",
-        "description": "Crea un nou lead al CRM d'Odoo. Tots els camps del cos de la petició\nsón opcionals. Si s'adjunten fitxers, el lead s'associa al canal de\nsimulació i s'envia la confirmació indicant que s'han rebut documents.\n",
+        "description": "Crea un nou lead al CRM d'Odoo. Tots els camps del cos de la petició\nsón opcionals. Si s'adjunten fitxers, el lead s'associa al canal de\nsimulació i s'envia la confirmació indicant que s'han rebut documents.\n\nTotes les dades dels exemples són fictícies. Els telèfons són valors il·lustratius i no corresponen a números de contacte vàlids.\n",
         "operationId": "createLead",
         "tags": [
           "Leads"
@@ -39,22 +39,22 @@
                 "sense_fitxers": {
                   "summary": "Lead bàsic sense fitxers",
                   "value": {
-                    "contact_name": "Maria Garcia",
-                    "email": "maria.garcia@example.com",
-                    "phone": "+34 612 345 678",
+                    "contact_name": "Contacte Exemple A",
+                    "email": "contacte.a@example.com",
+                    "phone": "+34 000 000 001",
                     "lang": "ca_ES",
-                    "url_origin": "https://www.somenergia.coop/ca/tarifes/?utm_source=google&utm_medium=cpc&utm_campaign=tarifes_2024",
+                    "url_origin": "https://example.invalid/ca/tarifes/?utm_source=google&utm_medium=cpc&utm_campaign=tarifes_2024",
                     "comments": "Interessada en tarifa per a comunitat de veïns"
                   }
                 },
                 "amb_fitxers": {
                   "summary": "Lead amb documents adjunts",
                   "value": {
-                    "contact_name": "Joan Puig",
-                    "email": "joan.puig@example.com",
-                    "phone": "+34 699 111 222",
+                    "contact_name": "Contacte Exemple B",
+                    "email": "contacte.b@example.com",
+                    "phone": "+34 000 000 002",
                     "lang": "es_ES",
-                    "url_origin": "https://www.somenergia.coop/es/simulacion/",
+                    "url_origin": "https://example.invalid/es/simulacion/",
                     "comments": "Adjunto factura per a simulació",
                     "files": [
                       {
@@ -89,13 +89,13 @@
                       "success": true,
                       "message": "Lead successfully created",
                       "lead_id": 123,
-                      "lead_name": "Maria Garcia",
+                      "lead_name": "Contacte Exemple A",
                       "lead_data": {
                         "id": 123,
-                        "name": "Maria Garcia",
-                        "contact_name": "Maria Garcia",
-                        "email_from": "maria.garcia@example.com",
-                        "phone": "+34612345678",
+                        "name": "Contacte Exemple A",
+                        "contact_name": "Contacte Exemple A",
+                        "email_from": "contacte.a@example.com",
+                        "phone": "+34000000001",
                         "create_date": "2026-05-27T10:00:00"
                       }
                     }
@@ -106,13 +106,13 @@
                       "success": true,
                       "message": "Lead successfully created",
                       "lead_id": 124,
-                      "lead_name": "Joan Puig",
+                      "lead_name": "Contacte Exemple B",
                       "lead_data": {
                         "id": 124,
-                        "name": "Joan Puig",
-                        "contact_name": "Joan Puig",
-                        "email_from": "joan.puig@example.com",
-                        "phone": "+34699111222",
+                        "name": "Contacte Exemple B",
+                        "contact_name": "Contacte Exemple B",
+                        "email_from": "contacte.b@example.com",
+                        "phone": "+34000000002",
                         "create_date": "2026-05-27T11:30:00"
                       },
                       "attachments": [
@@ -238,18 +238,18 @@
             "type": "string",
             "maxLength": 255,
             "description": "Nom complet del contacte. Es guarda en format Title Case (primera lletra de cada paraula en majúscula).\n",
-            "example": "Maria Garcia"
+            "example": "Contacte Exemple A"
           },
           "email": {
             "type": "string",
             "format": "email",
             "description": "Adreça de correu electrònic del contacte. Es normalitza a minúscules i s'eliminen espais als extrems.\n",
-            "example": "maria.garcia@example.com"
+            "example": "contacte.a@example.com"
           },
           "phone": {
             "type": "string",
             "description": "Número de telèfon del contacte. S'eliminen tots els espais abans de desar-lo.\n",
-            "example": "+34 612 345 678"
+            "example": "+34 000 000 001"
           },
           "lang": {
             "type": "string",
@@ -264,7 +264,7 @@
             "type": "string",
             "format": "uri",
             "description": "URL de la pàgina d'origen de la petició. Els paràmetres UTM (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`) s'extreuen automàticament i s'associen al lead.\n",
-            "example": "https://www.somenergia.coop/ca/tarifes/?utm_source=google&utm_medium=cpc&utm_campaign=tarifes_2024"
+            "example": "https://example.invalid/ca/tarifes/?utm_source=google&utm_medium=cpc&utm_campaign=tarifes_2024"
           },
           "comments": {
             "type": "string",
@@ -325,7 +325,7 @@
           "lead_name": {
             "type": "string",
             "description": "Nom del lead tal com s'ha creat.",
-            "example": "Maria Garcia"
+            "example": "Contacte Exemple A"
           },
           "lead_data": {
             "$ref": "#/components/schemas/LeadData"
@@ -348,25 +348,24 @@
           },
           "name": {
             "type": "string",
-            "example": "Maria Garcia"
+            "example": "Contacte Exemple A"
           },
           "contact_name": {
             "type": "string",
-            "example": "Maria Garcia"
+            "example": "Contacte Exemple A"
           },
           "email_from": {
             "type": "string",
             "format": "email",
-            "example": "maria.garcia@example.com"
+            "example": "contacte.a@example.com"
           },
           "phone": {
             "type": "string",
-            "example": "+34612345678"
+            "example": "+34000000001"
           },
           "create_date": {
             "type": "string",
-            "format": "date-time",
-            "description": "Data i hora de creació del lead en format ISO 8601 (UTC).",
+            "description": "Data i hora de creació del lead en format ISO 8601, expressada en UTC però sense sufix de zona horària (Z o +00:00). Cal interpretar el valor com a UTC, no com a hora local.",
             "example": "2026-05-27T10:00:00"
           }
         }
