@@ -253,11 +253,7 @@
           },
           "lang": {
             "type": "string",
-            "enum": [
-              "ca_ES",
-              "es_ES"
-            ],
-            "description": "Idioma preferit del contacte. Valors suportats: ca_ES i es_ES. Si s'envia un valor diferent, la peticio no falla i l'idioma no s'assigna.",
+            "description": "Idioma preferit del contacte. Valors suportats: `ca_ES` i `es_ES`. Si s'envia un valor diferent, la petició no falla i l'idioma no s'assigna.",
             "example": "ca_ES"
           },
           "url_origin": {
