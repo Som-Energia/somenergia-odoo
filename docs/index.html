@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ca">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>somenergia-odoo - API docs</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css" />
+    <style>
+      body {
+        margin: 0;
+        font-family: "Source Sans 3", "Segoe UI", sans-serif;
+        background: #f6f8fb;
+      }
+
+      header {
+        padding: 16px 20px;
+        background: #0e3a53;
+        color: #fff;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+
+      p {
+        margin: 6px 0 0;
+        opacity: 0.9;
+        font-size: 0.9rem;
+      }
+
+      .controls {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      label {
+        font-size: 0.9rem;
+      }
+
+      select {
+        min-width: 260px;
+        border: 1px solid #b4c5d1;
+        border-radius: 6px;
+        padding: 6px 8px;
+        font-size: 0.92rem;
+      }
+
+      #swagger-ui {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Som Energia API documentation</h1>
+      <p>Documentacio OpenAPI de consulta (sense execucio de crides)</p>
+      <div class="controls">
+        <label for="spec-select">Endpoint:</label>
+        <select id="spec-select"></select>
+      </div>
+    </header>
+    <div id="swagger-ui"></div>
+
+    <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
+    <script>
+      const SPECS = [
+        { label: "CRM - Create lead", file: "crm_lead_api.json" }
+      ];
+
+      const select = document.getElementById("spec-select");
+
+      function loadSpec(file) {
+        SwaggerUIBundle({
+          url: `./${file}`,
+          dom_id: "#swagger-ui",
+          deepLinking: true,
+          supportedSubmitMethods: []
+        });
+      }
+
+      function isValidSpec(file) {
+        return SPECS.some((spec) => spec.file === file);
+      }
+
+      function setQuerySpec(file) {
+        const params = new URLSearchParams(window.location.search);
+        params.set("spec", file);
+        const qs = params.toString();
+        const nextUrl = `${window.location.pathname}${qs ? `?${qs}` : ""}`;
+        window.history.replaceState({}, "", nextUrl);
+      }
+
+      SPECS.forEach((spec) => {
+        const option = document.createElement("option");
+        option.value = spec.file;
+        option.textContent = spec.label;
+        select.appendChild(option);
+      });
+
+      select.addEventListener("change", (event) => {
+        const file = event.target.value;
+        setQuerySpec(file);
+        loadSpec(file);
+      });
+
+      const requestedSpec = new URLSearchParams(window.location.search).get("spec");
+      const defaultSpec = SPECS[0].file;
+      const currentSpec = isValidSpec(requestedSpec) ? requestedSpec : defaultSpec;
+
+      select.value = currentSpec;
+      setQuerySpec(currentSpec);
+      loadSpec(currentSpec);
+    </script>
+  </body>
+</html>
