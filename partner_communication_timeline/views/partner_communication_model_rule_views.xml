@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_communication_model_rule_tree" model="ir.ui.view">
+        <field name="name">partner.communication.model.rule.tree</field>
+        <field name="model">partner.communication.model.rule</field>
+        <field name="arch" type="xml">
+            <tree string="Regles de timeline de comunicacions">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="partner_field_name"/>
+                <field name="include_child_contacts"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_partner_communication_model_rule_form" model="ir.ui.view">
+        <field name="name">partner.communication.model.rule.form</field>
+        <field name="model">partner.communication.model.rule</field>
+        <field name="arch" type="xml">
+            <form string="Regla de timeline de comunicacions">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="active"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="model_id"/>
+                            <field name="model_name" readonly="1"/>
+                            <field name="partner_field_name"/>
+                            <field name="include_child_contacts"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="description" nolabel="1" placeholder="Exemple: inclou registres project.task vinculats per partner_id."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_partner_communication_model_rule_search" model="ir.ui.view">
+        <field name="name">partner.communication.model.rule.search</field>
+        <field name="model">partner.communication.model.rule</field>
+        <field name="arch" type="xml">
+            <search string="Cerca regles de timeline de comunicacions">
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="partner_field_name"/>
+                <filter string="Actives" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Arxivades" name="inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Agrupar per">
+                    <filter string="Model" name="group_by_model" context="{'group_by': 'model_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_partner_communication_model_rule" model="ir.actions.act_window">
+        <field name="name">Regles de timeline de comunicacions</field>
+        <field name="res_model">partner.communication.model.rule</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_partner_communication_model_rule_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Afig models els missatges de chatter dels quals han dapareixer al timeline del contacte.
+            </p>
+            <p>
+                El camp de contacte seleccionat ha de ser un Many2one cap a Contacts.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_partner_communication_model_rule"
+              name="Timeline de comunicacions"
+              parent="contacts.res_partner_menu_config"
+              action="action_partner_communication_model_rule"
+              groups="base.group_system"
+              sequence="90"/>
+</odoo>

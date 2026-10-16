@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_comm_log_rule_tree" model="ir.ui.view">
+        <field name="name">comm.log.rule.tree</field>
+        <field name="model">comm.log.rule</field>
+        <field name="arch" type="xml">
+            <tree string="Capture Rules">
+                <field name="model_id"/>
+                <field name="partner_field_name"/>
+                <field name="include_child_contacts"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_comm_log_rule_form" model="ir.ui.view">
+        <field name="name">comm.log.rule.form</field>
+        <field name="model">comm.log.rule</field>
+        <field name="arch" type="xml">
+            <form string="Capture Rule">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="model_id"/>
+                            <field name="partner_field_name"/>
+                        </group>
+                        <group>
+                            <field name="include_child_contacts"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_comm_log_rule" model="ir.actions.act_window">
+        <field name="name">Capture Rules</field>
+        <field name="res_model">comm.log.rule</field>
+        <field name="view_mode">tree,form</field>
+        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+    <menuitem id="menu_comm_log_rule"
+              name="Capture Rules"
+              parent="contacts.res_partner_menu_config"
+              action="action_comm_log_rule"
+              sequence="30"
+              groups="base.group_system"/>
+
+</odoo>
