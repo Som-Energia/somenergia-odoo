@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import crm_lead
+from . import crm_lead_integration
+from . import crm_lead_intake
 from . import contact_time_slot
 from . import crm_phonecall
 from . import res_users

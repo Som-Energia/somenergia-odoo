@@ -6,6 +6,11 @@ from odoo.exceptions import ValidationError
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
+    som_crm_collaborator_intake_enabled = fields.Boolean(
+        string='Allow collaborator lead intake',
+        config_parameter='som_crm.collaborator_intake_enabled', default=False,
+    )
+
     som_crm_call_category_id = fields.Many2one(
         related='company_id.som_crm_call_category_id',
         readonly=False,

@@ -299,6 +299,7 @@ class Lead(models.Model):
                 self.env.context.get('default_fetchmail_server_id', False)):
             lead_id.do_opportunity_from_fetchmail()
         if (not (self.env.context.get('from_phonecall', False))
+                and not lead_id.som_lead_integration_id
                 and self.env.company.som_ff_auto_upcomming_activity):
             lead_id.create_upcomming_activity(force_today=True)
         return lead_id
@@ -940,8 +941,10 @@ class Lead(models.Model):
             next_activity_date = today + timedelta(days=self.stage_id.som_upcoming_activity_days)
         return next_activity_date
 
-    def create_upcomming_activity(self, activity_type_id = False, force_today=False):
+    def create_upcomming_activity(self, activity_type_id=False, force_today=False):
         self.ensure_one()
+        if self.som_lead_integration_id and not self.som_lead_integration_id.create_initial_activity:
+            return False
         won_stage_id = self.get_won_stage()
         if self.stage_id == won_stage_id:
             _logger.info(
@@ -1008,6 +1011,9 @@ class Lead(models.Model):
 
     def action_send_email_confirmation(self, invoice_received=False):
         self.ensure_one()
+
+        if self.som_lead_integration_id:
+            return False
 
         if not self.env.company.som_ff_send_lead_confirmation_email:
             _logger.warning(
@@ -1316,6 +1322,7 @@ class Lead(models.Model):
 
         leads = self.search([
             ('stage_id', '=', origin_stage.id),
+            ('som_lead_integration_id', '=', False),
             ('partner_id', '!=', False),
             ('email_from', '!=', False),
         ], limit=limit)
@@ -1338,7 +1345,8 @@ class Lead(models.Model):
             return
 
         for lead in self.filtered(
-            lambda x: x.stage_id == origin_stage and x.partner_id and x.email_from
+            lambda x: not x.som_lead_integration_id and
+                x.stage_id == origin_stage and x.partner_id and x.email_from
         ):
             try:
                 lang = lead.lang_id.code or ''

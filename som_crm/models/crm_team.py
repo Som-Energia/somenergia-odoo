@@ -9,6 +9,17 @@ class CrmTeam(models.Model):
     def get_random_member(self, exclude_team_leader=False, exclude_absent_members=True):
         """ Returns a random member of the sales team. """
         self.ensure_one()
+        user_member_ids = self.member_ids
+        if exclude_team_leader:
+            user_member_ids = user_member_ids.filtered(lambda x: x != self.user_id)
+        return self._get_random_assignable_member(
+            user_member_ids, exclude_absent_members=exclude_absent_members,
+        )
+
+    def _get_random_assignable_member(self, user_member_ids, exclude_absent_members=True,
+                                      approved_leaves_only=False):
+        """Select only from the supplied pool; preserve the web selection policy."""
+        self.ensure_one()
         today = fields.Date.context_today(self)
 
         def _can_be_assigned_opportunities(user):
@@ -20,15 +31,16 @@ class CrmTeam(models.Model):
                 return False
             return not (from_date <= today <= to_date)
 
-        user_member_ids = self.member_ids
-        if exclude_team_leader:
-            user_member_ids = user_member_ids.filtered(lambda x: x != self.user_id)
         if exclude_absent_members:
-            absent_today_employee_ids = set(self.env['hr.leave'].sudo().search([
+            leave_domain = [
                 ('employee_id', 'in', user_member_ids.mapped('employee_id').ids),
                 ('request_date_from', '<=', today),
                 ('request_date_to', '>=', today),
-            ]).mapped('employee_id').ids)
+            ]
+            if approved_leaves_only:
+                leave_domain.append(('state', '=', 'validate'))
+            absent_today_employee_ids = set(
+                self.env['hr.leave'].sudo().search(leave_domain).mapped('employee_id').ids)
             user_member_ids = user_member_ids.filtered(
                 lambda x: x.employee_id and x.employee_id.id not in absent_today_employee_ids
             )

@@ -11,6 +11,10 @@
                 <field name="som_last_call_date"/>
                 <field name="som_last_act_done_mail_date"/>
                 <field name="som_id_meta" readonly="1"/>
+                <field name="som_lead_integration_id" readonly="1"
+                       attrs="{'invisible': [('som_lead_integration_id', '=', False)]}"/>
+                <field name="id_external_lead" readonly="1"
+                       attrs="{'invisible': [('som_lead_integration_id', '=', False)]}"/>
             </xpath>
 
             <xpath expr="//group[@name='lead_partner']//field[@name='lang_id']" position="attributes">
@@ -51,6 +55,10 @@
                 <field name="som_last_call_date"/>
                 <field name="som_last_act_done_mail_date"/>
                 <field name="som_id_meta" readonly="1"/>
+                <field name="som_lead_integration_id" readonly="1"
+                       attrs="{'invisible': [('som_lead_integration_id', '=', False)]}"/>
+                <field name="id_external_lead" readonly="1"
+                       attrs="{'invisible': [('som_lead_integration_id', '=', False)]}"/>
             </xpath>
 
             <xpath expr="//group[@name='lead_info']" position="inside">
@@ -162,6 +170,14 @@
         <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter" />
         <field name="arch" type="xml">
             <filter name="open_opportunities" position="after">
+                <field name="som_lead_integration_id"/>
+                <field name="id_external_lead"/>
+                <filter string="Collaborator leads" name="som_collaborator_leads"
+                        domain="[('som_lead_integration_id', '!=', False)]"/>
+                <filter string="Collaborators without salesperson" name="som_collaborator_unassigned"
+                        domain="[('som_lead_integration_id', '!=', False), ('user_id', '=', False)]"/>
+                <filter string="Collaborator integration" name="som_group_integration"
+                        context="{'group_by': 'som_lead_integration_id'}"/>
                 <separator/>
                 <filter string="Contacted today" name="som_ct" domain="[('som_last_call_date_only', '=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter string="Not contacted today phone" name="som_nct" domain="['|',('som_last_call_date','=', False), ('som_last_call_date_only', '!=', context_today().strftime('%Y-%m-%d'))]"/>
@@ -194,6 +210,8 @@
                 <field name="som_next_renovation_date" optional="show"/>
                 <field name="som_url_origin" widget="url" optional="hide"/>
                 <field name="som_id_meta" readonly="1" optional="hide"/>
+                <field name="som_lead_integration_id" optional="hide"/>
+                <field name="id_external_lead" optional="hide"/>
             </field>
         </field>
     </record>
