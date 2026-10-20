@@ -189,6 +189,12 @@ temporals. En aquest canal només es consideren absències aprovades. Els usuari
 han de ser interns, actius, usuaris CRM, membres o responsables de
 l’equip i tenir empleat associat per superar el criteri de presència compartit.
 
+En desar la integració es valida estrictament que els comercials configurats
+pertanyen a l’equip i són usuaris interns de CRM. Si més endavant un comercial
+és desactivat, perd el grup CRM o deixa de pertànyer a l’equip, s’exclou del
+conjunt elegible durant la recepció; la petició no falla si encara hi ha altres
+candidats vàlids. Si no en queda cap, el lead es crea sense responsable ni activitat.
+
 Si hi ha candidats amb capacitat, se n’escull un aleatòriament. Si tots estan
 plens, se’n pot assignar un igualment. Sense candidats elegibles, queda sense
 responsable i sense activitat: no s’assigna ningú de fora del conjunt configurat.

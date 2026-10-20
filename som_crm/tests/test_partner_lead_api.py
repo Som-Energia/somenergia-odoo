@@ -212,6 +212,39 @@ class TestCollaboratorIntake(CollaboratorIntakeFixture, TransactionCase):
         self.assertFalse(other.user_id)
         self.assertFalse(other.activity_ids)
 
+    def test_removed_configured_salesperson_is_filtered_during_intake(self):
+        replacement = self.env['res.users'].create({
+            'name': 'Replacement salesperson', 'login': 'replacement_salesperson',
+            'email': 'replacement@example.com',
+            'company_id': self.company.id, 'company_ids': [(6, 0, self.company.ids)],
+            'groups_id': [(6, 0, [self.env.ref('sales_team.group_sale_salesman_all_leads').id])],
+        })
+        replacement.action_create_employee()
+        self.team.write({
+            'crm_team_member_ids': [(0, 0, {'user_id': replacement.id})],
+            'user_id': replacement.id,
+        })
+        self.integration.salesperson_ids = [(6, 0, (self.salesperson | replacement).ids)]
+
+        old_membership = self.team.crm_team_member_ids.filtered(
+            lambda member: member.user_id == self.salesperson
+        )
+        self.assertEqual(len(old_membership), 1)
+        old_membership.unlink()
+        self.assertNotIn(self.salesperson, self.team.member_ids)
+        self.assertIn(replacement, self.team.member_ids)
+
+        # Strict validation still applies when someone saves the configuration.
+        with self.assertRaises(ValidationError), self.env.cr.savepoint():
+            self.integration.write({'salesperson_ids': [(6, 0, (self.salesperson | replacement).ids)]})
+
+        # But stale configured users no longer make intake fail if another
+        # configured salesperson remains eligible.
+        lead, created = self._receive(id_external_lead='removed-salesperson')
+        self.assertTrue(created)
+        self.assertEqual(lead.user_id, replacement)
+        self.assertEqual(len(lead.activity_ids), 1)
+
     def test_activity_setting_is_respected_by_creation_and_cron(self):
         self.integration.create_initial_activity = False
         lead, _ = self._receive()

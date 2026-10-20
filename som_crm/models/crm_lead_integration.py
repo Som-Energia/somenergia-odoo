@@ -68,11 +68,8 @@ class CRMLeadIntegration(models.Model):
 
     @api.constrains('stage_id', 'team_id', 'salesperson_ids')
     def _check_routing(self):
+        self._check_stage_team_routing()
         for integration in self:
-            if integration.stage_id.is_won or (
-                    integration.stage_id.team_id and
-                    integration.stage_id.team_id != integration.team_id):
-                raise ValidationError(_('Select a non-won stage compatible with the sales team.'))
             for user in integration.salesperson_ids:
                 if user.share or not user.has_group('sales_team.group_sale_salesman'):
                     raise ValidationError(_(
@@ -80,6 +77,14 @@ class CRMLeadIntegration(models.Model):
                     ))
                 if user not in integration.team_id.member_ids and user != integration.team_id.user_id:
                     raise ValidationError(_('Receiving salespeople must belong to the selected team.'))
+
+    def _check_stage_team_routing(self):
+        """Recheck structural routing while allowing stale users to be filtered out."""
+        for integration in self:
+            if integration.stage_id.is_won or (
+                    integration.stage_id.team_id and
+                    integration.stage_id.team_id != integration.team_id):
+                raise ValidationError(_('Select a non-won stage compatible with the sales team.'))
 
     def action_generate_api_key(self):
         self.ensure_one()
@@ -190,7 +195,10 @@ class CRMLeadIntegration(models.Model):
                 raise LeadIntakeError('external_id_conflict', 'This external ID has different data.', 409)
             return existing, False
 
-        self._check_routing()
+        # Integration writes are validated strictly by _check_routing(). At
+        # intake time, configured users may have since left the team or lost
+        # eligibility; _select_salesperson filters them and can return no user.
+        self._check_stage_team_routing()
         lang = self.env['res.lang']
         if data['lang']:
             lang = lang.search([('code', '=', data['lang'])], limit=1)
