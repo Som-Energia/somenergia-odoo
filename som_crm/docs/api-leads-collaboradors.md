@@ -224,19 +224,8 @@ equips i benvinguda:
 La comanda completa d’Odoo i la configuració de l’entorn es documenten a
 la [skill de tests del repositori](../../.agents/skills/odoo-test/SKILL.md).
 
-Per comprovar concurrència real contra una instància de proves en execució,
-fora del mode transaccional d’`HttpCase`, hi ha un script amb biblioteca estàndard:
-
-```bash
-python som_crm/scripts/test_partner_lead_concurrency.py --url http://localhost:8069 --workers 4
-```
-
-Cal definir `SOM_CRM_API_KEY` a l’entorn amb la clau de la integració de proves.
-La instància ha de poder atendre peticions en paral·lel per exercitar el
-conflicte real entre transaccions; amb un servidor serial només es proven reintents.
-La prova crea una oportunitat amb un ID extern aleatori i comprova una única
-creació, reintents al mateix registre i conflicte quan es canvia el contingut.
-El registre creat queda a la instància per poder inspeccionar activitats i origen.
+Els tests HTTP comproven els reintents seqüencials i els conflictes d’ID, però
+no envien peticions simultànies; per tant, no són una prova de concurrència real.
 
 La implementació es lliura sense executar els tests ni actualitzar cap base
 de dades; aquestes comprovacions les farà l’usuari.
