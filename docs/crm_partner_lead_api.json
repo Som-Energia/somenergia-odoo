@@ -1,0 +1,517 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Som Energia — API d’entrada de leads de col·laboradors",
+    "version": "1.0.0",
+    "description": "Contracte per a integracions servidor a servidor d’Odoo 16 Community. Permet crear oportunitats derivades per empreses col·laboradores. Les dades i identificadors dels exemples són ficticis."
+  },
+  "servers": [
+    {
+      "url": "https://example.invalid",
+      "description": "URL placeholder: Som Energia ha de proporcionar al col·laborador l’URL de l’entorn corresponent. No és un servidor executable."
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Leads",
+      "description": "Recepció d’oportunitats derivades per col·laboradors."
+    }
+  ],
+  "paths": {
+    "/api/crm/partner/lead": {
+      "post": {
+        "tags": [
+          "Leads"
+        ],
+        "summary": "Crear o reconèixer una oportunitat derivada",
+        "operationId": "createCollaboratorLead",
+        "description": "L’autenticació identifica una integració concreta. La integració determina l’equip, l’etapa i el conjunt de comercials; el client no pot triar aquests valors. Aquesta API és només de creació: no actualitza oportunitats existents.\n\n**Flux a Odoo:** crea una oportunitat; busca o crea el contacte amb el nom i l’email/telèfon rebuts; assigna un comercial elegible del conjunt configurat; i crea una activitat per a avui quan la configuració ho permet i hi ha responsable. Sense comercial elegible, l’oportunitat es crea sense responsable ni activitat. Desa `cups` al camp Odoo `som_cups`. No envia confirmacions ni benvingudes automàtiques al contacte. En una creació nova, el cos JSON acceptat es registra com a nota interna al chatter juntament amb la integració i l’ID extern; els comentaris també es publiquen separadament. No s’hi desa la capçalera `X-API-Key`. Els reintents idèntics no creen un segon missatge de traçabilitat.\n\n**Límits HTTP:** envieu `Content-Type: application/json` i una capçalera `Content-Length` calculada pel client HTTP. El cos màxim és de 65.536 bytes (64 KiB). No envieu ni `Content-Length` manualment ni capçalera de sessió/cookie. No s’admeten fitxers, camps addicionals ni l’embolcall `lead_data`.\n\n**Idempotència:** la clau del registre és la parella integració autenticada + `id_external_lead`. Si es repeteix la mateixa petició després d’un timeout, la resposta és `200` i retorna el mateix `lead_id`. Si es reutilitza l’ID amb dades normalitzades diferents, la resposta és `409`. Reenvieu el mateix ID i el mateix contingut per fer un reintent segur.\n\n**Normalització abans de comparar reintents:** s’eliminen espais dels extrems de les cadenes; `contact_name` aplica capitalització de títol, `email` es passa a minúscules, `phone` elimina espais simples i `cups` elimina tots els blancs i es passa a majúscules. Els opcionals omesos i els opcionals enviats com a cadena buida són equivalents. L’ID extern conserva zeros inicials i distingeix majúscules/minúscules després de llevar-ne els espais extrems.\n\nLa integració ha d’estar habilitada individualment i el canal global d’Odoo ha d’estar actiu.",
+        "requestBody": {
+          "required": true,
+          "description": "Objecte JSON UTF-8, màxim 65.536 bytes. Els valors són cadenes estrictes: no envieu números, booleans, arrays ni `null`. Els camps desconeguts provoquen `400`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeadRequest"
+              },
+              "examples": {
+                "email": {
+                  "summary": "Derivació amb email",
+                  "value": {
+                    "id_external_lead": "PARTNER-A-000123",
+                    "contact_name": "Contacte Exemple A",
+                    "email": "contacte.a@example.com",
+                    "comments": "Contacte derivat per valorar una oferta."
+                  }
+                },
+                "phoneAndCups": {
+                  "summary": "Derivació amb telèfon, idioma i CUPS",
+                  "value": {
+                    "id_external_lead": "PARTNER-A-000124",
+                    "contact_name": "Contacte Exemple B",
+                    "phone": "+34 000 000 002",
+                    "lang": "ca_ES",
+                    "cups": "ES0021000000000001AB",
+                    "comments": "Exemple de nota interna."
+                  }
+                },
+                "minimum": {
+                  "summary": "Camps mínims: nom, ID extern i telèfon o email",
+                  "value": {
+                    "id_external_lead": "PARTNER-A-000125",
+                    "contact_name": "Contacte Exemple C",
+                    "phone": "+34 000 000 003"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Oportunitat creada correctament. Un primer enviament crea exactament un registre.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadResult"
+                },
+                "example": {
+                  "success": true,
+                  "created": true,
+                  "lead_id": 123,
+                  "id_external_lead": "PARTNER-A-000123"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Reintent idèntic d’una oportunitat existent. No repeteix l’assignació, el contacte ni l’activitat.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadResult"
+                },
+                "example": {
+                  "success": true,
+                  "created": false,
+                  "lead_id": 123,
+                  "id_external_lead": "PARTNER-A-000123"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/IntegrationDisabled"
+          },
+          "409": {
+            "$ref": "#/components/responses/ExternalIdConflict"
+          },
+          "411": {
+            "$ref": "#/components/responses/LengthRequired"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "422": {
+            "$ref": "#/components/responses/ConfigurationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ChannelDisabled"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Clau generada per a una integració. S’envia només per HTTPS en entorns no locals."
+      }
+    },
+    "schemas": {
+      "CreateLeadRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id_external_lead",
+          "contact_name"
+        ],
+        "anyOf": [
+          {
+            "required": [
+              "email"
+            ],
+            "properties": {
+              "email": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          {
+            "required": [
+              "phone"
+            ],
+            "properties": {
+              "phone": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ],
+        "properties": {
+          "id_external_lead": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Obligatori. Identificador de l’oportunitat al sistema emissor. No és un número: conserva zeros inicials. Es normalitza traient espais dels extrems, és sensible a majúscules/minúscules i ha de ser únic dins de la integració autenticada. No reutilitzeu un ID per modificar un lead existent.",
+            "example": "PARTNER-A-000123"
+          },
+          "contact_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Obligatori. Nom de contacte. Es lleven espais extrems i després s’aplica la normalització de títol de Python (`str.title()`). Un valor buit o format només per espais no és vàlid.",
+            "example": "Contacte Exemple A"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "default": "",
+            "description": "Opcional si s’envia `phone`; si no, és obligatori. Es lleven espais extrems, es passa a minúscules i se’n valida el format amb les utilitats d’email d’Odoo. No és `null` ni una cadena no buida formada només per espais.",
+            "example": "contacte.a@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 64,
+            "default": "",
+            "description": "Opcional si s’envia `email`; si no, és obligatori. Es lleven espais extrems i s’eliminen els espais ASCII interns. No es valida una numeració internacional completa.",
+            "example": "+34 000 000 001"
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "",
+              "ca_ES",
+              "es_ES"
+            ],
+            "default": "",
+            "description": "Opcional. Si s’envia `ca_ES` o `es_ES`, l’idioma també ha d’estar instal·lat/actiu a Odoo; altrament retorna `400`. Ometeu-lo o envieu cadena buida per no especificar idioma."
+          },
+          "cups": {
+            "type": "string",
+            "maxLength": 64,
+            "default": "",
+            "description": "Opcional. Abans de validar, elimina tots els caràcters de whitespace i passa a majúscules. El format normalitzat acceptat és `ES` + 16 dígits + 2 lletres, amb sufix opcional d’1 dígit i 1 lletra (20 o 22 caràcters). Es valida l’estructura, no les lletres de control. Es desa al camp Odoo `som_cups`.",
+            "example": "ES0021000000000001AB"
+          },
+          "comments": {
+            "type": "string",
+            "maxLength": 10000,
+            "default": "",
+            "description": "Opcional. Es desa com a nota interna al chatter de l’oportunitat. El contingut HTML s’escapa; els salts de línia es conserven com a salts visuals. No s’envia al contacte per correu."
+          }
+        },
+        "description": "Tots els camps acceptats són cadenes JSON estrictes. No envieu `null`, valors numèrics, booleans ni arrays. Els opcionals omesos equivalen a cadena buida. La longitud es comprova després de llevar espais extrems i abans de les altres normalitzacions. La validació OpenAPI de `minLength` no pot modelar que valors de només whitespace també es rebutgen després de normalitzar-los; el servidor aplica aquesta regla."
+      },
+      "LeadResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "created",
+          "lead_id",
+          "id_external_lead"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "created": {
+            "type": "boolean",
+            "description": "`true` només quan aquesta petició ha creat l’oportunitat; `false` quan és un reintent idèntic."
+          },
+          "lead_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador intern del registre crm.lead d’Odoo."
+          },
+          "id_external_lead": {
+            "type": "string",
+            "description": "Identificador extern normalitzat (espais extrems eliminats)."
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "error",
+          "message"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "error": {
+            "type": "string",
+            "description": "Codi estable per identificar el tipus d’error."
+          },
+          "message": {
+            "type": "string",
+            "description": "Missatge descriptiu. Els errors interns no inclouen el payload ni detalls de l’excepció."
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "JSON mal format o dades que no compleixen el contracte. Codis possibles: `invalid_json`, `invalid_data`, `unknown_fields`, `missing_fields`, `invalid_language`, `invalid_cups`, `invalid_email`.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "invalidJson": {
+                "summary": "JSON invàlid",
+                "value": {
+                  "success": false,
+                  "error": "invalid_json",
+                  "message": "Provide a valid UTF-8 JSON object."
+                }
+              },
+              "missingFields": {
+                "summary": "Falta ID extern o nom de contacte",
+                "value": {
+                  "success": false,
+                  "error": "missing_fields",
+                  "message": "id_external_lead and contact_name are required."
+                }
+              },
+              "contactMethodRequired": {
+                "summary": "Cal un email o telèfon",
+                "value": {
+                  "success": false,
+                  "error": "missing_fields",
+                  "message": "An email or phone is required."
+                }
+              },
+              "unknownFields": {
+                "summary": "El payload conté un camp no admès",
+                "value": {
+                  "success": false,
+                  "error": "unknown_fields",
+                  "message": "The body contains unsupported fields."
+                }
+              },
+              "invalidEmail": {
+                "summary": "Email amb format no admès",
+                "value": {
+                  "success": false,
+                  "error": "invalid_email",
+                  "message": "Provide a valid email address."
+                }
+              },
+              "invalidLanguage": {
+                "summary": "Idioma no admès",
+                "value": {
+                  "success": false,
+                  "error": "invalid_language",
+                  "message": "Supported languages: ca_ES, es_ES."
+                }
+              },
+              "inactiveLanguage": {
+                "summary": "Idioma vàlid però no actiu a Odoo",
+                "value": {
+                  "success": false,
+                  "error": "invalid_language",
+                  "message": "The requested language is not active."
+                }
+              },
+              "invalidCups": {
+                "summary": "CUPS amb estructura no vàlida",
+                "value": {
+                  "success": false,
+                  "error": "invalid_cups",
+                  "message": "CUPS must have a valid 20 or 22 character format."
+                }
+              },
+              "invalidType": {
+                "summary": "Tipus de dada no vàlid",
+                "value": {
+                  "success": false,
+                  "error": "invalid_data",
+                  "message": "phone must be a string."
+                }
+              }
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "No s’ha enviat una clau vàlida a `X-API-Key`. El servidor comprova l’autenticació abans de llegir o validar el cos.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": "unauthorized",
+              "message": "Provide a valid X-API-Key."
+            }
+          }
+        }
+      },
+      "IntegrationDisabled": {
+        "description": "La clau és vàlida però la integració està deshabilitada o arxivada. Cal contactar amb Som Energia.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": "integration_disabled",
+              "message": "This integration is disabled."
+            }
+          }
+        }
+      },
+      "ExternalIdConflict": {
+        "description": "La parella integració + ID extern ja existeix amb dades normalitzades diferents. Aquesta API no actualitza oportunitats.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": "external_id_conflict",
+              "message": "This external ID has different data."
+            }
+          }
+        }
+      },
+      "LengthRequired": {
+        "description": "La petició no inclou la capçalera `Content-Length`. La majoria de clients HTTP, inclòs Insomnia, la calculen automàticament per a un cos JSON.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": "length_required",
+              "message": "Provide Content-Length."
+            }
+          }
+        }
+      },
+      "PayloadTooLarge": {
+        "description": "El cos excedeix 65.536 bytes (64 KiB).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": "payload_too_large",
+              "message": "Maximum body size is 64 KiB."
+            }
+          }
+        }
+      },
+      "UnsupportedMediaType": {
+        "description": "El Content-Type ha de ser `application/json`.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": "unsupported_media_type",
+              "message": "Use application/json."
+            }
+          }
+        }
+      },
+      "ConfigurationError": {
+        "description": "La configuració interna (equip, etapa, usuaris o permisos) no permet processar la petició. No es crea cap oportunitat parcial; contacteu amb Som Energia.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": "configuration_error",
+              "message": "The integration configuration could not process this lead."
+            }
+          }
+        }
+      },
+      "InternalError": {
+        "description": "Error inesperat. El missatge públic no inclou dades del payload ni detalls interns. Alguns errors de base de dades propagats fins al framework HTTP d’Odoo poden retornar el format d’error propi d’Odoo en lloc d’aquest esquema.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": "internal_error",
+              "message": "The lead could not be processed."
+            }
+          }
+        }
+      },
+      "ChannelDisabled": {
+        "description": "L’interruptor global del canal de col·laboradors està desactivat a Odoo. Contacteu amb Som Energia abans de repetir la petició.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": "channel_disabled",
+              "message": "Collaborator intake is temporarily disabled."
+            }
+          }
+        }
+      }
+    }
+  }
+}
