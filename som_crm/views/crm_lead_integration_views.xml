@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="som_crm_lead_integration_view_tree" model="ir.ui.view">
+        <field name="name">som.crm.lead.integration.tree</field>
+        <field name="model">som.crm.lead.integration</field>
+        <field name="arch" type="xml">
+            <tree string="Collaborator integrations">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="partner_id"/>
+                <field name="enabled"/>
+                <field name="team_id"/>
+                <field name="salesperson_ids" widget="many2many_tags"/>
+            </tree>
+        </field>
+    </record>
+    <record id="som_crm_lead_integration_view_form" model="ir.ui.view">
+        <field name="name">som.crm.lead.integration.form</field>
+        <field name="model">som.crm.lead.integration</field>
+        <field name="arch" type="xml">
+            <form string="Collaborator integration">
+                <header>
+                    <button name="action_generate_api_key" type="object" string="Generate / rotate API key"
+                            groups="base.group_system" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger"
+                            attrs="{'invisible': [('active', '=', True)]}"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="partner_id"/>
+                            <field name="active" invisible="1"/>
+                            <field name="enabled"/>
+                        </group>
+                        <group>
+                            <field name="team_id"/>
+                            <field name="stage_id" domain="[('is_won', '=', False), '|', ('team_id', '=', False), ('team_id', '=', team_id)]"/>
+                            <field name="salesperson_ids" widget="many2many_tags"/>
+                            <field name="create_initial_activity"/>
+                        </group>
+                    </group>
+                    <div class="text-muted">
+                        Endpoint: POST /api/crm/partner/lead. Send the dedicated key in X-API-Key.
+                        The generated key is displayed only once; rotating it invalidates the previous key.
+                        Enable the global collaborator intake switch in CRM settings as well.
+                        External confirmation and welcome emails are disabled for these opportunities.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="som_crm_lead_integration_view_search" model="ir.ui.view">
+        <field name="name">som.crm.lead.integration.search</field>
+        <field name="model">som.crm.lead.integration</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="partner_id"/>
+                <filter name="disabled" string="Disabled" domain="[('enabled', '=', False)]"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="som_crm_lead_integration_action" model="ir.actions.act_window">
+        <field name="name">Collaborator integrations</field>
+        <field name="res_model">som.crm.lead.integration</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_som_crm_lead_integrations" name="Collaborator integrations"
+              parent="crm.crm_menu_config" action="som_crm_lead_integration_action"
+              groups="sales_team.group_sale_manager,base.group_system" sequence="55"/>
+</odoo>
