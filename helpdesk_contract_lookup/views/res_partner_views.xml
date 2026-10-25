@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_helpdesk_contract_lookup" model="ir.ui.view">
+        <field name="name">res.partner.form.helpdesk.contract.lookup</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button
+                    name="action_open_contract_lookup"
+                    type="object"
+                    string="Contacte 360"
+                    class="oe_stat_button"
+                    icon="fa-search"
+                    groups="helpdesk_mgmt.group_helpdesk_user"
+                />
+            </xpath>
+        </field>
+    </record>
+</odoo>

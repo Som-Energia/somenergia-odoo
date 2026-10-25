@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_helpdesk_contract_lookup" model="ir.actions.client">
+        <field name="name">Contacte 360</field>
+        <field name="tag">helpdesk_contract_lookup.main</field>
+    </record>
+
+    <menuitem
+        id="menu_helpdesk_contract_lookup_root"
+        name="Contacte 360"
+        parent="helpdesk_mgmt.helpdesk_ticket_main_menu"
+        action="action_helpdesk_contract_lookup"
+        sequence="30"
+        groups="helpdesk_mgmt.group_helpdesk_user"
+    />
+
+    <menuitem
+        id="menu_contacts_contacte_360"
+        name="Contacte 360"
+        parent="contacts.menu_contacts"
+        action="action_helpdesk_contract_lookup"
+        sequence="100"
+        groups="helpdesk_mgmt.group_helpdesk_user"
+    />
+</odoo>
