@@ -364,3 +364,15 @@ class AccountAnalyticLine(models.Model):
         result = super().button_resume_work()
         result["context"] = {"resuming_lines": timesheets_to_avoid_timer_ids.ids}
         return result
+
+
+class HrTimesheetSwitch(models.TransientModel):
+    _inherit = "hr.timesheet.switch"
+
+    def _prepare_copy_values(self, record):
+        values = super()._prepare_copy_values(record)
+        values.update({
+            'som_week_id': False,
+            'som_worked_week_id': False,
+        })
+        return values
