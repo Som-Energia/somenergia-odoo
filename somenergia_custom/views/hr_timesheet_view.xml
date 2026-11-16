@@ -2,6 +2,32 @@
 <odoo>
     <data>
 
+        <record id="hr_timesheet.act_hr_timesheet_line" model="ir.actions.act_window">
+            <field name="domain">[
+                ('project_id', '!=', False),
+                ('user_id', '=', uid),
+                '|',
+                    ('project_id.user_id', '=', False),
+                    ('project_id.user_id', '!=', 1)
+            ]</field>
+        </record>
+
+        <record id="hr_timesheet.timesheet_action_all" model="ir.actions.act_window">
+            <field name="domain">[
+                ('project_id', '!=', False),
+                '|',
+                    ('project_id.user_id', '=', False),
+                    ('project_id.user_id', '!=', 1)
+            ]</field>
+        </record>
+
+        <menuitem id="som_timesheet_menu_visible_projects"
+                  name="Visible Timesheets"
+                  parent="hr_timesheet.timesheet_menu_root"
+                  action="hr_timesheet.timesheet_action_all"
+                  sequence="35"
+                  groups="somenergia_custom.som_group_hr_timesheet_visible_projects"/>
+
         <record id="som_timesheet_view_tree_user" model="ir.ui.view">
             <field name="name">som.account.analytic.line.view.tree.with.user</field>
             <field name="model">account.analytic.line</field>

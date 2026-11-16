@@ -10,7 +10,8 @@
                 <tree string="Worked weeks"
                       decoration-success="som_total_unassigned_hours == 0 and som_total_worked_hours != 0"
                       decoration-danger="som_total_assigned_hours == 0 and som_total_worked_hours != 0"
-                      decoration-warning="(som_total_assigned_hours != 0 and som_total_unassigned_hours != 0 and som_total_worked_hours != 0) or (som_total_unassigned_hours &lt; 0)">
+                      decoration-warning="(som_total_assigned_hours != 0 and som_total_unassigned_hours != 0 and som_total_worked_hours != 0) or (som_total_unassigned_hours &lt; 0)"
+                      decoration-muted="som_is_locked == True">
                     <field name="som_week_id"/>
                     <field name="som_employee_id" optional="hide" />
                     <field name="som_timesheet_ids" optional="hide"/>
@@ -20,6 +21,7 @@
                            widget="float_time"/>
                     <field name="som_total_unassigned_hours"
                            widget="float_time"/>
+                    <field name="som_is_locked" optional="show" string="Tancat" readonly="1"/>
                     <field name="som_cw_date_rel" optional="hide" />
                     <field name="som_cw_date_end_rel" optional="hide" />
                     <field name="som_cw_week_number_rel" optional="hide" />
@@ -63,8 +65,18 @@
             <field name="arch" type="xml">
                 <form string="Worked Week">
                     <header>
+                        <field name="som_is_locked" invisible="1"/>
+                        <button name="action_open_help_url"
+                                type="object"
+                                string="Ajuda"
+                                icon="fa-question-circle"
+                                class="btn btn-secondary"/>
                     </header>
                     <sheet>
+                        <widget name="web_ribbon"
+                                title="Període tancat"
+                                bg_color="bg-warning"
+                                attrs="{'invisible': [('som_is_locked', '=', False)]}"/>
                         <group>
                             <group>
                                 <field name="som_week_id"
@@ -100,7 +112,7 @@
                                        options="{'no_open': True}"
                                        attrs="{'readonly': [('som_is_cumulative', '=', True)]}"
                                        required="True"
-                                       string="Scope"
+                                       string="Tasca Servei"
                                        domain="[('id', 'in', som_project_area_domain_ids)]"
                                        readonly="0"/>
                                 <field name="som_additional_project_id"
@@ -109,7 +121,9 @@
                                        required="False"
                                        string="Projecte"
                                        domain="[('id', 'in', som_additional_project_domain_ids)]"
-                                       readonly="0"/>
+                                       invisible="0"
+                                       readonly="0"
+                                       optional="hide"/>
                                 <field name='task_id' readonly="1" optional="show"/>
                                 <field name="name"
                                        attrs="{'readonly': [('som_is_cumulative', '=', True)]}"/>

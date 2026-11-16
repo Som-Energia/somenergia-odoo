@@ -43,6 +43,7 @@ class Lead(models.Model):
                     'favourable' if record.som_comparison_cost > 0 else 'disfavourable')
             else:
                 record.som_comparison_cost = 0.0
+                record.som_comparison_result = False
 
     @api.depends('message_ids', 'message_ids.subtype_id', 'message_ids.mail_activity_type_id')
     def _compute_activities_counters(self):
@@ -191,7 +192,7 @@ class Lead(models.Model):
             ("disfavourable", _("disfavourable")),
         ],
         string="Comparison Result",
-        compute='_compute_comparison_result',
+        compute='_compute_comparison_cost',
         readonly=False,
         store=True,
         required=False,
@@ -379,16 +380,58 @@ class Lead(models.Model):
         domain += [(erp_field, '=', casted_phone)]
         return erp_lead_obj.search(domain, limit=1)
 
+    def _get_erp_contract_domain(self, crm_lead_operator):
+        """
+        Build the base ERP domain for valid contractations.
+
+        Args:
+            crm_lead_operator (str): '=' for unlinked leads (normal sync),
+                                     '!=' for linked leads (inconsistency check).
+
+        Returns:
+            list: Odoo-style domain with crm_lead_id, state and polissa_id conditions.
+        """
+        return [
+            ('crm_lead_id', crm_lead_operator, 0),
+            ('state', '=', 'done'),
+            ('polissa_id', '!=', False),
+        ]
+
+    def _get_erp_contract_date_domain(self):
+        self.ensure_one()
+        margin_days = max(0, int(self.env['ir.config_parameter'].sudo().get_param(
+            'som_crm_erp_contract_match_days', 10
+        )))
+        current_date = fields.Date.today()
+        return [
+            ('create_date', '>=', fields.Datetime.to_string(
+                fields.Datetime.to_datetime(
+                    current_date - timedelta(days=margin_days)
+                )
+            )),
+            ('create_date', '<', fields.Datetime.to_string(
+                fields.Datetime.to_datetime(
+                    current_date + timedelta(days=margin_days + 1)
+                )
+            )),
+        ]
+
     def get_contract_in_erp(self, erp_lead_obj):
         self.ensure_one()
+        if self.som_cups:
+            domain = self._get_erp_contract_domain('=') + self._get_erp_contract_date_domain()
+            erp_lead_id = self._erp_search_by_cups(
+                erp_lead_obj, domain, self.som_cups
+            )
+            return erp_lead_id[0] if erp_lead_id else False
+
         search_strategies = {
-            'som_cups': self._erp_search_by_cups,
             'vat': self._erp_search_by_vat,
             'email_from': self._erp_search_by_email,
             'phone': self._erp_search_by_phone,
         }
 
-        for lead_field in ['som_cups', 'vat', 'email_from', 'phone']:
+        for lead_field in ['vat', 'email_from', 'phone']:
             if lead_field not in search_strategies:
                 _logger.warning(f"No search strategy for field {lead_field}")
                 continue
@@ -396,12 +439,82 @@ class Lead(models.Model):
             value_to_search = getattr(self, lead_field, None)
             if not value_to_search:
                 continue
-            domain = [('crm_lead_id', '=', 0)]
+            domain = self._get_erp_contract_domain('=') + self._get_erp_contract_date_domain()
             erp_lead_id = search_strategies[lead_field](erp_lead_obj, domain, value_to_search)
             if erp_lead_id:
                 return erp_lead_id[0]
 
         return False
+
+    def _get_erp_lead_model(self):
+        _logger.info("Connecting to ERP")
+        try:
+            erppeek = dict(
+                server=f"{config.get('erp_uri')}:{config.get('erp_port')}",
+                db=config.get('erp_dbname'),
+                user=config.get('erp_user'),
+                password=config.get('erp_pwd'),
+            )
+            return Client(**erppeek).model("giscedata.crm.lead")
+        except Exception as e:
+            _logger.error("Error connecting to ERP: %s", e)
+            return False
+
+    def _sync_erp_contract_data(self, erp_lead_obj):
+        _logger.info("Starting ERP contract data synchronization")
+        leads_to_update = self.filtered(
+            lambda lead: lead.som_erp_lead_id and not lead.som_cups
+        )
+        _logger.info("CRM leads to enrich from ERP: %s", leads_to_update.ids)
+        if not leads_to_update:
+            _logger.info("ERP contract data synchronization completed: no leads updated")
+            return []
+
+        try:
+            erp_contracts = erp_lead_obj.read(
+                leads_to_update.mapped('som_erp_lead_id'), ['id', 'cups']
+            )
+        except Exception as e:
+            _logger.warning("Could not read ERP contract data: %s", e)
+            _logger.info("ERP contract data synchronization completed: no leads updated")
+            return []
+
+        cups_by_erp_id = {
+            contract['id']: contract.get('cups')
+            for contract in erp_contracts
+            if contract.get('cups')
+        }
+        updated_ids = []
+        for lead in leads_to_update:
+            cups = cups_by_erp_id.get(lead.som_erp_lead_id)
+            if cups:
+                lead.write({'som_cups': cups})
+                try:
+                    lead.message_post(
+                        body=_(
+                            "CUPS updated from ERP contract synchronization: %s"
+                        ) % cups,
+                        message_type='comment',
+                        subtype_xmlid='mail.mt_note',
+                    )
+                except Exception as e:
+                    _logger.warning(
+                        "Lead %s CUPS updated but failed to post chatter message: %s",
+                        lead.id, e,
+                    )
+                updated_ids.append(lead.id)
+
+        _logger.info(
+            "ERP contract data synchronization completed; updated CRM leads: %s",
+            updated_ids,
+        )
+        return updated_ids
+
+    def sync_erp_contract_data(self):
+        erp_lead_obj = self._get_erp_lead_model()
+        if not erp_lead_obj:
+            return []
+        return self._sync_erp_contract_data(erp_lead_obj)
 
     @api.model
     def _erp_sync(self, include_inactive=False):
@@ -416,20 +529,9 @@ class Lead(models.Model):
             return
         _logger.info(f"Leads to check in ERP: {len(lead_ids)}")
 
-        _logger.info(f"Connecting to ERP")
-        try:
-            erppeek = dict(
-                server=f"{config.get('erp_uri')}:{config.get('erp_port')}",
-                db=config.get('erp_dbname'),
-                user=config.get('erp_user'),
-                password=config.get('erp_pwd'),
-            )
-            c = Client(**erppeek)
-        except Exception as e:
-            _logger.error(f"Error connecting to ERP: {e}")
+        erp_lead_obj = self._get_erp_lead_model()
+        if not erp_lead_obj:
             return
-
-        erp_lead_obj = c.model("giscedata.crm.lead")
 
         found_ids = []
         for lead_id in lead_ids:
@@ -461,6 +563,7 @@ class Lead(models.Model):
             return
 
         _logger.info(f"Leads moved to 'Won' stage: {found_ids}")
+        self.browse(found_ids)._sync_erp_contract_data(erp_lead_obj)
 
     @api.model
     def _erp_sync_check_inconsistencies(self, date_from=None):
@@ -484,21 +587,11 @@ class Lead(models.Model):
         """
         _logger.info("Starting ERP sync inconsistency check")
 
-        try:
-            erppeek_params = dict(
-                server=f"{config.get('erp_uri')}:{config.get('erp_port')}",
-                db=config.get('erp_dbname'),
-                user=config.get('erp_user'),
-                password=config.get('erp_pwd'),
-            )
-            c = Client(**erppeek_params)
-        except Exception as e:
-            _logger.error("Error connecting to ERP: %s", e)
+        erp_lead_obj = self._get_erp_lead_model()
+        if not erp_lead_obj:
             return []
 
-        erp_lead_obj = c.model("giscedata.crm.lead")
-
-        erp_domain = [('crm_lead_id', '!=', 0)]
+        erp_domain = self._get_erp_contract_domain('!=')
         if date_from:
             erp_domain.append(('create_date', '>=', date_from))
 
@@ -660,14 +753,17 @@ class Lead(models.Model):
         print("Connection OK\n")
 
         erp_lead_obj = c.model('giscedata.crm.lead')
-        base_domain = [('crm_lead_id', '=', 0)]
 
-        strategies = [
-            ('som_cups',   'CUPS',  self._erp_search_by_cups),
-            ('vat',        'VAT',   self._erp_search_by_vat),
-            ('email_from', 'EMAIL', self._erp_search_by_email),
-            ('phone',      'PHONE', self._erp_search_by_phone),
-        ]
+        base_domain = self._get_erp_contract_domain('=') + self._get_erp_contract_date_domain()
+
+        if self.som_cups:
+            strategies = [('som_cups', 'CUPS', self._erp_search_by_cups)]
+        else:
+            strategies = [
+                ('vat', 'VAT', self._erp_search_by_vat),
+                ('email_from', 'EMAIL', self._erp_search_by_email),
+                ('phone', 'PHONE', self._erp_search_by_phone),
+            ]
 
         for lead_field, label, strategy_fn in strategies:
             value = getattr(self, lead_field, None)
@@ -693,14 +789,19 @@ class Lead(models.Model):
 
             print(f"  result: [] ✗ NO MATCH")
 
-            # Check without crm_lead_id=0 to detect false negatives
-            domain_no_filter = [d for d in domain if d != ('crm_lead_id', '=', 0)]
+            # Check without base filters to detect false negatives and show why no match
+            base_filter_keys = {('crm_lead_id', '=', 0), ('state', '=', 'done'), ('polissa_id', '!=', False)}
+            domain_no_filter = [d for d in domain if d not in base_filter_keys]
             result_no_filter = erp_lead_obj.search(domain_no_filter)
             if result_no_filter:
-                matching = erp_lead_obj.read(result_no_filter, ['id', 'crm_lead_id'])
+                matching = erp_lead_obj.read(result_no_filter, ['id', 'crm_lead_id', 'state', 'polissa_id'])
                 crm_ids = [m.get('crm_lead_id') for m in matching]
-                print(f"  ⚠  Without crm_lead_id=0 filter → found: {result_no_filter}")
-                print(f"     crm_lead_id in ERP            : {crm_ids}")
+                states = [m.get('state') for m in matching]
+                polissa_ids = [m.get('polissa_id') for m in matching]
+                print(f"  ⚠  Without base filters → found: {result_no_filter}")
+                print(f"     crm_lead_id in ERP: {crm_ids}")
+                print(f"     state in ERP      : {states}")
+                print(f"     polissa_id in ERP : {polissa_ids}")
                 print(f"     → Likely cause: ERP lead already has crm_lead_id set")
             print()
 
@@ -1240,7 +1341,7 @@ class Lead(models.Model):
             lambda x: x.stage_id == origin_stage and x.partner_id and x.email_from
         ):
             try:
-                lang = lead.partner_id.lang or ''
+                lang = lead.lang_id.code or ''
                 is_spanish = lang_es and lang == lang_es.code
                 template = template_es if (is_spanish and template_es) else template_ca
                 template.send_mail(lead.id, force_send=True)

@@ -44,13 +44,22 @@ class Task(models.Model):
             self.env["ir.config_parameter"].sudo().get_param("som_avoid_default_task_followers")
         )
         if flag_avoid_default_followers:
-            for task_id in task_ids:
-                partner_to_remove_ids = (task_id.message_partner_ids.user_ids - task_id.user_ids).partner_id
-                if partner_to_remove_ids:
-                    task_id.sudo().message_follower_ids.filtered(
-                        lambda x: x.partner_id.id in partner_to_remove_ids.ids
-                    ).unlink()
+            task_ids._remove_default_followers()
         return task_ids
+
+    def _remove_default_followers(self):
+        for task in self:
+            follower_user_ids = task.message_partner_ids.with_context(
+                active_test=False
+            ).user_ids
+            assigned_user_ids = task.with_context(active_test=False).user_ids
+            partner_to_remove_ids = (
+                follower_user_ids.partner_id - assigned_user_ids.partner_id
+            )
+            if partner_to_remove_ids:
+                task.sudo().message_follower_ids.filtered(
+                    lambda follower: follower.partner_id in partner_to_remove_ids
+                ).unlink()
 
     def button_start_work(self):
         internal_project_ids = self.env['project.project'].get_internal_projects()
@@ -64,12 +73,25 @@ class Task(models.Model):
         return result
 
     def write(self, vals):
+        if 'som_project_id' in vals:
+            id_new_service_project = vals.get('som_project_id', False)
+            for task_id in self:
+                current_service_project = task_id.som_project_id
+                flag_changing_som_project_id = current_service_project.id != id_new_service_project
+                timesheet_with_current_service_project_ids = task_id.timesheet_ids.filtered(
+                    lambda x: x.project_id.id == current_service_project.id
+                )
+                if flag_changing_som_project_id and timesheet_with_current_service_project_ids:
+                    raise ValidationError(_(
+                        "No pots modificar la 'Tasca Servei' d'aquesta tasca perquè ja hi ha "
+                        "parts d'hores vinculats."
+                    ))
+
         # we don't allow to change 'som_additional_project_id'
         # if the task has timesheet lines linked to it
         # to avoid inconsistencies in the timesheet entries
         if 'som_additional_project_id' in vals:
             id_new_ap = vals.get('som_additional_project_id', False)
-            timesheet_line_obj = self.env['account.analytic.line']
             for task_id in self:
                 current_ap_id = task_id.som_additional_project_id
                 flag_changing_som_additional_project_id = (

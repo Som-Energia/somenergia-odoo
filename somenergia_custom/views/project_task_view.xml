@@ -11,6 +11,8 @@
                            invisible="1"/>
                     <field name="som_additional_project_domain_ids"
                            invisible="1"/>
+                    <field name="allow_timesheets"
+                           invisible="1"/>
                     <field name="kanban_state"
                            invisible="1"/>
                     <field name="som_hide_partner"
@@ -30,18 +32,18 @@
                 </xpath>
                 <xpath expr="//field[@name='user_ids']" position="after">
                     <field name="som_department_ids" widget="many2many_tags"/>
+                    <field name="som_project_id"
+                           options="{'no_open': True}"
+                           string="Tasca Servei"
+                           domain="[('id', 'in', som_project_area_domain_ids)]"
+                           attrs="{'required': [('allow_timesheets', '=', True)]}"
+                           invisible="0"
+                           readonly="0"/>
                     <field name="som_additional_project_id"
                            options="{'no_open': True}"
                            string="Transversal Project"
-                           domain="[('id', 'in', som_additional_project_domain_ids)]"
-                           readonly="0"/>
-                </xpath>
-                <xpath expr="//field[@name='tag_ids']" position="after">
-                    <field name="som_project_id"
-                           options="{'no_open': True}"
-                           string="Area"
-                           domain="[('id', 'in', som_project_area_domain_ids)]"
                            invisible="1"
+                           domain="[('id', 'in', som_additional_project_domain_ids)]"
                            readonly="0"/>
                 </xpath>
                 <xpath expr="//widget[@name='web_ribbon']" position="after">
@@ -66,8 +68,8 @@
                 </xpath>
                 <xpath expr="//kanban/field[@name='allow_milestones']" position="after">
                     <field name="som_department_ids"/>
-                    <field name="som_project_id" invisible="1"/>
-                    <field name="som_additional_project_id"/>
+                    <field name="som_project_id"/>
+                    <field name="som_additional_project_id" invisible="1"/>
                 </xpath>
                 <xpath expr="//strong[hasclass('o_kanban_record_title')]" position="replace">
                     <strong class="o_kanban_record_title">
@@ -95,8 +97,8 @@
             <field name="arch" type="xml">
                 <field name="user_ids" position="after">
                     <field name="som_department_ids" widget="many2many_tags" optional="show"/>
-                    <field name="som_project_id" invisible="1"/>
-                    <field name="som_additional_project_id" optional="show"/>
+                    <field name="som_project_id" optional="show"/>
+                    <field name="som_additional_project_id" invisible="1"/>
                 </field>
             </field>
         </record>

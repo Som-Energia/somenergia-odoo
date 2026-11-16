@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from odoo import api, fields, models, tools, _
+from odoo import api, fields, models, tools, exceptions, _
 from datetime import datetime, timedelta
 
 _logger = logging.getLogger(__name__)
@@ -11,6 +11,14 @@ class SomWorkedWeek(models.Model):
     _name = "som.worked.week"
     _inherit = ["som.common.project", "mail.thread", "mail.activity.mixin"]
     _description = "Som Worked Week"
+
+    @api.depends('som_cw_date_rel')
+    def _compute_project_type_domain_ids(self):
+        for record in self:
+            reference_date = fields.Date.to_date(record.som_cw_date_rel) if record.som_cw_date_rel else False
+            project_area_ids, project_transversal_ids = record._get_project_type_domain_ids(reference_date)
+            record.som_project_area_domain_ids = project_area_ids
+            record.som_additional_project_domain_ids = project_transversal_ids
 
     @api.depends('som_timesheet_ids', 'som_timesheet_ids.unit_amount')
     def _compute_totals(self):
@@ -106,6 +114,50 @@ class SomWorkedWeek(models.Model):
     )
 
     # -----
+
+    @api.depends('som_cw_date_end_rel')
+    def _compute_is_locked(self):
+        company = self.env.company
+        for record in self:
+            date_end = record.som_cw_date_end_rel
+            record.som_is_locked = bool(
+                date_end and company._is_period_locked(date_end, employee=record.som_employee_id)
+            )
+
+    som_is_locked = fields.Boolean(
+        string="Period locked",
+        compute='_compute_is_locked',
+        store=False,
+    )
+
+    def _check_period_lock(self):
+        """Raises UserError if any record in self belongs to a locked period."""
+        company = self.env.company
+        for record in self:
+            date_end = record.som_cw_date_end_rel
+            if date_end and company._is_period_locked(date_end, employee=record.som_employee_id):
+                raise exceptions.UserError(_(
+                    "The worked week '%s' belongs to a locked period and cannot be modified."
+                ) % record.name)
+
+    def write(self, vals):
+        self._check_period_lock()
+        return super().write(vals)
+
+    def action_open_help_url(self):
+        self.ensure_one()
+        help_url = self.env['ir.config_parameter'].sudo().get_param(
+            'somenergia_custom.som_worked_week_help_url'
+        )
+        if not help_url:
+            raise exceptions.UserError(_(
+                "No help URL is configured for worked weeks."
+            ))
+        return {
+            'type': 'ir.actions.act_url',
+            'url': help_url,
+            'target': 'new',
+        }
 
     def get_incomplete_worked_weeks(self):
         reference_day = datetime.now() - timedelta(days=datetime.now().weekday() + 1)
