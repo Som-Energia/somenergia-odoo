@@ -2,7 +2,7 @@ import logging
 from erppeek import Client
 
 from odoo import _, models
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tools import config
 
 
@@ -24,6 +24,10 @@ class HelpdeskContractLookupService(models.AbstractModel):
         "partner_id",
         "all",
     }
+
+    def _check_helpdesk_access(self):
+        if not self.env.user.has_group("helpdesk_mgmt.group_helpdesk_user"):
+            raise AccessError(_("You do not have access to Contract Lookup."))
 
     def _get_param(self, key, default=False):
         return self.env["ir.config_parameter"].sudo().get_param(key, default)
@@ -347,6 +351,7 @@ class HelpdeskContractLookupService(models.AbstractModel):
         return result
 
     def search(self, field="phone", value="", limit=20):
+        self._check_helpdesk_access()
         field = (field or "phone").strip().lower()
         value = (value or "").strip()
 
@@ -376,6 +381,7 @@ class HelpdeskContractLookupService(models.AbstractModel):
         }
 
     def contract_details(self, contract_numbers=None):
+        self._check_helpdesk_access()
         contract_numbers = contract_numbers or []
         if not isinstance(contract_numbers, list):
             raise ValidationError(_("contract_numbers must be a list."))

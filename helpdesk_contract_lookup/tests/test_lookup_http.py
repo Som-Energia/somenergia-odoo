@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from odoo.exceptions import ValidationError
 from odoo.tests.common import HttpCase, new_test_user, tagged
@@ -20,17 +20,61 @@ class TestLookupHttp(HttpCase):
         cls.partner = cls.env["res.partner"].create({"name": "Lookup partner", "som_erp_id": 987654321})
         cls.call = cls.env["crm.phonecall"].create({"name": "Lookup call", "user_id": cls.agent.id})
 
-    def rpc(self, endpoint, **params):
+    def _json_rpc(self, path, params):
         response = self.url_open(
-            "/helpdesk_contract_lookup/" + endpoint,
+            path,
             data=json.dumps({"jsonrpc": "2.0", "method": "call", "params": params, "id": 1}),
             headers={"Content-Type": "application/json"},
         )
         self.assertEqual(response.status_code, 200)
         return response.json()
 
+    def rpc(self, endpoint, **params):
+        return self._json_rpc("/helpdesk_contract_lookup/" + endpoint, params)
+
+    def model_rpc(self, method, **kwargs):
+        model = "helpdesk.contract.lookup.service"
+        api = getattr(getattr(type(self.env[model]), method), "_api", None)
+        return self._json_rpc("/web/dataset/call_kw", {
+            "model": model,
+            "method": method,
+            "args": [] if api == "model" else [[]],
+            "kwargs": kwargs,
+        })
+
     def login_agent(self):
         self.authenticate(self.agent.login, self.agent.login)
+
+    def test_model_rpc_rejects_non_helpdesk_user(self):
+        self.authenticate(self.other.login, self.other.login)
+        self.assertFalse(self.other.has_group("helpdesk_mgmt.group_helpdesk_user"))
+        service = type(self.env["helpdesk.contract.lookup.service"])
+        client = MagicMock()
+        client.model.return_value.search.return_value = []
+        with patch.object(service, "_get_erp_client", return_value=client) as connect:
+            for method, params in (
+                ("search", {"field": "name", "value": "Example"}),
+                ("contract_details", {"contract_numbers": ["C005"]}),
+                ("contract_details", {"contract_numbers": []}),
+            ):
+                with self.subTest(method=method, params=params):
+                    result = self.model_rpc(method, **params)
+                    self.assertIn("error", result)
+                    self.assertEqual(result["error"]["data"]["name"], "odoo.exceptions.AccessError")
+            connect.assert_not_called()
+
+    def test_model_rpc_allows_helpdesk_user(self):
+        self.login_agent()
+        service = type(self.env["helpdesk.contract.lookup.service"])
+        client = MagicMock()
+        client.model.return_value.search.return_value = []
+        with patch.object(service, "_get_erp_client", return_value=client) as connect:
+            empty = self.model_rpc("contract_details", contract_numbers=[])
+            self.assertEqual(empty["result"], {"status": "ok", "contracts": {}})
+            connect.assert_not_called()
+            details = self.model_rpc("contract_details", contract_numbers=["C005"])
+            self.assertEqual(details["result"], {"status": "no_info", "contracts": {}})
+            connect.assert_called_once_with()
 
     def test_all_routes_reject_non_helpdesk_user(self):
         self.authenticate(self.other.login, self.other.login)

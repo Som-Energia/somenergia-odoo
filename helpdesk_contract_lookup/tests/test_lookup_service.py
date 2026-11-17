@@ -1,13 +1,23 @@
 from unittest.mock import MagicMock, patch
 
-from odoo.exceptions import UserError, ValidationError
-from odoo.tests.common import TransactionCase
+from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.tests.common import TransactionCase, new_test_user
 
 
 class TestLookupService(TransactionCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.agent = new_test_user(
+            cls.env, login="lookup_service_agent",
+            groups="base.group_user,helpdesk_mgmt.group_helpdesk_user",
+        )
+        cls.other = new_test_user(cls.env, login="lookup_service_other", groups="base.group_user")
+        cls.portal = new_test_user(cls.env, login="lookup_service_portal", groups="base.group_portal")
+
     def setUp(self):
         super().setUp()
-        self.service = self.env["helpdesk.contract.lookup.service"]
+        self.service = self.env["helpdesk.contract.lookup.service"].with_user(self.agent)
         self.models = {}
         self.client = MagicMock()
         self.client.model.side_effect = self.models.__getitem__
@@ -26,6 +36,25 @@ class TestLookupService(TransactionCase):
         model.read.return_value = records or []
         self.models[name] = model
         return model
+
+    def test_public_methods_reject_non_helpdesk_users(self):
+        for model in ("res.partner", "giscedata.polissa"):
+            self.erp_model(model)
+        with patch.object(type(self.service), "_get_erp_client", return_value=self.client) as connect:
+            for user in (self.other, self.portal):
+                self.assertFalse(user.has_group("helpdesk_mgmt.group_helpdesk_user"))
+                service = self.service.with_user(user)
+                for method, params in (
+                    ("search", {"field": "name", "value": "Example"}),
+                    ("search", {"field": "unknown", "value": ""}),
+                    ("contract_details", {"contract_numbers": ["C005"]}),
+                    ("contract_details", {"contract_numbers": []}),
+                    ("contract_details", {"contract_numbers": "invalid"}),
+                ):
+                    with self.subTest(user=user.login, method=method, params=params):
+                        with self.assertRaises(AccessError):
+                            getattr(service, method)(**params)
+            connect.assert_not_called()
 
     def test_invalid_search_never_connects_to_erp(self):
         for field, value, limit in [("unknown", "x", 20), ("phone", "  ", 20), ("name", "x", "bad")]:
