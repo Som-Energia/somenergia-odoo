@@ -7,7 +7,7 @@ export const pbxCtiService = {
     dependencies: ["bus_service", "action", "notification"],
 
     start(env, { bus_service, action, notification }) {
-        const uid = session.user_id;
+        const uid = session.uid;
         bus_service.addChannel(`pbx_cti_${uid}`);
 
         bus_service.addEventListener("notification", ({ detail: notifications }) => {
