@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_crm_phonecall_form_lookup" model="ir.ui.view">
+        <field name="name">crm.phonecall.form.lookup</field>
+        <field name="model">crm.phonecall</field>
+        <field name="arch" type="xml">
+            <form string="Phone Call">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Edició de trucada</h1>
+                    </div>
+                    <group>
+                        <field name="som_pbx_call_id" string="ID Centraleta" readonly="1"/>
+                        <field name="date" string="Data i hora" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="name" string="Resum trucada"/>
+                        <field name="som_caller_name" string="Persona"/>
+                        <field name="som_contract_name" string="Contracte"/>
+                        <field name="som_phone" string="Telèfon"/>
+                        <field name="som_category_ids" string="Categories" widget="many2many_tags" domain="[('som_level', '=', 3)]" options="{'color_field': 'som_family_color'}"/>
+                        <field name="priority" string="Prioritat"/>
+                    </group>
+                    <field name="description" string="Descripció" placeholder="Descripció..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
