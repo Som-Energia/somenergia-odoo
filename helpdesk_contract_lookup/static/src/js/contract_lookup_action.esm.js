@@ -115,9 +115,11 @@ class ContractLookupAction extends Component {
             this.state.linkedPartnerId = partnerId;
             this.state.linkedContractNumber = contractName || null;
             this._reloadAllPhonecalls();
+            return true;
         } catch (error) {
             const message = error.message || "Unexpected error linking partner to call.";
             this.notification.add(message, { type: "danger" });
+            return false;
         }
     }
 
@@ -132,8 +134,10 @@ class ContractLookupAction extends Component {
     }
 
     async linkPartnerToCallAndOpen(partnerId, partnerName, partnerVat, contractName) {
-        await this.linkPartnerToCall(partnerId, partnerName, partnerVat, contractName);
-        this.openPhonecall(partnerId);
+        const linked = await this.linkPartnerToCall(partnerId, partnerName, partnerVat, contractName);
+        if (linked) {
+            this.openPhonecall(partnerId);
+        }
     }
 
     async openPartnerInOdoo(partnerId, partnerName, partnerVat) {

@@ -26,6 +26,9 @@
             "/helpdesk_contract_lookup/static/src/**/*.scss",
             "/helpdesk_contract_lookup/static/src/**/*.xml",
         ],
+        "web.qunit_suite_tests": [
+            "helpdesk_contract_lookup/static/tests/contract_lookup_action_tests.js",
+        ],
     },
     "installable": True,
 }
