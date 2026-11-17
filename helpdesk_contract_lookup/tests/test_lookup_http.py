@@ -130,6 +130,69 @@ class TestLookupHttp(HttpCase):
         self.assertEqual(call.user_id, self.agent)
         self.assertEqual((call.state, call.direction, call.som_phone), ("open", "in", "900000000"))
 
+    def test_new_partner_rejects_blank_name(self):
+        self.login_agent()
+        result = self.rpc(
+            "open_partner_in_odoo", partner_id=987654499, partner_name=" \t\n ", partner_vat=False,
+        )
+        self.assertIn("error", result)
+        self.assertEqual(result["error"]["data"]["name"], "odoo.exceptions.ValidationError")
+        self.assertEqual(
+            result["error"]["data"]["message"],
+            "A partner name is required to create a new contact.",
+        )
+        self.assertFalse(self.env["res.partner"].search([("som_erp_id", "=", 987654499)]))
+
+    def test_new_partner_rejects_missing_or_non_text_names_on_all_creation_routes(self):
+        self.login_agent()
+        calls_before = self.env["crm.phonecall"].search_count([])
+        names = ({}, {"partner_name": None}, {"partner_name": False}, {"partner_name": ""},
+                 {"partner_name": 42}, {"partner_name": []}, {"partner_name": {}})
+        for index, name_params in enumerate(names):
+            partner_id = 987654400 + index
+            for endpoint in ("open_partner_in_odoo", "register_incoming_call", "link_partner_to_call"):
+                with self.subTest(endpoint=endpoint, name_params=name_params):
+                    params = {"partner_id": partner_id, "partner_vat": False, **name_params}
+                    if endpoint == "link_partner_to_call":
+                        params["phonecall_id"] = self.call.id
+                    result = self.rpc(endpoint, **params)
+                    self.assertEqual(result["error"]["data"]["name"], "odoo.exceptions.ValidationError")
+                    self.assertEqual(
+                        result["error"]["data"]["message"],
+                        "A partner name is required to create a new contact.",
+                    )
+                    self.assertFalse(self.env["res.partner"].search([("som_erp_id", "=", partner_id)]))
+        self.assertEqual(self.env["crm.phonecall"].search_count([]), calls_before)
+        self.call.invalidate_recordset()
+        self.assertFalse(self.call.partner_id)
+
+    def test_existing_partner_is_reused_without_supplied_name(self):
+        self.login_agent()
+        for endpoint in ("open_partner_in_odoo", "register_incoming_call", "link_partner_to_call"):
+            with self.subTest(endpoint=endpoint):
+                params = {"partner_id": self.partner.som_erp_id, "partner_vat": False}
+                if endpoint == "link_partner_to_call":
+                    params["phonecall_id"] = self.call.id
+                result = self.rpc(endpoint, **params)["result"]
+                self.assertEqual(result["status"], "ok")
+                if endpoint == "open_partner_in_odoo":
+                    self.assertEqual(result["odoo_partner_id"], self.partner.id)
+        self.partner.invalidate_recordset()
+        self.assertEqual(self.partner.name, "Lookup partner")
+        self.assertEqual(
+            self.env["res.partner"].search([("som_erp_id", "=", self.partner.som_erp_id)]), self.partner,
+        )
+
+    def test_new_partner_name_is_trimmed(self):
+        self.login_agent()
+        result = self.rpc(
+            "open_partner_in_odoo", partner_id=987654499, partner_name="  New lookup partner \t",
+            partner_vat=False,
+        )["result"]
+        partner = self.env["res.partner"].browse(result["odoo_partner_id"])
+        self.assertEqual(partner.name, "New lookup partner")
+        self.assertEqual(partner.som_erp_id, 987654499)
+
     def test_required_parameters_and_missing_call(self):
         self.login_agent()
         for endpoint, params in (

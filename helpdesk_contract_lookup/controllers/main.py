@@ -1,7 +1,7 @@
 import logging
 import pytz
 
-from odoo import http
+from odoo import _, http
 from odoo.http import request
 from odoo.exceptions import AccessError, UserError, ValidationError
 
@@ -23,8 +23,10 @@ class HelpdeskContractLookupController(http.Controller):
             [("som_erp_id", "=", partner_id)], limit=1
         )
         if not odoo_partner:
+            if not isinstance(partner_name, str) or not partner_name.strip():
+                raise ValidationError(_("A partner name is required to create a new contact."))
             odoo_partner = partner_model.sudo().create({
-                "name": partner_name,
+                "name": partner_name.strip(),
                 "vat": partner_vat,
                 "som_erp_id": partner_id,
                 "type": "contact",
