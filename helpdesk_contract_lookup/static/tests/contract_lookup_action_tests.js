@@ -29,6 +29,20 @@ QUnit.module("Contract Lookup Linking", (hooks) => {
         });
     });
 
+    QUnit.test("search leaves the limit to the backend configuration", async (assert) => {
+        assert.expect(3);
+        lookup.state.field = "name";
+        lookup.state.value = "Example";
+        const result = { status: "no_info", partners: [], limit: 7 };
+        lookup.rpc = async (route, params) => {
+            assert.strictEqual(route, "/helpdesk_contract_lookup/search");
+            assert.deepEqual(params, { field: "name", value: "Example" });
+            return result;
+        };
+
+        assert.strictEqual(await lookup._rpcSearch(), result);
+    });
+
     QUnit.test("failed linking does not open the call or change the linked partner", async (assert) => {
         lookup.rpc = async () => {
             throw new Error("Link rejected");

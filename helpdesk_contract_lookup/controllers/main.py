@@ -50,7 +50,7 @@ class HelpdeskContractLookupController(http.Controller):
         methods=["POST"],
         csrf=False,
     )
-    def search(self, field="phone", value="", limit=20):
+    def search(self, field="phone", value="", limit=None):
         self._check_access()
         try:
             return request.env["helpdesk.contract.lookup.service"].search(

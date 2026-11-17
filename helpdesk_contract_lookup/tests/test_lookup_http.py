@@ -105,6 +105,21 @@ class TestLookupHttp(HttpCase):
             result = self.rpc("search", field="unknown", value="x")
             self.assertEqual(result["error"]["data"]["name"], "odoo.exceptions.ValidationError")
 
+    def test_search_uses_configured_limit_unless_explicitly_overridden(self):
+        self.login_agent()
+        self.env["ir.config_parameter"].sudo().set_param("helpdesk_contract_lookup.search_limit", "7")
+        service = type(self.env["helpdesk.contract.lookup.service"])
+        client = MagicMock()
+        client.model.return_value.search.return_value = []
+        with patch.object(service, "_get_erp_client", return_value=client):
+            for params, expected in (({}, 7), ({"limit": 3}, 3)):
+                with self.subTest(params=params):
+                    result = self.rpc("search", field="name", value="Example", **params)["result"]
+                    self.assertEqual(result["limit"], expected)
+                    client.model.return_value.search.assert_called_with(
+                        [("name", "ilike", "Example")], limit=expected,
+                    )
+
     def test_link_call_reuses_partner_and_updates_contract(self):
         self.login_agent()
         result = self.rpc(

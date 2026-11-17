@@ -73,6 +73,20 @@ class TestLookupService(TransactionCase):
         self.params.set_param("helpdesk_contract_lookup.erp_invoice_url_template", "")
         self.assertEqual(self.service._build_erp_invoice_url(12), "")
 
+    def test_search_uses_configured_limit_unless_explicitly_overridden(self):
+        partner = self.erp_model("res.partner")
+        for configured, params, expected in (
+            ("7", {}, 7),
+            ("7", {"limit": 3}, 3),
+            ("invalid", {}, 20),
+            (False, {}, 20),
+        ):
+            with self.subTest(configured=configured, params=params):
+                self.params.set_param("helpdesk_contract_lookup.search_limit", configured)
+                result = self.service.search("name", "Example", **params)
+                self.assertEqual(result["limit"], expected)
+                partner.search.assert_called_with([("name", "ilike", "Example")], limit=expected)
+
     def test_partner_search_domains(self):
         partner = self.erp_model("res.partner")
         for field, column in [("name", "name"), ("nif", "vat"), ("soci", "ref")]:

@@ -351,7 +351,7 @@ class HelpdeskContractLookupService(models.AbstractModel):
             )
         return result
 
-    def search(self, field="phone", value="", limit=20):
+    def search(self, field="phone", value="", limit=None):
         self._check_helpdesk_access()
         field = (field or "phone").strip().lower()
         value = (value or "").strip()

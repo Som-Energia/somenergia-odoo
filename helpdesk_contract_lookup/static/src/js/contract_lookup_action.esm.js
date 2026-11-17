@@ -95,7 +95,6 @@ class ContractLookupAction extends Component {
         return this.rpc("/helpdesk_contract_lookup/search", {
             field: this.state.field,
             value: this.state.value,
-            limit: 20,
         });
     }
 
