@@ -262,6 +262,7 @@ class HelpdeskContractLookupService(models.AbstractModel):
                         "active",
                         "cups",
                         "titular",
+                        "administradora",
                         "pagador",
                         "soci",
                         "tarifa",
@@ -313,7 +314,7 @@ class HelpdeskContractLookupService(models.AbstractModel):
                 "end_date": contract.get("data_baixa") or "",
                 "contract_url": self._build_erp_contract_url(contract["id"]),
             }
-            for rel_field in ["titular", "pagador", "soci"]:
+            for rel_field in ["titular", "administradora", "pagador", "soci"]:
                 rel_value = contract.get(rel_field)
                 if rel_value and rel_value[0] in partner_contracts:
                     partner_contracts[rel_value[0]][contract_number] = contract_data

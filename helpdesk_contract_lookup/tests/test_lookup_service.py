@@ -147,6 +147,32 @@ class TestLookupService(TransactionCase):
         self.assertEqual(partner["contracts"][0]["contract_url"], "https://erp.example.test/contract/5")
         self.assertFalse(partner["contracts"][0]["active"])
 
+    def test_partner_summary_keeps_administrator_contracts_without_duplicates(self):
+        self.erp_model("res.partner", records=[
+            {"id": 42, "name": "Administrator"}, {"id": 43, "name": "Holder"},
+        ])
+        records = [
+            {"id": 5, "name": "C005", "administradora": [42, "Administrator"],
+             "titular": [43, "Holder"], "pagador": [43, "Holder"], "soci": [43, "Holder"]},
+            {"id": 6, "name": "C006", "administradora": [42, "Administrator"],
+             "titular": [42, "Administrator"], "pagador": [42, "Administrator"],
+             "soci": [42, "Administrator"]},
+        ]
+        contracts = self.erp_model("giscedata.polissa", [5, 6], records)
+        contracts.read.side_effect = lambda ids, fields: [
+            {key: value for key, value in record.items() if key == "id" or key in fields}
+            for record in records if record["id"] in ids
+        ]
+
+        partners = {
+            partner["id"]: partner
+            for partner in self.service._build_partner_summary(self.client, [42, 43], 20)
+        }
+
+        self.assertEqual([contract["contract_id"] for contract in partners[42]["contracts"]], [5, 6])
+        self.assertEqual([contract["contract_id"] for contract in partners[43]["contracts"]], [5])
+        self.assertIn("administradora", contracts.read.call_args.kwargs["fields"])
+
     def test_contract_details_validate_input_and_handle_missing_contracts(self):
         self.assertEqual(self.service.contract_details(), {"status": "ok", "contracts": {}})
         with self.assertRaises(ValidationError):
