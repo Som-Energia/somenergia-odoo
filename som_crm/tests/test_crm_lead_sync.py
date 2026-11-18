@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from datetime import timedelta
 from unittest.mock import patch, MagicMock, ANY
 
 from odoo.tests.common import TransactionCase, tagged
+from odoo import fields
+from odoo.exceptions import ValidationError
 from odoo.tools import config
 
 _logger = logging.getLogger(__name__)
@@ -173,6 +176,50 @@ class TestErpLeadSync(TransactionCase):
             self.assertIn(('state', '=', 'done'), domain)
             self.assertIn(('polissa_id', '!=', False), domain)
 
+    @patch('odoo.addons.som_crm.models.crm_lead.fields.Date.today')
+    def test_get_erp_contract_date_domain_uses_configured_margin(self, mock_today):
+        current_date = fields.Date.from_string('2026-10-01')
+        mock_today.return_value = current_date
+        self.env['ir.config_parameter'].sudo().set_param(
+            'som_crm_erp_contract_match_days', 3
+        )
+
+        domain = self.lead_to_find_by_cups._get_erp_contract_date_domain()
+
+        self.assertEqual(domain, [
+            ('create_date', '>=', fields.Datetime.to_string(
+                fields.Datetime.to_datetime(current_date - timedelta(days=3))
+            )),
+            ('create_date', '<', fields.Datetime.to_string(
+                fields.Datetime.to_datetime(current_date + timedelta(days=4))
+            )),
+        ])
+
+    @patch('odoo.addons.som_crm.models.crm_lead.fields.Date.today')
+    def test_get_erp_contract_date_domain_normalizes_negative_margin(self, mock_today):
+        current_date = fields.Date.from_string('2026-10-01')
+        mock_today.return_value = current_date
+        self.env['ir.config_parameter'].sudo().set_param(
+            'som_crm_erp_contract_match_days', -3
+        )
+
+        domain = self.lead_to_find_by_cups._get_erp_contract_date_domain()
+
+        self.assertEqual(domain, [
+            ('create_date', '>=', fields.Datetime.to_string(
+                fields.Datetime.to_datetime(current_date)
+            )),
+            ('create_date', '<', fields.Datetime.to_string(
+                fields.Datetime.to_datetime(current_date + timedelta(days=1))
+            )),
+        ])
+
+    def test_erp_contract_match_days_rejects_negative_values(self):
+        with self.assertRaises(ValidationError):
+            self.env['res.config.settings'].create({
+                'som_crm_erp_contract_match_days': -1,
+            })
+
     def test_get_contract_in_erp_matches_with_full_domain(self):
         """
         Test that get_contract_in_erp returns an ERP id when the full
@@ -190,11 +237,13 @@ class TestErpLeadSync(TransactionCase):
         self.assertIn(('crm_lead_id', '=', 0), call_domain)
         self.assertIn(('state', '=', 'done'), call_domain)
         self.assertIn(('polissa_id', '!=', False), call_domain)
+        for clause in self.lead_to_find_by_cups._get_erp_contract_date_domain():
+            self.assertIn(clause, call_domain)
 
     def test_get_contract_in_erp_priority(self):
         """
-        Test the logic and search priority in 'get_contract_in_erp'.
-        It should find by CUPS first, even if it has other data.
+        Test that a lead with CUPS only searches by CUPS, even when it also
+        has other searchable data.
         """
         _logger.info("--> Test: test_get_contract_in_erp_priority")
 
@@ -220,7 +269,25 @@ class TestErpLeadSync(TransactionCase):
                 ('crm_lead_id', '=', 0),
                 ('state', '=', 'done'),
                 ('polissa_id', '!=', False),
-                ('cups', '=ilike', 'ES_PRIORITY_TEST%'),
+            ] + lead_with_multiple_fields._get_erp_contract_date_domain() + [
+                ('cups', '=ilike', 'ES_PRIORITY_TEST%')
+            ], limit=1
+        )
+
+        # A CUPS that does not match must not fall back to the VAT.
+        mock_erp_lead_obj.reset_mock()
+        mock_erp_lead_obj.search.return_value = []
+
+        erp_id = lead_with_multiple_fields.get_contract_in_erp(mock_erp_lead_obj)
+
+        self.assertFalse(erp_id)
+        mock_erp_lead_obj.search.assert_called_once_with(
+            [
+                ('crm_lead_id', '=', 0),
+                ('state', '=', 'done'),
+                ('polissa_id', '!=', False),
+            ] + lead_with_multiple_fields._get_erp_contract_date_domain() + [
+                ('cups', '=ilike', 'ES_PRIORITY_TEST%')
             ], limit=1
         )
 
@@ -249,6 +316,10 @@ class TestErpLeadSync(TransactionCase):
             return []
 
         mock_erp_lead_model.search.side_effect = search_side_effect
+        mock_erp_lead_model.read.return_value = [
+            {'id': 102, 'cups': 'ES0021000000000002ABCD'},
+            {'id': 103, 'cups': False},
+        ]
 
         self.CrmLead._erp_sync()
 
@@ -260,9 +331,11 @@ class TestErpLeadSync(TransactionCase):
 
         self.assertEqual(self.lead_to_find_by_vat.stage_id, self.stage_won)
         self.assertEqual(self.lead_to_find_by_vat.som_erp_lead_id, 102)
+        self.assertEqual(self.lead_to_find_by_vat.som_cups, 'ES0021000000000002ABCD')
 
         self.assertEqual(self.lead_to_find_by_phone.stage_id, self.stage_won)
         self.assertEqual(self.lead_to_find_by_phone.som_erp_lead_id, 103)
+        self.assertFalse(self.lead_to_find_by_phone.som_cups)
 
         # 2. Verify that the lead not found has not changed stage
         self.assertEqual(self.lead_not_in_erp.stage_id, self.stage_new)
@@ -276,6 +349,51 @@ class TestErpLeadSync(TransactionCase):
         mock_erp_lead_model.write.assert_any_call(
             103, {'crm_lead_id': self.lead_to_find_by_phone.id})
         self.assertEqual(mock_erp_lead_model.write.call_count, 3)
+        mock_erp_lead_model.read.assert_called_once()
+        read_args = mock_erp_lead_model.read.call_args[0]
+        self.assertEqual(set(read_args[0]), {102, 103})
+        self.assertEqual(read_args[1], ['id', 'cups'])
+
+    def test_sync_erp_contract_data_preserves_existing_cups(self):
+        self.lead_to_find_by_cups.write({'som_erp_lead_id': 101})
+        self.lead_to_find_by_vat.write({'som_erp_lead_id': 102})
+        mock_erp_lead_obj = MagicMock()
+        mock_erp_lead_obj.read.return_value = [
+            {'id': 102, 'cups': 'ES0021000000000002ABCD'},
+        ]
+
+        updated_ids = (
+            self.lead_to_find_by_cups | self.lead_to_find_by_vat
+        )._sync_erp_contract_data(mock_erp_lead_obj)
+
+        self.assertEqual(updated_ids, [self.lead_to_find_by_vat.id])
+        self.assertEqual(
+            self.lead_to_find_by_cups.som_cups, 'ES0021000000000001ABCD'
+        )
+        self.assertEqual(self.lead_to_find_by_vat.som_cups, 'ES0021000000000002ABCD')
+        self.assertTrue(any(
+            'CUPS updated from ERP contract synchronization: ES0021000000000002ABCD'
+            in message.body
+            for message in self.lead_to_find_by_vat.message_ids
+        ))
+        mock_erp_lead_obj.read.assert_called_once_with([102], ['id', 'cups'])
+
+    @patch('odoo.addons.som_crm.models.crm_lead.Client')
+    def test_sync_erp_contract_data_connects_to_erp(self, mock_erppeek_client):
+        self.lead_to_find_by_vat.write({'som_erp_lead_id': 102})
+        mock_client_instance = MagicMock()
+        mock_erppeek_client.return_value = mock_client_instance
+        mock_erp_lead_obj = MagicMock()
+        mock_client_instance.model.return_value = mock_erp_lead_obj
+        mock_erp_lead_obj.read.return_value = [
+            {'id': 102, 'cups': 'ES0021000000000002ABCD'},
+        ]
+
+        updated_ids = self.lead_to_find_by_vat.sync_erp_contract_data()
+
+        self.assertEqual(updated_ids, [self.lead_to_find_by_vat.id])
+        self.assertEqual(self.lead_to_find_by_vat.som_cups, 'ES0021000000000002ABCD')
+        mock_client_instance.model.assert_called_once_with('giscedata.crm.lead')
 
     def test_get_leads_to_check_include_inactive(self):
         """Test that inactive leads are included when include_inactive=True."""

@@ -29,6 +29,7 @@
         'security/ir.model.access.csv',
         'views/crm_phonecall_view.xml',
         'views/product_category.xml',
+        'views/res_partner_views.xml',
         'report/crm_phonecall_report_view.xml',
     ],
     # only loaded in demonstration mode

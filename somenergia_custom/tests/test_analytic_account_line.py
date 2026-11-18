@@ -112,6 +112,59 @@ class TestAnalyticAccountLine(TransactionCase):
             "Both timesheets in same week should share the same worked_week"
         )
 
+    def test_timer_switch_recomputes_week_from_new_start_time(self):
+        next_week_date = self.test_date + timedelta(days=7)
+        next_calendar_week = self.env['som.calendar.week'].create({
+            'name': '2022-W11',
+            'som_cw_code': '2022W11',
+            'som_cw_date': next_week_date,
+            'som_cw_date_end': next_week_date + timedelta(days=6),
+            'som_cw_week_number': 11,
+            'som_cw_week_year': 2022,
+            'som_cw_year': 2022,
+        })
+        next_worked_week = self.env['som.worked.week'].create({
+            'som_week_id': next_calendar_week.id,
+            'som_employee_id': self.employee.id,
+        })
+        source_timesheet = self.env['account.analytic.line'].create({
+            'name': 'Previous week timer',
+            'task_id': self.task.id,
+            'project_id': self.project_service.id,
+            'employee_id': self.employee.id,
+            'date_time': self.test_date,
+            'unit_amount': 1.0,
+        })
+
+        switch = self.env['hr.timesheet.switch'].create({
+            'analytic_line_id': source_timesheet.id,
+            'running_timer_id': False,
+            'name': source_timesheet.name,
+            'date_time': next_week_date,
+            'project_id': self.project_service.id,
+            'task_id': self.task.id,
+        })
+        switch.action_switch()
+
+        switched_timesheet = self.env['account.analytic.line'].search([
+            ('task_id', '=', self.task.id),
+            ('employee_id', '=', self.employee.id),
+            ('date_time', '=', fields.Datetime.to_string(next_week_date)),
+            ('unit_amount', '=', 0),
+        ], order='id desc', limit=1)
+
+        self.assertTrue(switched_timesheet, "The timer switch should create a new timesheet")
+        self.assertEqual(
+            switched_timesheet.som_week_id,
+            next_calendar_week,
+            "The new timer should use the week containing its start time"
+        )
+        self.assertEqual(
+            switched_timesheet.som_worked_week_id,
+            next_worked_week,
+            "The new timer should use the employee's worked week for its start time"
+        )
+
     def test_create_timesheet_sets_project_from_task_service_project(self):
         """Test that project_id is set from the task service project."""
         timesheet = self.env['account.analytic.line'].create({
