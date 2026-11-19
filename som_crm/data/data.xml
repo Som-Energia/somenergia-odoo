@@ -157,6 +157,10 @@
     </record>
 
     <!-- UTM Mediums -->
+    <record model="utm.medium" id="som_medium_collaborators">
+        <field name="name">Collaborators</field>
+        <field name="active" eval="True"/>
+    </record>
     <record model="utm.medium" id="som_medium_social_media">
         <field name="name">Social media</field>
         <field name="active" eval="True"/>

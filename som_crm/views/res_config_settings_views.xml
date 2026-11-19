@@ -8,6 +8,16 @@
 
                 <div class="col-12 col-lg-6 o_setting_box">
                     <div class="o_setting_left_pane">
+                        <field name="som_crm_collaborator_intake_enabled"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="som_crm_collaborator_intake_enabled"/>
+                        <div class="text-muted">Enable the collaborator API globally. The web API is independent.</div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6 o_setting_box">
+                    <div class="o_setting_left_pane">
                         <field name="som_ff_send_lead_confirmation_email" />
                     </div>
                     <div class="o_setting_right_pane">

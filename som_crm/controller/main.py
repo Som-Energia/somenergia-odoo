@@ -10,6 +10,8 @@ from odoo.tools.misc import get_lang
 from urllib.parse import urlparse, parse_qs
 import werkzeug.wrappers
 
+from ..models.lead_intake import normalize_contact_data
+
 _logger = logging.getLogger(__name__)
 
 FILE_MAX_SIZE_MB = 10
@@ -58,23 +60,11 @@ class CRMLeadAPIController(http.Controller):
         if lang_code and lang_code in lang_codes_accepted:
             lang_id = get_lang(request.env, lang_code) if lang_code else False
 
-        phone_casted = data.get('phone', False)
-        if phone_casted:
-            phone_casted = phone_casted.replace(' ','')
-
-        clean_mail = data.get('email', False)
-        if clean_mail:
-            clean_mail = clean_mail.lower().strip()
-
-        clean_contact_name = data.get('contact_name', False)
-        if clean_contact_name:
-            clean_contact_name = clean_contact_name.title()
+        contact_values = normalize_contact_data(data)
 
         lead_values = {
-            'name': data.get('name', clean_contact_name),
-            'contact_name': clean_contact_name,
-            'email_from': clean_mail,
-            'phone': phone_casted,
+            'name': data.get('name', contact_values['contact_name']),
+            **contact_values,
             'som_url_origin': data.get('url_origin', False),
             'som_channel': medium_id.id if medium_id else False,
             'lang_id': lang_id.id if lang_id else False,

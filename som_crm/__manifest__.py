@@ -13,7 +13,7 @@
     'author': "Pau Boix i Tura, Pere Montagud Ferragud ",
     'website': "https://github.com/Som-Energia/somenergia-odoo",
     'category': 'Uncategorized',
-    'version': '0.1',
+    'version': '16.0.1.0.0',
     'license': 'AGPL-3',
 
     # any module necessary for this one to work correctly
@@ -28,7 +28,7 @@
         'somenergia_custom',
         'som_google_sheets_integration',
     ],
-    "external_dependencies": {"python": ["erppeek"]},
+    "external_dependencies": {"python": ["erppeek", "pydantic"]},
 
     'assets': {
         'web.assets_backend': [
@@ -43,6 +43,7 @@
         'data/crm_stage_data.xml',
         'data/mail_template_data.xml',
         'views/crm_lead_views.xml',
+        'views/crm_lead_integration_views.xml',
         'views/contact_time_slot_views.xml',
         'views/res_users_views.xml',
         'views/res_config_settings_views.xml',
